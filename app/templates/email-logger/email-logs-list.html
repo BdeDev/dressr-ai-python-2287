@@ -1,0 +1,103 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Email Logs</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'logger:email_logs_list' %}">Email Logs</a>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-danger action_confirm" message="Are you sure you want to clear all Email Logs?" href="{% url 'logger:delete_email_logs' %}"><i class="fas fa-trash-alt"></i></a></a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class='d-flex flex-wrap justify-content-between'>
+                    <!-- showing_objects-->
+					{% include "admin-includes/showing_objects.html" with listing_objects=email_logs %}
+					<!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'logger:email_logs_list' %}" method="GET">
+                        <div class="table-responsive ">
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th><strong>Reciever Email</strong></th>
+                                        <th><strong>Sender Email</strong></th>
+                                        <th><strong>Email Subject</strong></th>
+                                        <th><strong>Email Status</strong></th>
+                                        <th><strong>Created On</strong></th>
+                                        <th><strong>Actions</strong></th>
+                                    </tr>
+                                </thead>
+                                <thead>
+                                    <tr class="search-row">
+                                        <td><input type="text" value="{{recievers_email}}" class="form-control" name="recievers_email" maxlength="20"></td>
+                                        <td><input type="text" value="{{sender_email}}" class="form-control" name="sender_email" maxlength="20"></td>
+                                        <td><input type="text" value="{{email_subject}}" class="form-control" name="email_subject" maxlength="20"></td>
+                                        <td>
+                                            <select class="form-control" name="sent_status" onchange="this.form.submit()">
+                                                <option  value=""></option>
+                                                <option {% if request.GET.sent_status == '1' %} selected {% endif %} value="1">SENT</option>
+                                                <option {% if request.GET.sent_status == '2' %} selected {% endif %} value="2">PENDING</option>
+                                                <option {% if request.GET.sent_status == '3' %} selected {% endif %} value="3">FAILED</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="date" onkeydown="return false" value="{{created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+                                        <td><button type="submit" class="btn btn-primary">Search</button></td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if email_logs %}
+                                    {% for email_log in email_logs %}
+                                    <tr>
+                                        <td class='clickable-row' data-href="{% url 'logger:view_email_log' email_log.id %}">{{email_log.recievers_email|truncatechars:30}}</td>
+                                        <td class='clickable-row' data-href="{% url 'logger:view_email_log' email_log.id %}">{{email_log.sender_email}}</td>
+                                        <td class='clickable-row' data-href="{% url 'logger:view_email_log' email_log.id %}">
+                                            {% if email_log.email_subject %}{{email_log.email_subject|truncatechars:20}}{% else %}-{% endif %}</td>
+                                        <td class='clickable-row' data-href="{% url 'logger:view_email_log' email_log.id %}">
+                                            {% if email_log.sent_status == 1 %}
+                                            <div class="badge bg-success">SENT</div>
+                                            {% elif email_log.sent_status == 2 %}
+                                            <div class="badge bg-warning">PENDING</div>
+                                            {% elif email_log.sent_status == 3 %}
+                                            <div class="badge bg-danger">FAILED</div>
+                                            {% endif %}
+                                        </td>
+                                        <td class='clickable-row' data-href="{% url 'logger:view_email_log' email_log.id %}">
+                                            <script>
+                                                var date = ConvertDateTime("{{ email_log.created_on|date:'Y-m-d' }}", "{{ email_log.created_on|time:'H:i' }}");
+                                                document.write(date);
+                                            </script>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <a title='View' href="{% url 'logger:view_email_log' email_log.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                <a title='delete' style="margin-right:5px"  href="{% url 'logger:delete_email_log' email_log.id %}" message="Are you sure you want to delete this email log?" class="btn btn-danger shadow btn-xs sharp action_confirm"><i class="fa fa-trash"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    <!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=email_logs %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

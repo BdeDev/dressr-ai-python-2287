@@ -1,0 +1,53 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>SMS Campaigns</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'logger:sms_campaign_templates' %}">SMS Campaigns</a></li>
+                        <li class="breadcrumb-item "><a class="white-text" href=""> {% if draft %}Update Campaign Message{% else %}Add Campaign Message{% endif %} </a></li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary"  href="{% url 'logger:sms_campaign_templates' %}" ><i class="fa fa-angle-left me-1"></i>Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="productdetails">
+                            <form id="custome-sms-form" onsubmit="Loader(this.id)" action="" method="POST"  enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-6 col-12">
+                                        <div class="form-group required-field">
+                                            <label class="form-label">Subject</label>
+                                            <input type="text" placeholder="Enter Subject" name="title" id="title" class="form-control" maxlength="150" value="{% if draft %}{{draft.subject}}{% endif %}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12 col-12">
+                                        <div class="form-group required-field">
+                                            <label class="form-label">Campaign Message</label>
+                                            <textarea maxlength="800" rows="10" placeholder="Enter Campaign Message" name="content" id="content" class="form-control">{% if draft %}{{draft.description}}{% endif %}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <button type="submit" class="btn btn-primary me-2" >Save</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/customized-js/sms-campaigns.js' %}"></script>
+

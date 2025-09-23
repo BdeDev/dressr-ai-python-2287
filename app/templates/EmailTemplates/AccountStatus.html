@@ -1,0 +1,111 @@
+<!doctype html>
+{% load static %}
+<html lang="en-US">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    <title>Account Status Update</title>
+    <meta name="description" content="Account Status Update">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        @media only screen and (max-width: 700px) {
+            .main-table {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .content-td {
+                padding: 0 10px !important;
+            }
+            .logo-td {
+                padding: 10px !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin:0; background: #f1f5f9; padding:0;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#f1f5f9" style="font-family: 'Open Sans', Arial, sans-serif; margin:0; padding:0;">
+        <tr>
+            <td align="center">
+                <table class="main-table" cellpadding="0" cellspacing="0" border="0" width="670" style="background-color: #fff; max-width:670px; margin:50px auto; border-radius:3px; box-shadow:0 6px 18px 0 rgba(0,0,0,.06);">
+                    <tr>
+                        <td class="logo-td" align="center" style="padding: 20px;background: #1e3d9d;">
+                            <a href="{{ protocol }}://{{ domain }}{% url "frontend:index" %}" title="logo" target="_blank">
+                                <img width="100" src="{{ protocol }}://{{ domain }}/static/admin-assets/images/230x0w.webp" title="logo" alt="logo" style="display:block; margin:auto;">
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="height:10px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td class="content-td" style="padding:0 35px;">
+                            <h1 style="color: #1e3d9d;font-weight: 500;margin: 0;font-size: 22px;font-family: 'Rubik',sans-serif;">
+                                {{title}}
+                            </h1>
+                            <span style="display: inline-block;vertical-align: middle;margin: 0px 0 20px; width: 240px;height: 5px;"></span>
+                            <p style="font-size:15px; color:#000; margin:0; line-height:24px; padding: 20px 0 20px 0;text-align:left;">
+                                Dear {{user.full_name|capfirst}},
+                            </p>
+                            {% if title == 'Account Activated' %}
+                                <p style="font-size:14px; color:#000; margin: 0; line-height:24px;padding-bottom: 10px;text-align:left;">
+                                    We hope this message finds you well. <br>
+                                    We are writing to inform you that your account with Dressr AI has been successfully activated. <br>
+                                    You can now access all the features and services available to you. <br>
+                                    To log in, please visit
+                                    {% if user.role_id == 2 %}
+                                         <a style="color:#4467ff" target="_blank" href="{{ protocol }}://{{ domain }}{% url 'frontend:index' %}">Dressr AI App</a>
+                                    {% else %}
+                                        <a style="color:#4467ff" target="_blank" href="{{ protocol }}://{{ domain }}{% url 'accounts:login' %}">Dressr AI Login</a>
+                                    {% endif %}
+                                    and use your registered credentials.  <br>
+                                    If you have forgotten your password, you can reset it using the "Forgot Password" link on the login page. <br>
+                                    If you have any questions or need further assistance, please do not hesitate to reach out to us.<br>
+                                    <a style="color:#4467ff" target="_blank" href="">click here for assistance</a>
+                                    We are here to help! <br> <br>
+                                    Thank you for choosing Dressr AI. We look forward to serving you. <br>
+                                    Best regards, <br>
+                                    Team Dressr AI
+                                </p>
+                            {% elif title == 'Account Deactivated' %}
+                                <p style="font-size:14px; color:#000; margin: 0; line-height:24px;padding-bottom: 10px;text-align:left;">
+                                    We hope this message finds you well. <br>
+                                    We are writing to inform you that your account with Dressr AI has been deactivated. <br>
+                                    If you believe this deactivation was made in error or if you have any questions regarding your account status, 
+                                    Please do not hesitate to reach out to us. <br>
+                                    <a style="color:#4467ff" target="_blank" href="">click here for assistance</a>
+                                    We are here to help! <br> <br>
+                                    Thank you for your understanding.<br>
+                                    Best regards,<br>
+                                    Team Dressr AI
+                                </p>
+                            {% elif title == 'Account Deleted' %}
+                                <p style="font-size:14px; color:#000; margin: 0; line-height:24px;padding-bottom: 10px;text-align:left;">
+                                    We hope this message finds you well. <br>
+                                    We are writing to inform you that your account with Dressr AI has been permanently deleted. <br>
+                                    If you believe this deletion was made in error or if you have any questions regarding your account status, 
+                                    Please do not hesitate to reach out to us. <br>
+                                    <a style="color:#4467ff" target="_blank" href="">click here for assistance</a>
+                                    We are here to help! <br> <br>
+                                    Thank you for your understanding.<br>
+                                    Best regards,<br>
+                                    Team Dressr AI
+                                </p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="height:40px;">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td align="center" style="padding: 20px 0;border-top: 2px solid #cbcbcb4a; background-color: #1e3d9d;">
+                            <p style="font-size:14px; color:#fff; line-height:18px; margin:0 0 0;">
+                                Copyright  © <span id="full_year">{% now "Y" as current_year %}{{current_year}}</span>
+                                <a style="color: #fff;text-decoration: none; font-weight: 600;" target="_blank" href="{% url 'frontend:index' %}"> Dressr AI </a> | All Rights Reserved. Developed by <a style="color: #fff; text-decoration: none; font-weight: 600;" href="https://toxsl.com/" target="_blank">TOXSL Technologies</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

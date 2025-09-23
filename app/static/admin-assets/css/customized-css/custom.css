@@ -1,0 +1,31 @@
+/* loan support query and response management */
+
+.border.border-dashed {
+    border-style: dashed !important
+}
+
+.border.border-dotted {
+    border-style: dotted !important
+}
+
+.review-list .vr{
+	width:4px;
+}
+
+
+/* show more and less data */
+.morecontent .remaining-content {
+	display: none;
+}
+.morelink {
+	display: block ;
+	font-size: 14px;
+	font-weight: 600;
+}
+/* show more and less data end */
+
+
+.set_auto_scroll{
+	max-height: 600px; 
+	overflow-y: auto;
+}

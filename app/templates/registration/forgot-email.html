@@ -1,0 +1,60 @@
+{% load static %}
+{% include 'registration/includes/header.html' %}
+
+<div class="login">
+    <div class="container">
+        <div class="login_box">
+        <div class="row">
+            <div class="col-lg-6 col-sm-12 col-pad-0 align-self-center">
+                <div class="form-section">
+                 
+                    <h3 class="mb-3">RECOVER YOUR PASSWORD</h3>
+                    <p class="text-start mb-3 ">
+                        Don’t worry! it happens. Please enter the address
+                        associated with your account
+                    </p>
+                    <form onsubmit="Loader(this.id)" id="forget_password" method="POST" action="{% url 'accounts:forgot_password_email' %}"
+                        class="mt-50">
+                        {% csrf_token %}
+
+                        <div class="form-group form-box required-field">
+                            <label class="form-label">Email</label>
+                            <div class="form-addons">
+                                <input type="text" class="form-control"
+                                    placeholder="Enter your email address"
+                                    name="email" id="email">
+                                <label class="email-error error"></label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit"
+                                class="btn btn-login btn-theme w-100 mb-4">Send
+                                Mail</button>
+                        </div>
+                    </form>
+                    <p class="text-center">Back to <a
+                            href="{% url 'accounts:login' %}"
+                            class="thembo">Sign In</a></p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12 col-sm-12 col-pad-0 bg-img align-self-center">
+                <div class="inner">
+                    <div class="logo-2 mb-0">
+                        <a href="{% url 'frontend:index' %}" class="login-logo mb-0">
+                            <img src="{% static 'admin-assets/images/logo.png' %}" alt='logo'>
+                        </a>
+                    </div>
+                    <h3 class="animate-charcter">Welcome To Dressr AI</h3>
+                    <p>Dressr AI is your personal wardrobe assistant. 
+                    Digitize your closet, explore AI-driven outfit suggestions, 
+                    and try on clothes virtually. 
+                    Sign in now to get started</p>
+                    <div class="clearfix"></div>
+                   
+                </div>
+                </div>
+        </div>
+        </div>
+    </div>
+</div>
+{% include 'registration/includes/footer.html' %}

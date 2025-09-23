@@ -1,0 +1,36 @@
+{% load static %}{% load extras %}
+{% if listing_objects.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if listing_objects.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% url_replace request 'page' listing_objects.previous_page_number %}">&laquo;</a>                                          
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+            {% endif %}
+            {% for i in listing_objects.paginator.page_range %}
+                {% if listing_objects.number == i %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ i }} <span class="sr-only">(current)</span></span>
+                    </li>
+                {% elif i > listing_objects.number|add:'-5' and i < listing_objects.number|add:'5' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% url_replace request 'page' i %}">{{ i }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if listing_objects.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% url_replace request 'page' listing_objects.next_page_number %}">&raquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>{% load static %}{% load extras %}{% load humanize %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <meta name="description" content="POS - Bootstrap Admin Template">
+    <meta name="keywords"
+        content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern,  html5, responsive">
+    <meta name="author" content="toxsltech">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Dressr AI</title>
+    <link rel="shortcut icon" href="{% static 'admin-assets/images/favicon.ico' %}" />
+    <link rel="stylesheet" href="{% static 'admin-assets/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/dataTables.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/flash.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/loader.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/selectize.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/swiper.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/jquery.fancybox.min.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/intlTelInput.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/customized-css/custom.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/dark-theme.css' %}">
+
+	<style type="text/css">
+		.page_404 {
+			padding: 40px 0;
+			background: #fff;
+			font-family: 'Arvo', serif;
+			height: 70vh;
+			align-items: center;
+			justify-content: center;
+			display: flex;
+		}
+
+		.page_404 img {
+			width: 80%;
+		}
+
+		.link_404 {
+			color: #fff !important;
+			padding: 10px 20px;
+			background-color: #005CEC;
+			margin: 20px 0;
+			display: inline-block;
+			border-radius: 5px;
+			text-decoration: none;
+			max-width: 200px;
+			width: 100%;
+			font-size: 20px;
+			font-family: 'Poppins', sans-serif;
+		}
+
+		.contant_box_404 {
+			text-align: center;
+			max-height: 500px;
+			margin: 0 auto;
+			margin-top: -50px;
+		}
+
+		.contant_box_404 h3 {
+			font-weight: 600;
+			font-size: 40px;
+			margin: 10px 0px;
+			font-family: 'Poppins', sans-serif;
+		}
+
+		.contant_box_404 p {
+			font-family: 16px;
+			font-family: 'Poppins', sans-serif;
+		}
+
+	</style>
+
+
+</head>
+<body class="{% if request.session.dark_mode == 'enabled' %}dark-mode{% endif %}">
+    <div class="main-wrapper">
+        {% if request.user.role_id == 1 %}
+            {% include 'admin-includes/admin-sidebar.html' %}
+        {% elif request.user.role_id == 3 %}
+            {% include 'subadmin-panel/subadmin-sidebar.html' %}
+        {% endif %}
+    </div>
+
+	<div class="page-wrapper">
+		<section class="page_404">
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-12 ">
+						<div class="col-sm-10 col-sm-offset-1 text-center">
+							<div class="contant_box_404">
+								<img src="{% static 'admin-assets/images/not-found.gif' %}" width="240px">
+								<h3 class="h2">
+									Functionality is restricted
+								</h3>
+								<p></p>
+								<a href="{% url 'frontend:index' %}" class="link_404">Go Back to Home</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+
+
+		
+</body>

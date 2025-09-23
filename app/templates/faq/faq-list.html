@@ -1,0 +1,79 @@
+{% include 'admin-includes/header.html' %}
+{% load static %}{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>FAQs Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'static_pages:faq_list' %}">FAQs</a>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary" href="{% url 'static_pages:add_faq' %}"><i class="fas fa-plus ms-1"></i> FAQ</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class='d-flex flex-wrap justify-content-between'>
+                    <!-- showing_objects-->
+					{% include "admin-includes/showing_objects.html" with listing_objects=faqs %}
+					<!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'static_pages:faq_list' %}" method="GET">
+                        <div class="table-responsive ">
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Question</th>
+                                        <th>Answer</th>
+                                        <th>Created on</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <thead>
+                                    <tr class="search-row">
+                                        <td><input type="text" value="{{request.GET.question}}" class="form-control" name="question" maxlength="20"></td>
+                                        <td><input type="text" value="{{request.GET.answer}}" class="form-control" name="answer" maxlength="20"></td>
+                                        <td><input type="date" onkeydown="return false" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+                                        <td><button type="submit" class="btn btn-primary">Search</button></td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if faqs %}
+                                    {% for faq in faqs %}
+                                    <tr>
+                                        <td class='clickable-row' data-href="{% url 'static_pages:view_faq' faq.id %}">{{faq.question| truncatechars:50}}</td>
+                                        <td class='clickable-row' data-href="{% url 'static_pages:view_faq' faq.id %}">{{faq.answer|safe| truncatechars:50}}</td>
+                                        <td class='clickable-row' data-href="{% url 'static_pages:view_faq' faq.id %}">
+                                            <script>
+                                                var d = ConvertDateTime("{{ faq.created_on|date:'Y-m-d' }}", "{{ faq.created_on|time:'H:i' }}");
+                                                document.write(d);
+                                            </script>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <a title='View Faq' href="{% url 'static_pages:view_faq' faq.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    <!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=faqs %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'admin-includes/footer.html' %}

@@ -1,0 +1,116 @@
+{% include 'admin-includes/header.html' %}
+{% load static %}{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Pages Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'static_pages:pages_list' %}">Pages</a>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary" href="{% url 'static_pages:add_page' %}"><i class="fas fa-plus ms-1"></i> Page</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class='d-flex flex-wrap justify-content-between'>
+                    <!-- showing_objects-->
+					{% include "admin-includes/showing_objects.html" with listing_objects=pages %}
+					<!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'static_pages:pages_list' %}" method="GET">
+                        <div class="table-responsive ">
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>State</th>
+                                        <th>Type</th>
+                                        <th>Created on</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <thead>
+                                    <tr class="search-row">
+                                        <td><input type="text" value="{{request.GET.title}}" class="form-control" name="title" maxlength="20"></td>
+                                        <td>
+                                            <select class="form-control" name="is_active" onchange="this.form.submit()">
+                                                <option  value=""></option>
+                                                <option {% if request.GET.is_active == '0' %} selected {% endif %} value="0">Inactive</option>
+                                                <option {% if request.GET.is_active == '1' %} selected {% endif %} value="1">Active</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select class="form-control" name="type_id" onchange="this.form.submit()">
+                                                <option  value=""></option>
+                                                <option {% if request.GET.type_id == '1' %} selected {% endif %} value="1">Terms & Conditions</option>
+                                                <option {% if request.GET.type_id == '2' %} selected {% endif %} value="2">Privacy Policy</option>
+                                                <option {% if request.GET.type_id == '3' %} selected {% endif %} value="3">About Us</option>
+                                                <option {% if request.GET.type_id == '4' %} selected {% endif %} value="4">How it Works</option>
+                                                <option {% if request.GET.type_id == '5' %} selected {% endif %} value="5">Cookie Policy</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="date" onkeydown="return false" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+                                        <td><button type="submit" class="btn btn-primary">Search</button></td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if pages %}
+                                    {% for page in pages %}
+                                    <tr>
+                                        <td class='clickable-row' data-href="{% url 'static_pages:view_page' page.id %}">{{page.title| truncatechars:50}}</td>
+                                        <td>
+                                            {% if page.is_active %}
+                                                <span href="{% url 'static_pages:change_page_status' page.id %}" message="Are you sure you want to deactivate this page?" action='DeActivate' class="badge bg-success active_deactive">ACTIVE</span>
+                                            {% else %}
+                                                <span href="{% url 'static_pages:change_page_status' page.id %}" message="Are you sure you want to activate this page?" action='Activate' class="badge bg-warning active_deactive">INACTIVE</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class='clickable-row' data-href="{% url 'static_pages:view_page' page.id %}">
+                                        {% if page.type_id == 1 %}
+                                            <span class="badge bg-success">Terms & Conditions</span>
+                                        {% elif page.type_id == 2 %}
+                                            <span class="badge bg-warning">Privacy Policy</span>
+                                        {% elif page.type_id == 3 %}
+                                            <span class="badge bg-primary">About Us</span>
+                                        {% elif page.type_id == 4 %}
+                                            <span class="badge bg-secondary">How it Works</span>
+                                        {% elif page.type_id == 5 %}
+                                            <span class="badge bg-info">Cookie Policy</span>
+                                        {% endif %}
+                                        </td>
+                                       
+                                        <td class='clickable-row' data-href="{% url 'static_pages:view_page' page.id %}">
+                                            <script>
+                                                var d = ConvertDateTime("{{ page.created_on|date:'Y-m-d' }}", "{{ page.created_on|time:'H:i' }}");
+                                                document.write(d);
+                                            </script>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <a title="View"  href="{% url 'static_pages:view_page' page.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    <!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=pages %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'admin-includes/footer.html' %}

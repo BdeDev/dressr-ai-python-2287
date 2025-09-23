@@ -1,0 +1,68 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Email Campaigns</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'logger:campaign_templates' %}">Email Campaigns</a></li>
+                        <li class="breadcrumb-item "><a class="white-text" href=""> {% if draft %}Update Campaign Template{% else %}Add Campaign Template{% endif %} </a></li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary"  href="{% url 'logger:campaign_templates' %}" ><i class="fa fa-angle-left me-1"></i>Back</a>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="productdetails">
+                            <form id="custome-email-form" onsubmit="Loader(this.id)" action="" method="POST"  enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-6 col-12">
+                                        <div class="form-group required-field">
+                                            <label class="form-label">Email Subject</label>
+                                            <input type="text" placeholder="Enter Email Subject" name="title" id="title" class="form-control" maxlength="150" value="{% if draft %}{{draft.subject}}{% endif %}">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12 col-12">
+                                        <div class="form-group required-field">
+                                            <label class="form-label">Email Description</label>
+                                            <textarea rows="10" placeholder="Enter Email Description" name="content" id="content" class="form-control">{% if draft %}{{draft.description}}{% endif %}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <a onclick="PreviewEmail()" class="btn btn-primary me-2">Preview</a>
+                                        <button type="submit" class="btn btn-success me-2" >Save</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    <iframe class="card-body" id="email_div" style="width:100%;height:830px;border:none;">
+                        <!-- tamplate content -->
+                        <!-- tamplate content end -->
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="https://cdn.ckeditor.com/4.17.2/standard/ckeditor.js"></script>
+<script src="{% static 'admin-assets/js/customized-js/email-campaigns.js' %}" data-domain="{{domain}}" data-protocol="{{protocol}}" data-logo_url="{% static 'admin-assets/images/230x0w.webp' %}" {% if draft %}data-description="true" data-query_param="?draft_id={{draft.id}}"{% endif %}></script>
+<script>
+    {% if draft %}
+        PreviewEmail()
+    {% endif %}
+</script>

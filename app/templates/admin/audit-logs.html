@@ -1,0 +1,178 @@
+{% include "admin-includes/header.html" %}{% load extras %}{% load static %}
+<link rel="stylesheet" href="{% static 'admin-assets/css/customized-css/activity-list.css' %}">
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Activity Logs</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'users:view_user' user.id %}">User Profile</a></li>
+                        <li class="breadcrumb-item active">Activities</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary" href="{{request.META.HTTP_REFERER}}"><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+
+        <div class="row my-2 ">
+            <!-- activity graph -->
+            <div class="col-xl-12 col-lg-12 col-sm-6"  >
+                <div class="card flex-fill">
+                    <div class="card-header pb-0 d-md-flex justify-content-between align-items-center">
+                        <h5 class="card-title">Activity in <span id="activity_selected_year"></span><span id="activity_selected_month"></span></h5>
+                        <div class="graph-sets mt-md-0 mt-2">
+                            <div class="dropdown d-flex">
+                                <select class="graph-dropdown me-2" name="months" id="activity_months" onchange="GetActivityGraphData(this.value)">
+                                    <option value="">Select</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                                <select class="graph-dropdown" name="years" id="activity_years" onchange="GetActivityGraphData(this.value)"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="activity-chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- activity graph end -->
+        </div>
+
+        <div class="row">
+            <div class="col-xl-12 col-md-8">
+                <div class="card mt-2" >
+                    <div class="card-body" id="card_body_div">
+                        <div class='d-flex flex-wrap justify-content-between'>
+                            <!-- showing_objects-->
+                            {% include "admin-includes/showing_objects.html" with listing_objects=activities %}
+                            <!-- showing_objects end-->
+                        </div>
+                        <div class="dataview">
+                            <div class="row gy-3">
+                                <div class="col-lg-12">
+                                    {% for activity in activities %}
+                                        <div class="">
+                                            <ul class="list-unstyled mb-0" id="review-list">
+                                                <li class="review-list py-2" id="review-1">
+                                                    <div class="border border-dashed rounded p-3">
+                                                        <div class="hstack flex-wrap gap-3 mb-4">
+                                                            <div class="vr"></div>
+                                                            <div class="flex-grow-1 d-flex align-items-center">
+                                                                <div class="entry-info__avatar">
+                                                                    <div class="avatar ">
+                                                                        {% if activity.actor.profile_pic  %}
+                                                                            <img class="user-avatar user-avatar--default" src="{{activity.actor.profile_pic.url}}">
+                                                                        {% else %}
+                                                                            <img class="user-avatar user-avatar--default" src="{% static 'admin-assets/images/dp.png' %}">
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="entry-info__content">
+                                                                    <b class="author ">
+                                                                        <h4 class="activity-title">
+                                                                            {{ activity.object_repr|prettify_model_name }} : =>  {% if activity.action == 0 %}Created New Record {% elif activity.action == 1 %}Modified Information{% elif activity.action == 2 %}Deleted Record{% endif %}
+                                                                            <a
+                                                                                {% if activity.content_type.model == 'loanapplication' %}
+                                                                                    href="{% url 'loan_manager:view_loan_application' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'mobiledevicecategory' %}
+                                                                                    href="{% url 'device_management:view_device_category' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'testimonials' %}
+                                                                                    href="{% url 'static_pages:view_testimonial' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'pages' %}
+                                                                                    href="{% url 'static_pages:view_page' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'mobilecustommessage' %}
+                                                                                    href="{% url 'accounts:mobile_custom_message' %}"
+                                                                                {% elif activity.content_type.model == 'bonusamount' %}
+                                                                                    href="{% url 'accounts:set_bonus_amount' %}"
+                                                                                {% elif activity.content_type.model == 'minmaxloanamount' %}
+                                                                                    href="{% url 'loan_manager:set_loan_amount' %}"
+                                                                                {% elif activity.content_type.model == 'interestratetier' %}
+                                                                                    href="{% url 'loan_manager:view_interest_rate' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'communityfeedback' %}
+                                                                                    href="{% url 'accounts:view_feedback' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'loanoffer' %}
+                                                                                    href="{% url 'loan_manager:view_loan_offer' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'lockdays' %}
+                                                                                    href="{% url 'loan_manager:manage_lock_day' %}"
+                                                                                {% elif activity.content_type.model == 'penaltytiers' %}
+                                                                                    href="{% url 'loan_manager:set_loan_penalty' %}"
+                                                                                {% elif activity.content_type.model == 'devicelock' %}
+                                                                                    href="{% url 'loan_manager:view_device_lock' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'faqs' %}
+                                                                                    href="{% url 'static_pages:view_faq' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'helpandsupport' %}
+                                                                                    href="{% url 'contact_us:help_and_support' %}"
+                                                                                {% elif activity.content_type.model == 'sociallinks' %}
+                                                                                    href="{% url 'contact_us:social_links' %}"
+                                                                                {% elif activity.content_type.model == 'paypalcred' %}
+                                                                                    href="{% url 'credentials:view_paypal_keys' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'adyenkeys' %}
+                                                                                    href="{% url 'credentials:view_adyen_keys' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'stripesetting' %}
+                                                                                    href="{% url 'credentials:view_stripe_keys' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'twiliosetting' %}
+                                                                                    href="{% url 'credentials:view_twilio' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'smtpsetting' %}
+                                                                                    href="{% url 'credentials:view_smtp' activity.object_pk %}"
+                                                                                {% elif activity.content_type.model == 'firebasecredentials' %}
+                                                                                    href="{% url 'credentials:view_firebase_credentials' activity.object_pk %}"
+                                                                                {% endif %}
+                                                                                >[ {{activity.object_pk}} ]
+                                                                            </a>
+                                                                        </h4>
+                                                                    </b>
+                                                                    <div class="meta">
+                                                                        {% if activity.actor %} By <a href="{% url "subadmin_panel:my_profile" %}">{% if activity.actor.full_name %}{{activity.actor.full_name|capfirst}}{% else %}Admin{% endif %}</a>{% endif %} on 
+                                                                        <time >
+                                                                            <script>
+                                                                                var d = ConvertDateTime("{{ activity.timestamp|date:'Y-m-d' }}", "{{ activity.timestamp|time:'H:i' }}","Do MMM YYYY hh:mm A");
+                                                                                document.write(d);
+                                                                            </script>
+                                                                        </time>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    {% empty %}
+                                        <p class=" mb-0">Data not available.</p>
+                                    {% endfor %}
+                                </div>
+                                <!-- pagination-->
+                                {% include "admin-includes/pagination.html" with listing_objects=activities %}
+                                <!-- pagination end-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script data-user_id="{{user.id}}" src="{% static 'admin-assets/js/customized-js/graph.js' %}" ></script>
+<script>
+    GetActivityGraphData()
+</script>

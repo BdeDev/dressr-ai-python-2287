@@ -1,0 +1,101 @@
+{% include 'admin-includes/header.html' %}
+{% load static %}
+{% load extras %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Database Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'backup:backup' %}">Backup</a>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary me-1" href="{% url 'backup:database_backup' %}" onclick="Loader()">Create Backup<i class="fas fa-plus ms-1"></i></a>
+                <a class="btn btn-primary me-1" href="{% url 'backup:database_schema' %}" onclick="Loader()">Create Structure<i class="fas fa-plus ms-1"></i></a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class='d-flex flex-wrap justify-content-between'>
+                    <!-- showing_objects-->
+					{% include "admin-includes/showing_objects.html" with listing_objects=records %}
+					<!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="" method="GET">
+                        <div class="table-responsive ">
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Created on</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <thead>
+									<tr class="search-row">
+										<td><input type="text" value="{{request.GET.name}}" class="form-control" name="name" maxlength="20"></td>
+                                        <td>
+                                            <select class="form-control" name="database_type" onchange="this.form.submit()">
+                                                <option  selected  value=""></option>
+                                                <option {% if request.GET.database_type == '0' %} selected {% endif %}value="0">BACKUP</option>
+                                                <option {% if request.GET.database_type == '1' %} selected {% endif %}value="1">STRUCTURE</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="date" onkeydown="return false" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>										
+										<td><button type="submit" class="btn btn-primary">Search</button></td>
+									</tr>
+								</thead>
+                                <tbody>
+                                    {% if records %}
+                                    {% for backup in records %}
+                                    <tr>
+                                        <td><strong>{{backup.name}}</strong></td>
+                                        <td>
+                                            {% if backup.is_schema == 0 %}
+                                            <span class="badge bg-warning">BACKUP</span>
+                                            {% elif backup.is_schema == 1 %}
+                                            <span class="badge bg-danger">STRUCTURE</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <script>
+                                                var date = ConvertDateTime("{{ backup.created_on|date:'Y-m-d' }}", "{{ backup.created_on|time:'H:i' }}");
+                                                document.write(date);
+                                            </script>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <a title="Delete" style="margin-right:5px"
+                                                    message="Are you sure you want to delete this file?"
+                                                    href="{% url 'backup:delete_backup' backup.id %}"
+                                                    class="btn btn-danger shadow btn-xs sharp action_confirm"><i
+                                                        class="fa fa-trash"></i></a>
+                                                <a title="Download" href="{{backup.backup_file.url}}" download
+                                                    class="btn btn-info shadow btn-xs sharp"><i class="fa fa-download"
+                                                        style="margin-top:6px"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    <!-- pagination-->
+                    {% include "admin-includes/pagination.html" with listing_objects=records %}
+                    <!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'admin-includes/footer.html' %}

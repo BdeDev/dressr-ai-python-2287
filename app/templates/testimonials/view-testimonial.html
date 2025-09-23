@@ -1,0 +1,111 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Testimonial Information</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'static_pages:testimonials' %}">Testimonials</a></li>
+                        <li class="breadcrumb-item active">Testimonial Information</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a href="{% url "static_pages:update_testimonial" testimonial.id %}" class="btn btn-primary shadow btn-xs sharp me-1"><i class="fa fa-edit"></i></a>
+                <a style="margin-right:5px" href="{% url "static_pages:delete_testimonial" testimonial.id %}" message="Are you sure you want to delete this testimonial ?" class="btn btn-danger shadow btn-xs sharp action_confirm" ><i class="fa fa-trash"></i></a>
+                <a class="btn btn-secondary" href="{% url 'static_pages:testimonials' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="productdetails">
+                            <ul class="product-bar">
+                                <li>
+                                    <h4>Id </h4>
+                                    <h6>{{testimonial.id}}</h6>
+                                </li>
+                                <li>
+                                    <h4>Client Name </h4>
+                                    <h6>{{testimonial.client_name}}</h6>
+                                </li>
+                                <li>
+                                    <h4>Client Location </h4>
+                                    <h6>{{testimonial.client_location}}</h6>
+                                </li>
+                                <li>
+                                    <h4>Client Image </h4>
+                                    <h6>
+                                        <div class="d-flex align-items-center display-images">
+                                            {% if testimonial.client_image %}
+                                                <a href="{{testimonial.client_image.url}}" data-fancybox>
+                                                    <img src="{{testimonial.client_image.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% else %}
+                                                <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                    class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Publish Status </h4>
+                                    <h6>
+                                        {% if testimonial.publish_status %}
+                                        <span class="badge bg-primary">Published</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Created On </h4>
+                                    <h6>
+                                        <script>
+                                            var date = ConvertDateTime("{{ testimonial.created_on|date:'Y-m-d' }}", "{{ testimonial.created_on|time:'H:i' }}");
+                                            document.write(date);
+                                        </script>
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Updated On </h4>
+                                    <h6>
+                                        <script>
+                                            var date = ConvertDateTime("{{ testimonial.updated_on|date:'Y-m-d' }}", "{{ testimonial.updated_on|time:'H:i' }}");
+                                            document.write(date);
+                                        </script>
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Description</h4>
+                                    <h6>
+                                        <span id="static-content">{% if testimonial.description %}{{testimonial.description|safe}}{% else %}-{% endif %}</span>
+                                    </h6>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- status update -->
+                        <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
+                             {% if testimonial.publish_status %}
+                                <a onclick="Loader()" href="{% url "static_pages:publish_unpublish_testimonial" testimonial.id  %}" class="btn btn-warning shadow btn-xs sharp me-1">Unpublish</a>
+                            {% else %}
+                                <a  onclick="Loader()"  href="{% url "static_pages:publish_unpublish_testimonial" testimonial.id  %}" class="btn btn-primary shadow btn-xs sharp me-1">Publish</a>
+                            {% endif %}
+                        </div>
+                        <!-- status update end-->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Audit Log History -->
+		{% include "admin-includes/activity-logs.html" with activity_title="Testimonial Information" %}
+        <!-- End Audit Log History -->
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

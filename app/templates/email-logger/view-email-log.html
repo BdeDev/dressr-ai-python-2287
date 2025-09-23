@@ -1,0 +1,96 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Email Log Information</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'logger:email_logs_list' %}">Email Logs</a>
+                        </li>
+                        <li class="breadcrumb-item active">View Email Log</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                {% if not email_log.sent_status == 1 %}
+                <a class="btn btn-primary me-2" href="{% url 'logger:resend_email' email_log.id %}" onclick="Loader()" ><i class="fas fa-redo me-1"></i> Resend</a>
+                {% endif %}
+                <a class="btn btn-secondary" href="{% url 'logger:email_logs_list' %}" ><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="productdetails">
+                            <ul class="product-bar">
+                                <li>
+                                    <h4>Id </h4>
+                                    <h6>{% if email_log.id %}{{email_log.id}}{% else %}-{% endif %}</h6>
+                                </li>
+                                <li>
+                                    <h4>Email Subject</h4>
+                                    <h6>{% if email_log.email_subject %}{{email_log.email_subject}}{% else %}-{% endif %}</h6>
+                                </li>
+                                <li>
+                                    <h4>Reciever Email </h4>
+                                    <h6>{% if email_log.recievers_email %}{{email_log.recievers_email}}{% else %}-{% endif %}</h6>
+                                </li>
+                                <li>
+                                    <h4>Sender Email </h4>
+                                    <h6>{% if email_log.sender_email %}{{email_log.sender_email}}{% else %}-{% endif %}</h6>
+                                </li>
+                                 <li>
+                                    <h4>Email Status </h4>
+                                    <h6>
+                                        {% if email_log.sent_status == 1 %}
+                                            <div class="badge bg-success">SENT</div>
+                                            {% elif email_log.sent_status == 2 %}
+                                            <div class="badge bg-warning">PENDING</div>
+                                            {% elif email_log.sent_status == 3 %}
+                                            <div class="badge bg-danger">FAILED</div>
+                                        {% endif %}
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Created On </h4>
+                                    <h6>
+                                        <script>
+                                            var date = ConvertDateTime("{{ email_log.created_on|date:'Y-m-d' }}", "{{ email_log.created_on|time:'H:i' }}");
+                                            document.write(date);
+                                        </script>
+                                    </h6>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    {% comment %} <div class="card-body">
+                        {{email_log.email_template|safe}}
+                    </div> {% endcomment %}
+                    <iframe class="card-body" id="email_div" style="width:100%;height:830px;border:none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script>
+    // Get the email HTML from Django context (escaped for JS)
+    var emailHtml = `{{email_log.email_template|safe}}`;
+    // Wrap in a full HTML document
+    var fullHtml = `${emailHtml}`;
+
+    // Inject into iframe
+    var iframe = document.getElementById('email_div');
+    iframe.contentWindow.document.open();
+    iframe.contentWindow.document.write(fullHtml);
+    iframe.contentWindow.document.close();
+
+</script>
+

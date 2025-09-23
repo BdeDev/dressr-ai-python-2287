@@ -1,0 +1,188 @@
+{% include 'admin-includes/header.html' %}
+{% load static %}{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Twilio Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'frontend:index' %}"> Dashboard </a></li>
+                        <li class="breadcrumb-item"><a class="white-text"  href="{% url 'credentials:twilio_list' %}">Twilio Management</a>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#website-contact"><i class="fas fa-plus ms-1"></i> Twilio Key</a>
+            </div>
+
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class='d-flex flex-wrap justify-content-between'>
+                    <!-- showing_objects-->
+					{% include "admin-includes/showing_objects.html" with listing_objects=twilio_key %}
+					<!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="" method="GET">
+                        <div class="table-responsive ">
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Account SID</th>
+                                        <th>Number</th>
+                                        <th>Token</th>
+                                        <th>Is Active</th>
+                                        <th>Created on</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <thead>
+                                    <tr class="search-row">
+                                        <td>
+                                            <input type="text" value="{{request.GET.account_sid}}" class="form-control" name="account_sid" maxlength="255">
+                                        </td>
+                                        <td>
+                                            <input type="text" onkeypress="return /[0-9\+\Enter]/i.test(event.key)" value="{{request.GET.number}}" class="form-control" name="number" maxlength="255">
+                                        </td>
+                                        <td>
+                                            <input type="text" value="{{request.GET.token}}" class="form-control" name="token" maxlength="255">
+                                        </td>
+                                        <td>
+                                            <select class="form-control" name="is_active" onchange="this.form.submit()">
+                                                <option value=""></option>
+                                                <option {% if request.GET.is_active == '1' %} selected {% endif %} value="1">Active
+                                                </option>
+                                                <option {% if request.GET.is_active == '0' %} selected {% endif %} value="0">Inactive
+                                                </option>
+                                            </select>
+                                        </td>
+
+                                        <td>
+                                            <input type="date" onkeydown="return false" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on" id="created_on">
+                                        </td>
+                                        <td><button type="submit" class="btn btn-primary">Search</button></td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for key in twilio_key %}
+                                    <tr>
+                                        <td class='clickable-row' data-href="{% url 'credentials:view_twilio' key.id %}">
+                                            {% if key.account_sid  %}{{key.account_sid| truncatechars:50}}{% else %}-{% endif %}
+                                        </td>
+                                        <td class='clickable-row' data-href="{% url 'credentials:view_twilio' key.id %}">
+                                            {% if key.number  %}{{key.number| truncatechars:50}}{% else %}-{% endif %}
+                                        </td>
+                                        <td class='clickable-row' data-href="{% url 'credentials:view_twilio' key.id %}">
+                                            {% if key.token  %}{{key.token| truncatechars:50}}{% else %}-{% endif %}
+                                        </td>
+
+                                        <td>
+                                            {% if key.is_active == True %}
+                                            <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                            {% endif %}
+                                        </td>
+
+                                        {% if  key.created_on %}
+                                        <td class='clickable-row'
+                                            data-href="{% url 'credentials:view_twilio' key.id %}">
+                                            <script>
+                                                var d = ConvertDateTime("{{ key.created_on|date:'Y-m-d' }}", "{{ key.created_on|time:'H:i' }}");
+                                                document.write(d);
+                                            </script>
+                                        </td>
+                                        {% endif %}
+                                        <td>
+                                            <div class="d-flex">
+                                                <a onclick="Loader()" href="{% url 'credentials:view_twilio' key.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                     <!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=twilio_key %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="website-contact"  data-bs-backdrop='static' data-bs-keyboard='false' tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Twilio Key</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="add-key" action=" " method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Account SID</label>
+                                    <input type="text" placeholder="Enter Account SID" name="account_sid" class="form-control" maxlength="254" >
+                                </div>
+                            </div>
+                            <div class="col-lg-12 col-md-12 col-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Number</label>
+                                    <input type="text"  onkeypress="return /[0-9\+]/i.test(event.key)" placeholder="Enter Number" name="number" class="form-control" maxlength="254" >
+                                </div>
+                            </div>
+                            <div class="col-lg-12 col-md-12 col-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Token</label>
+                                    <input type="text" placeholder="Enter Token" name="token" class="form-control" maxlength="254" >
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Save</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'admin-includes/footer.html' %}
+<script type="text/javascript">
+
+    $("#add-key").validate({
+        rules: {
+            account_sid: {
+                required: true,
+                },
+            number: {
+                required: true,
+                },
+            token: {
+                required: true,
+                },
+            },        
+        messages: {
+            account_sid: {
+                required: "Please enter account sid",
+                },
+            number: {
+                required: "Please enter number",
+                },
+            token: {
+                required: "Please enter token",
+                },
+        },
+    });   
+</script>

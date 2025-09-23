@@ -1,0 +1,123 @@
+USE_HTTPS = False
+DEFAULT_TIMEZONE='Asia/Kolkata'
+DEFAULT_SEARCH_RADIUS_KM=20
+TEMP_OTP = 1234
+MAX_ACTIVE_BANNER = 5
+SHOW_MORE_COUNT = 5
+DEFAULT_SERVICE_FEES = 5
+DEFAULT_CONVENIENCE_FEES = 5
+NEAR_BY_RANGE = 200
+MAX_PROVIDERS_KEY = 3
+
+
+SIGN_UP_BONUS = 25 
+REFERAL_BONUS = 25
+
+
+'''
+Used in development mode
+'''
+RELEASE_DATE = "2026-04-20"
+
+"""
+User role type name
+"""
+USER_ROLE = ((1, "Admin"),(2, "Customer"))
+ADMIN = 1
+CUSTOMER = 2
+
+"""
+User Status 
+"""
+USER_STATUS = ((1, "Active"),(2,"Inactive"),(3,"Deleted"),(4,"Pause"))
+ACTIVE = 1
+INACTIVE = 2
+DELETED = 3
+
+"""
+GENDER
+"""
+GENDER = ((1, 'Male'),(2,'Female'),(3,'Other'))
+MALE = 1
+FEMALE = 2
+OTHER= 3
+"""
+MARITAL_STATUS
+"""
+MARITAL_STATUS = ((1, 'MARRIED'),(2,'UNMARRIED'),(3,'WIDOW'),(4,'DIVORCED'))
+MARRIED = 1
+UNMARRIED = 2
+WIDOW = 3
+DIVORCED = 4 
+
+"""
+Device
+"""
+DEVICE_TYPE  = ((1,"Android"),(2,"IOS"))
+ANDROID = 1
+IOS = 2
+
+"""
+PAGE SIZE
+"""
+PAGE_SIZE = 20
+API_PAGINATION = 10
+
+REQUEST_STATUS  = ((1,"New"),(2,"IOS"))
+NEW = 1
+IOS = 2
+
+PRIORITY  = ((1,"Low"),(2,"IOS"))
+LOW = 1
+IOS = 2
+
+'''
+Notification Type
+'''
+NOTIFICATION_TYPE = ((1,'Admin Notification'),(2,'Loan Status Notification'),(3,'User Related Notification'),(3,'Query Ticket Notification'))
+ADMIN_NOTIFICATION=1
+LOAN_STATUS_NOTIFICATION = 2
+USER_RELATED_NOTIFICATION = 3
+QUERY_TICKET_NOTIFICATION = 4
+
+"""
+LOGIN_STATE
+"""
+LOGIN_STATE = ((1,'Login Success'),(2,'Login Failure'))
+LOGIN_SUCCESS = 1
+LOGIN_FAILURE = 2
+
+"""
+Page Type
+"""
+PAGE_TYPE =  ((1,"Terms_And_Condition"),(2,"Privacy_Policy"),(3, "About_Us"),(4, "How_it_works"),(5, "Cookie_Policy"))
+TERMS_AND_CONDITION = 1
+PRIVACY_POLICY = 2
+ABOUT_US = 3
+HOW_IT_WORKS = 4
+COOKIE_POLICY = 5
+
+"""
+SOCIAL TYPE
+"""
+SOCIAL_TYPE = ((1, 'Google'), (2, 'Facebook'), (3, 'Apple'), (4, 'X'), (5, 'Linkedin'),(6,'Others'))
+GOOGLE = 1
+FACEBOOK = 2
+APPLE = 3
+X = 4
+LINKEDIN = 5
+OTHERS = 6
+
+
+'''
+EMAIL STATUS
+'''
+EMAIL_STATUS = ((1,'EMAIL_SENT'),(2,'EMAIL_PENDING'),(3,'EMAIL_FAILED'))
+EMAIL_SENT = 1
+EMAIL_PENDING = 2
+EMAIL_FAILED = 3
+
+BODY_TYPE = ((1,'Slim'),(2,'Athletic'),(3,'Curvy'))
+SLIM = 1
+ATHLETIC = 2
+CURVY = 3
