@@ -9,11 +9,6 @@ DEFAULT_CONVENIENCE_FEES = 5
 NEAR_BY_RANGE = 200
 MAX_PROVIDERS_KEY = 3
 
-
-SIGN_UP_BONUS = 25 
-REFERAL_BONUS = 25
-
-
 '''
 Used in development mode
 '''
@@ -37,10 +32,12 @@ DELETED = 3
 """
 GENDER
 """
-GENDER = ((1, 'Male'),(2,'Female'),(3,'Other'))
+GENDER = ((1, 'Male'),(2,'Female'),(3,'Other'),(4,'Unisex'))
 MALE = 1
 FEMALE = 2
 OTHER= 3
+UNISEX= 4
+
 """
 MARITAL_STATUS
 """
@@ -62,14 +59,6 @@ PAGE SIZE
 """
 PAGE_SIZE = 20
 API_PAGINATION = 10
-
-REQUEST_STATUS  = ((1,"New"),(2,"IOS"))
-NEW = 1
-IOS = 2
-
-PRIORITY  = ((1,"Low"),(2,"IOS"))
-LOW = 1
-IOS = 2
 
 '''
 Notification Type
@@ -121,3 +110,65 @@ BODY_TYPE = ((1,'Slim'),(2,'Athletic'),(3,'Curvy'))
 SLIM = 1
 ATHLETIC = 2
 CURVY = 3
+
+STYLE = [(1, "Casual"),(2, "Formal"),(3, "Party"),(4, "Street Style"),(5, "Classic")]
+CASUAL = 1
+FORMAL = 2
+PARTY = 3
+STREET_STYLE = 4
+CLASSIC = 5
+
+WEATHER_TYPE = [(1, "Summer"),(2, "Winter"),(3, "Rainy"),(4, "All Seasons")]
+SUMMER = 1
+WINTER = 2
+RAINY = 3
+ALL_SEASONS = 4
+
+PLAN_VALIDITY = [(1,'Monthly'),(2,'Yearly')]
+MONTHLY_PLAN = 1
+YEARLY_PLAN = 2
+
+"""
+Subscription Plan Satus
+"""
+PLAN_STATUS = [(1,'PLAN_ACTIVE'),(2,'PLAN_INACTIVE')]
+PLAN_ACTIVE = 1
+PLAN_INACTIVE = 2
+
+"""
+User subscription Plan Status
+"""
+USER_PLAN_STATUS = ((1,'PLAN_ACTUSER_PLAN_ACTIVEIVE'),(2,'PLANUSER_PLAN_IN_QUEUE_IN_QUEUE'),(3,'USER_PLAN_EXPIRED'),(4,'USER_PLAN_CANCELLED'))
+USER_PLAN_ACTIVE = 1
+USER_PLAN_IN_QUEUE = 2
+USER_PLAN_EXPIRED = 3
+USER_PLAN_CANCELLED = 4
+
+"""
+PAYMENT_PROCRESS_FOR
+"""
+PAYMENT_PROCRESS_FOR = ((1,'PAYMENT_PLAN_PURCHASE'),(2,'PAYMENT_NFT_CIRTIFICATE'))
+PAYMENT_PLAN_PURCHASE = 1
+PAYMENT_NFT_CIRTIFICATE = 2
+
+"""
+Wallet history 
+"""
+WALLET_HISTORY_ACTION_TYPE = ((1,'WALLET_AMOUNT_DEBITED'),(2,'WALLET_AMOUNT_CREATED'))
+WALLET_AMOUNT_DEBITED = 1
+WALLET_AMOUNT_CREATED = 2
+
+"""
+TRANSACTION_TYPE
+"""
+TRANSACTION_TYPE = ((1,'Amount Paid'),(2,'Amount Refunded'))
+AMOUNT_PAID = 1
+AMOUNT_REFUNDED = 2
+
+
+"""
+PAYMENT_TYPE
+"""
+PAYMENT_TYPE = ((1,'PAYMENT_ONLINE'),(2,'PAYMENT_CASH'))
+PAYMENT_ONLINE = 1
+PAYMENT_CASH = 2

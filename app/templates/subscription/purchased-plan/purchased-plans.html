@@ -1,0 +1,139 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Purchased Plans</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+						{% if plan_user %}
+							{% if plan_user.role_id == 4 %}
+								<li class="breadcrumb-item"><a class="white-text" href="{% url 'bank_management:financial_institutions_list' %}">Financial Institutions </a> </li>
+								<li class="breadcrumb-item"><a class="white-text" href="{% url "users:view_user" plan_user.id %}">Financial Institution Profile </a> </li>
+							{% else %}
+								<li class="breadcrumb-item"><a class="white-text" href="{% url 'users:users_list' %}">Users </a> </li>
+								<li class="breadcrumb-item"><a class="white-text" href="{% url "users:view_user" plan_user.id %}">User Profile </a> </li>
+							{% endif %}
+						{% endif %}
+                        <li class="breadcrumb-item active">Purchased Plans</li>
+					</ol>
+				</nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+               
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=plans%}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+										<th><strong>Plan Id</strong></th>
+										<th><strong>Final Price</strong></th>
+										<th><strong>Status</strong></th>
+										<th><strong>Plan Validity</strong></th>
+										<th><strong>User</strong></th>
+										<th><strong>Purchased On</strong></th>
+										<th><strong>Actions </strong></th>
+									</tr>
+								</thead>
+								<thead>
+									{% if plan_user %}
+										<input type="text" hidden value="{{plan_user.id}}" class="form-control" name="to_user" >
+									{% endif %}
+									<tr class="search-row">
+										<td><input type="text" value="{{search_filters.plan_id}}" class="form-control" name="plan_id" maxlength="20"></td>
+										<td><input type="text" value="{{search_filters.final_amount}}" class="form-control number_field" name="final_amount" maxlength="20"></td>
+										<td>
+											<select class="form-control" name="status" onchange="this.form.submit()">
+												<option  value=""></option>
+												<option {% if search_filters.status == '1' %} selected {% endif %} value="1">ACTIVE</option>
+												<option {% if search_filters.status == '2' %} selected {% endif %} value="2">IN-QUEUE</option>
+												<option {% if search_filters.status == '3' %} selected {% endif %} value="3">EXPIRED</option>
+												<option {% if search_filters.status == '4' %} selected {% endif %} value="4">CANCELLED</option>
+											</select>
+										</td>
+										<td></td>
+										<td><input type="text" {% if plan_user %}disabled{% endif %} value="{{search_filters.created_by}}" class="form-control" name="created_by" maxlength="50"></td>
+										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if plans %}
+										{% for plan in plans %}
+										<tr>
+											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">{{plan.plan_id}}</td>
+											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">&euro; {{plan.final_amount|floatformat:'2g'}}</td>
+											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">
+												{% if plan.status == 1 %}
+													<span class="badge bg-primary">ACTIVE</span>
+												{% elif plan.status == 2 %}
+													<span class="badge bg-warning">IN-QUEUE</span>
+                                                {% elif plan.status == 3 %}
+                                                    <span class="badge bg-danger">EXPIRED</span>
+												{% elif plan.status == 4 %}
+													<span class="badge bg-danger">CANCELLED</span>
+												{% endif %}
+											</td>
+											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">
+												{{plan.month_year}} 
+												{% if plan.validity == 1 %}{% if plan.month_year > 1 %}Months{% else %}Month{% endif %} 
+												{% elif plan.validity == 2 %}{% if plan.month_year > 1 %}Years{% else %}Year{% endif %} 
+												{% endif %}
+											</td>
+											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">
+												<div class="d-flex align-items-center display-images">
+													{% if plan.purchased_by.profile_pic %}
+													<a href="{{plan.purchased_by.profile_pic.url}}" data-fancybox>
+														<img src="{{plan.purchased_by.profile_pic.url}}" class="rounded-lg me-2" width="24" alt="">
+													</a>
+													{% else %}
+													<a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+														<img src="{% static 'admin-assets/images/dp.png' %}"
+														class="rounded-lg me-2" width="24" alt="">
+													</a>
+													{% endif %}
+													{{plan.purchased_by.full_name|default:"-"}}
+												</div>
+												
+											</td>
+											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">
+												<script>
+													var date = ConvertDateTime("{{ plan.created_on|date:'Y-m-d' }}", "{{ plan.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											
+											<td>
+												<div class="d-flex">
+													<a title="View Details" href="{% url "subscription:purchased_plan_info" plan.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fas fa-eye "></i></a>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=plans %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

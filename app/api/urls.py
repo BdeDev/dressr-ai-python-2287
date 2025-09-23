@@ -16,20 +16,14 @@ urlpatterns = [
     re_path(r'^deactivate-account-api/$',DeactivateAccount.as_view(),name="deactivate_account_api"),
     re_path(r'^logout-api/$', LogoutView.as_view(), name='logout_api'),
     re_path(r'^social-login/$', SocialLogin.as_view(), name="social_login"),
-
-    # re_path(r'^verify-otp-api/$',VerifyOTP.as_view(),name="verify_otp_api"),
-    # re_path(r'^resend-otp-api/$',ResendOTP.as_view(),name="resend_otp_api"),
-    # re_path(r'^resend-verification-link-api/$',ResendVerificationLink.as_view(),name="resend_verification_link_api"),
-
     re_path(r'^check-user-mail/$',CheckUserEmail.as_view(),name="check_user_mail"),
-    
-    re_path(r'^forgot-password-api/$',ForgotPassword.as_view(),name="forgot_password_api"),
-    re_path(r'^forgot-password-resend-otp/$',ForgotPasswordResendOTP.as_view(),name="forgot_password_resend_otp_api"),
     
     ##Security Management
     re_path(r'^change-password-api/$',ChangePassword.as_view(),name="change_password_api"),
+    re_path(r'^forgot-password-api/$',ForgotPassword.as_view(),name="forgot_password_api"),
+    re_path(r'^forgot-password-resend-link/$',ForgotPasswordResendLink.as_view(),name="forgot_password_resend_link_api"),
     re_path(r'^reset-password/$',ResetPasswordView.as_view(),name="reset_password_api"),
-
+    
     ## Profile Management
     re_path(r'^profile-details-api/$',UserProfileDetails.as_view(),name="user_profile_details_api"),
     re_path(r'^update-profile-api/$',UpdateProfileDetails.as_view(),name="update_profile_api"),

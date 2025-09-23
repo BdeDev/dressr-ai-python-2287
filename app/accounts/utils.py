@@ -33,12 +33,13 @@ from django.contrib.sites.models import Site
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
 from decimal import Decimal
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from user_agents import parse
-
+from subscription.models import *
 from django.http.request import HttpRequest
-
+import random
 
 
 db_logger = logging.getLogger('db')
@@ -584,3 +585,64 @@ def send_campaign_sms(campaign_template,user_list):
             results.append({"number": to_num, "status": "failed", "error": str(e)})
     
     return results
+
+def activate_subscription(user,activate_purchased_plan:SubscriptionPlans=None):
+    ## Warning : This function is also used on cronjob to renew plan
+    if not activate_purchased_plan:
+        upcomming_plan =  UserPlanPurchased.objects.filter(purchased_by=user,status = USER_PLAN_IN_QUEUE).order_by('created_on').first()
+    else:
+        upcomming_plan = activate_purchased_plan ## if specify which plan have to activate  
+        
+    ## check use have any active plan or not 
+    if not UserPlanPurchased.objects.filter(purchased_by=user,status = USER_PLAN_IN_QUEUE).exists() and upcomming_plan:
+        upcomming_plan.status = USER_PLAN_IN_QUEUE
+        upcomming_plan.activated_on = datetime.now()
+        ## set plan expiry
+        if upcomming_plan.validity == MONTHLY_PLAN:
+            expiry_date = datetime.now() + relativedelta(months=upcomming_plan.month_year)
+        elif  upcomming_plan.validity == YEARLY_PLAN:
+            expiry_date = datetime.now() + relativedelta(years=upcomming_plan.month_year)
+
+        upcomming_plan.expire_on = expiry_date
+        
+        ## set user plan status 
+        user.is_plan_purchased = True
+        user.is_subscription_active = True
+        user.plan_activated_on = datetime.now()
+        user.plan_expire_on = expiry_date
+
+        upcomming_plan.save()
+        user.save()
+
+def generate_plan_id():
+    code = str(random.randint(1000000, 9999999))
+    generated_id="SUB-"+code
+    if UserPlanPurchased.objects.filter(plan_id = generated_id):
+        generate_plan_id()
+    else:
+        return generated_id
+
+def is_first_time_subscription_purchase(user:User):
+    validated_data = {"is_valid":True,"message":""}
+    already_purchased= UserPlanPurchased.objects.filter(purchased_by=user).exists()
+    if already_purchased :
+        validated_data['is_valid'] = False
+        validated_data['message'] = "Invalid subscription purchase request"
+    return validated_data
+
+def render_to_pdf_file(request:HttpRequest,template_src:str, context:dict={},file_name:str="booking_invoice"):
+    html_string = render_to_string(template_src, context)
+    if request:
+        base_url=request.build_absolute_uri()
+    else:
+        site=Site.objects.first()
+        protocol="https://" if USE_HTTPS else "http://"
+        base_url= f"{protocol}{site.domain}"
+    html = HTML(string=html_string,base_url = base_url)
+    html.write_pdf(target=f'/tmp/{file_name}.pdf',presentational_hints=True)
+    fs = FileSystemStorage('/tmp')
+    with fs.open(f'{file_name}.pdf') as pdf:
+            response = HttpResponse(pdf, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{file_name}.pdf"'
+            return response
+    return None

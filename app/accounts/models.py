@@ -32,18 +32,25 @@ class User(AbstractUser,CommonInfo):
     country_iso_code = models.CharField(max_length=10, null=True, blank=True)
     country_code = models.CharField(max_length=20, null=True, blank=True)
     profile_pic = models.FileField(upload_to='profile_pic/', blank=True, null=True)
-    user_images = models.ManyToManyField(Image)
+    user_image = models.FileField(upload_to='user_image/', blank=True, null=True)
     role_id = models.PositiveIntegerField(default=ADMIN,choices=USER_ROLE,null=True, blank=True)
     status = models.PositiveIntegerField(default=ACTIVE, choices=USER_STATUS,null=True, blank=True)
     gender = models.PositiveIntegerField(choices=GENDER, null=True, blank=True)
-    address=models.TextField(null=True,blank=True)
-    latitude=models.CharField(max_length=40,null=True,blank=True)
-    longitude=models.CharField(max_length=40,null=True,blank=True)
-    is_verified = models.BooleanField(default=False)
     is_profile_setup = models.BooleanField(default=False)
     notification_enable = models.BooleanField(default=True)
     email_notification = models.BooleanField(default=False)
     sms_notification = models.BooleanField(default=False)
+    body_type = models.PositiveIntegerField(default=SLIM,choices=BODY_TYPE,null=True, blank=True)
+    hieght_cm = models.FloatField(default=0.0, null=True, blank=True)
+    skin_tone = models.CharField(max_length=50, null=True,blank=True)
+    hair_color = models.CharField(max_length=50, null=True,blank=True)
+    others = models.TextField(null=True,blank=True)
+
+    ## subscription 
+    is_plan_purchased = models.BooleanField(default=False)
+    is_subscription_active = models.BooleanField(default=False)
+    plan_activated_on = models.DateTimeField(auto_now=False,null=True,blank=True)
+    plan_expire_on = models.DateTimeField(auto_now=False,null=True,blank=True)
     
     class Meta:
         db_table = 'user'
@@ -55,11 +62,6 @@ class Profile(CommonInfo):
     user = models.OneToOneField(User, on_delete=models.CASCADE,blank=True, null=True)
     profile_name = models.CharField(max_length=50, null=True,blank=True)
     avatar_url = models.URLField(blank=True, null=True)
-    body_type = models.PositiveIntegerField(default=SLIM,choices=BODY_TYPE,null=True, blank=True)
-    hieght = models.FloatField(default=0.0, null=True, blank=True)
-    skin_tone = models.CharField(max_length=50, null=True,blank=True)
-    hair_color = models.CharField(max_length=50, null=True,blank=True)
-    others = models.TextField(null=True,blank=True)
 
     class Meta:
         db_table = 'user_profile'
@@ -72,7 +74,6 @@ class Device(CommonInfo):
 
     class Meta:
         db_table = 'device'
-
 
 class LoginHistory(CommonInfo):
     user_ip = models.CharField(max_length=255, null=True, blank=True)
@@ -99,39 +100,4 @@ class Notifications(CommonInfo):
     class Meta:
         db_table = 'notifications'
 
-class Accessories(CommonInfo):
-    title = models.CharField(max_length=100, null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-
-    class Meta:
-        db_table = 'accessories'
-
-class Occasion(CommonInfo):
-    title = models.CharField(max_length=100, null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-
-    class Meta:
-        db_table = 'occasion'
-
-class ClothCategory(CommonInfo):
-    title = models.CharField(max_length=100, null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-
-    class Meta:
-        db_table = 'cloth_category'
-
-class ClothBrand(CommonInfo):
-    title = models.CharField(max_length=100, null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-
-    class Meta:
-        db_table = 'cloth_brand'
-
-
-class ClothColor(CommonInfo):
-    title = models.CharField(max_length=100, null=True, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-
-    class Meta:
-        db_table = 'cloth_color'
 

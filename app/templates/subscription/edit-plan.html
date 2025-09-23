@@ -1,0 +1,102 @@
+{% include "admin-includes/header.html" %}{% load static %} {% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Update Subscription Plan</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">Index</li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'subscription:all_plans' %}">Subscription Plans</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'subscription:view_plan' plan.id %}">Subscription Plan Information</a></li>
+                        <li class="breadcrumb-item active">Update Subscription Plan</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex">
+                <a class="btn btn-secondary" href="{% url 'subscription:view_plan' plan.id %}" ><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <form  onsubmit="Loader(this.id)" id="update-subscription-plan" method="POST" action="{% url 'subscription:edit_plan' plan.id %}" method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Title </label>
+                                <input type="text" maxlength="10" placeholder="Enter Title" {% if plan.title %}value="{{plan.title}}"{% endif %} name="title" class="form-control" maxlength="10">
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Price / Month </label>
+                                <input type="number" maxlength="10" placeholder="Enter Price" {% if plan.price %}value="{{plan.price}}"{% endif %} name="price" class="form-control number_field" maxlength="10">
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Maximum Uploads</label>
+                                <input type="number" placeholder="Enter Maximum Uploads" {% if plan.max_uploads %}value="{{plan.max_uploads}}"{% endif %} name="max_uploads" class="form-control number_field">
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Maximum Try Ons</label>
+                                <input type="number" placeholder="Enter Maximum Try Ons" {% if plan.max_try_ons %}value="{{plan.max_try_ons}}"{% endif %} name="max_try_ons" class="form-control number_field">
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Maximum Shares </label>
+                                <input type="number" placeholder="Enter Maximum Shares" {% if plan.max_shares %}value="{{plan.max_shares}}"{% endif %} name="max_shares" class="form-control number_field">
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Plan Type</label>
+                                <select name="validity" id="validity" class="form-control">
+                                    <option {% if  plan.validity == 1 %}selected{% endif %} value="1">Monthly</option>
+                                    <option {% if  plan.validity == 2 %}selected{% endif %} value="2">Yearly</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Time Period</label>
+                                <select name="month_year" id="month_year" required class="form-control">
+                                    <option value="">Select</option>
+                                    <option {% if  plan.month_year == 1 %}selected{% endif %} value="1">1</option>
+                                    <option {% if  plan.month_year == 2 %}selected{% endif %} value="2">2</option>
+                                    <option {% if  plan.month_year == 3 %}selected{% endif %} value="3">3</option>
+                                    <option {% if  plan.month_year == 4 %}selected{% endif %} value="4">4</option>
+                                    <option {% if  plan.month_year == 5 %}selected{% endif %} value="5">5</option>
+                                    <option {% if  plan.month_year == 6 %}selected{% endif %} value="6">6</option>
+                                    <option {% if  plan.month_year == 7 %}selected{% endif %} value="7">7</option>
+                                    <option {% if  plan.month_year == 8 %}selected{% endif %} value="8">8</option>
+                                    <option {% if  plan.month_year == 9 %}selected{% endif %} value="9">9</option>
+                                    <option {% if  plan.month_year == 10 %}selected{% endif %} value="10">10</option>
+                                    <option {% if  plan.month_year == 11 %}selected{% endif %} value="11">11</option>
+                                    <option {% if  plan.month_year == 12 %}selected{% endif %} value="12">12</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <div class="form-group ">
+                                <label class="form-label">Description</label>
+                                <textarea placeholder="Enter Description" name="description" id="description" class="form-control">{% if plan.features %}{{plan.features}}{% endif %}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-lg-12 text-end">
+                            <button type="submit" class="btn btn-primary me-2">Save</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/customized-js/add-subscription.js' %}"></script>
+

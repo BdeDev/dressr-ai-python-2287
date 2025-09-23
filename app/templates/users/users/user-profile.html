@@ -119,17 +119,7 @@
                                         <h4>Email </h4>
                                         <h6>{% if user.email %}{{user.email}}{% else %} - {% endif %}</h6>
                                     </li>
-                                    <li>
-                                        <h4>Verification Status</h4>
-                                        <h6>
-                                            {% if user.is_verified %}
-                                            <span class="badge bg-success">Verified</span>
-                                            {% else %}
-                                            <span class="badge bg-danger">Unverified</span>
-                                            {% endif%}                 
-                                        </h6>
-                                    </li>
-                                    
+                                   
                                     <li>
                                         <h4>Created On </h4>
                                         <h6>

@@ -1,0 +1,111 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Subscription Plans</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'subscription:all_plans' %}">Subscription Plans</a></li>
+					</ol>
+				</nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary" href="{% url 'subscription:add_subscription_plan' %}"><i class="fas fa-plus ms-1"></i>
+                    Subscription
+				</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=subscription_plans%}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'subscription:all_plans' %}" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+                                        <th><strong>Title</strong></th>
+										<th><strong>Price / Month</strong></th>
+										<th><strong>Final Price</strong></th>
+										<th><strong>Plan Type</strong></th>
+										<th><strong>Time Period</strong></th>
+										<th><strong>Created On</strong></th>
+										<th><strong>Actions </strong></th>
+									</tr>
+								</thead>
+								<thead>
+									<tr class="search-row">
+                                        <td><input type="text" value="{{search_filters.title}}" class="form-control number_field" name="title" maxlength="20"></td>
+										<td><input type="text" value="{{search_filters.price}}" class="form-control number_field" name="price" maxlength="20"></td>
+										<td><input type="text" value="{{search_filters.final_price}}" class="form-control number_field" name="final_price" maxlength="20"></td>
+										<td>
+											<select class="form-control" name="validity" onchange="this.form.submit()">
+												<option  value=""></option>
+												<option {% if search_filters.validity == '1' %} selected {% endif %} value="1">Monthly</option>
+												<option {% if search_filters.validity == '2' %} selected {% endif %} value="2">Yearly</option>
+											</select>
+										</td>
+										<td><input type="text" value="{{search_filters.month_year}}" class="form-control number_field" name="month_year" maxlength="20"></td>
+										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if subscription_plans %}
+										{% for plan in subscription_plans %}
+										<tr>
+                                            <td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}"> {{plan.title|default:"-"}}</td>
+											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}"> {{plan.price|floatformat:'2g'}}</td>
+											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}"> {{plan.final_price|floatformat:'2g'}}</td>
+											
+											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}">
+												{% if plan.validity == 1 %}
+													<span class="badge bg-primary">MONTHLY</span>
+												{% else %}
+													<span class="badge bg-primary">YEARLY</span>
+												{% endif %}
+											</td>
+											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}">
+												{{plan.month_year}} 
+												{% if plan.validity == 1 %}{% if plan.month_year > 1 %}Months{% else %}Month{% endif %} 
+												{% elif plan.validity == 2 %}{% if plan.month_year > 1 %}Years{% else %}Year{% endif %} 
+												{% endif %}
+											</td>
+											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}">
+												<script>
+													var date = ConvertDateTime("{{ plan.created_on|date:'Y-m-d' }}", "{{ plan.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											<td>
+												<div class="d-flex">
+													<a title="View Plan" href="{% url 'subscription:view_plan' plan.id %}"
+														id="update-btn" class="btn btn-success shadow btn-xs sharp me-1">
+														<i class="fa fa-eye"></i>
+													</a>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=subscription_plans %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

@@ -1,0 +1,120 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Subscription Plan Information</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">Index</li>
+                        <li class="breadcrumb-item"><a class="white-text"
+                                href="{% url 'subscription:all_plans' %}">Subscription Plans</a>
+                        </li>
+                        <li class="breadcrumb-item active">View Subscription Plan</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex">
+                <a  href="{% url 'subscription:edit_plan' plan.id %}" class="btn btn-warning shadow btn-xs sharp me-1">
+                    <i class="fa fa-edit"></i>
+                </a>
+                <a style="margin-right:5px" href="{% url 'subscription:delete_plan' plan.id %}" message="Are you sure you want to delete this page?" class="btn btn-danger shadow btn-xs sharp action_confirm" ><i class="fa fa-trash"></i></a>
+                <a class="btn btn-secondary" href="{% url 'subscription:all_plans' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="productdetails">
+                            <ul class="product-bar">
+                                <li>
+                                    <h4>Id </h4>
+                                    <h6>{{plan.id}}</h6>
+                                </li>
+                                <li>
+                                    <h4>Title </h4>
+                                    <h6>{{plan.title|default:"-"}}</h6>
+                                </li>
+                                <li>
+                                    <h4>Maximum Uploads </h4>
+                                    <h6>{{plan.max_uploads|default:"-"}}</h6>
+                                </li>
+                                <li>
+                                    <h4>Maximum Try Ons </h4>
+                                    <h6>{{plan.max_try_ons|default:"-"}}</h6>
+                                </li>
+                                <li>
+                                    <h4>Maximum Shares </h4>
+                                    <h6>{{plan.max_shares|default:"-"}}</h6>
+                                </li>
+                                <li>
+                                    <h4>Price / Month</h4>
+                                    <h6>{{plan.price|floatformat:'2g'}}</h6>
+                                </li>
+                                <li>
+                                    <h4>Final Price</h4>
+                                    <h6>{{plan.final_price|floatformat:'2g'}}</h6>
+                                </li>
+                                
+                                <li>
+                                    <h4>Status</h4>
+                                    <h6>
+                                        {% if plan.status %}
+                                        <span class="badge bg-success">ACTIVE</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">INACTIVE</span>
+                                        {% endif %}
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Time Period</h4>
+                                    <h6>
+                                        {{plan.month_year}} 
+                                        {% if plan.validity == 1 %}{% if plan.month_year > 1 %}Months{% else %}Month{% endif %} 
+                                        {% elif plan.validity == 2 %}{% if plan.month_year > 1 %}Years{% else %}Year{% endif %} 
+                                        {% endif %}
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Created On </h4>
+                                    <h6>
+                                        <script>
+                                            var date = ConvertDateTime("{{ plan.created_on|date:'Y-m-d' }}", "{{ plan.created_on|time:'H:i' }}");
+                                            document.write(date);
+                                        </script>
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Updated On </h4>
+                                    <h6>
+                                        <script>
+                                            var date = ConvertDateTime("{{ plan.updated_on|date:'Y-m-d' }}", "{{ plan.updated_on|time:'H:i' }}");
+                                            document.write(date);
+                                        </script>
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Description</h4>
+                                    <h6>
+                                        {% if plan.features %}{{plan.features|safe}}{% else %}-{% endif %}
+                                    </h6>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                 <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
+                    {% if plan.status %}
+                        <a href="{% url 'subscription:change_status' plan.id %}" onclick="Loader()" class="btn btn-warning ms-2">DEACTIVATE</a>
+                    {% else %}
+                        <a href="{% url 'subscription:change_status' plan.id %}" onclick="Loader()" class="btn btn-success ms-2">ACTIVATE</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
