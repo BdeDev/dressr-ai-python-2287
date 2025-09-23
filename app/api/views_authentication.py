@@ -8,6 +8,9 @@ from django.contrib.auth import logout,login,authenticate
 from .serializer import *
 from api.helper import *
 import re
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 
 """
 Authentication Management
@@ -450,28 +453,31 @@ class ForgotPassword(APIView):
         ],
     )
     def post(self, request, *args, **kwargs):
-        response=CustomRequiredFieldsValidator.validate_api_field(self,request,
-            [
-                {"field_name": "email", "method": "post", "error_message": "Please enter email"},
-            ]
-        )
-        user = get_or_none(User, "Please enter a registered email address",status=ACTIVE,email=request.data.get("email"))
-        user.temp_otp=generate_otp()
-        user.save()
-        bulk_send_user_email(request,user,'EmailTemplates/OTP_Verification.html','Reset Password',request.POST.get("email"),"","",user.temp_otp,"")
-        message=f"An OTP {user.temp_otp} has been sent on your email to reset your password."
+        email = request.data.get("email")
+        if not email:
+            return Response({"error": "Please enter email"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"message":message,"temp_otp":user.temp_otp,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+        user = get_or_none(User, "Please enter a registered email address", status=ACTIVE, email=email)
+        if not user:
+            return Response({"error": "Email not found"}, status=status.HTTP_404_NOT_FOUND)
+        token,_ = Token.objects.get_or_create(user=user)
+        # Build reset link
+        reset_path = reverse("api:reset_password_api")
+        reset_link = f"{request.build_absolute_uri(reset_path)}?uid={user.id}&token={token}"
+        # Send reset link via email
+        bulk_send_user_email(request,user,'EmailTemplates/reset_password.html','Reset Password',email,"","","",reset_link)
+        message = f"A password reset link has been sent to {email}."
+        return Response({"message": message, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
 
-class ForgotPasswordResendOTP(APIView):
+class ForgotPasswordResendLink(APIView):
     permission_classes = (permissions.AllowAny,)
     parser_classes = [MultiPartParser,FormParser]
 
     @swagger_auto_schema(
         tags=["Authentication API's"],
-        operation_id="Forgot Password Resend OTP",
-        operation_description="Forgot Password Resend OTP",
+        operation_id="Forgot Password Resend Link",
+        operation_description="Forgot Password Resend Link",
         manual_parameters=[
             openapi.Parameter('email', openapi.IN_FORM, type=openapi.TYPE_STRING),
         ]
@@ -482,20 +488,15 @@ class ForgotPasswordResendOTP(APIView):
                 {"field_name": "email", "method": "post", "error_message": "Please enter email"},
             ]
         )
-        user = get_or_none(User, "User doesn't exist!",status=ACTIVE,email = request.data.get('email'))
-        try:
-            OTP = generate_otp()
-            user.temp_otp =  OTP
-            user.save()
-            to_num = user.country_code + user.mobile_no
-            # send_text_message(f"Enter {OTP} on Dressr AI to verify your account.", to_num )
-            bulk_send_user_email(request,user,'EmailTemplates/OTP_Verification.html','Reset Password',request.POST.get("email"),"","",user.temp_otp,"")
-            message=f"An OTP {user.temp_otp} has been sent on your email to reset your password."
-        except Exception as e:
-            db_logger.exception(e)
-            return Response({"message":"Something went wrong!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        email = request.data.get('email')
+        user = get_or_none(User, "User doesn't exist!",status=ACTIVE,email = email)
+        token,_ = Token.objects.get_or_create(user=user)
+        # Build reset link
+        reset_path = reverse("api:reset_password_api")
+        reset_link = f"{request.build_absolute_uri(reset_path)}?uid={user.id}&token={token}"
+        bulk_send_user_email(request,user,'EmailTemplates/reset_password.html','Reset Password',email,"","","",reset_link)
+        message = f"A password reset link has been sent to {email}."
         return Response({"message":message,"temp_otp":user.temp_otp,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-
 
 class ResetPasswordView(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -503,34 +504,45 @@ class ResetPasswordView(APIView):
 
     @swagger_auto_schema(
         tags=["Authentication API's"],
-        operation_id="Reset Password ",
-        operation_description="Reset Password ",
+        operation_id="Reset Password",
+        operation_description="Reset password using uid and token received via email link",
         manual_parameters=[
-            openapi.Parameter('email', openapi.IN_FORM, type=openapi.TYPE_STRING),
+            openapi.Parameter('uid', openapi.IN_FORM, type=openapi.TYPE_STRING),
+            openapi.Parameter('token', openapi.IN_FORM, type=openapi.TYPE_STRING),
             openapi.Parameter('new_password', openapi.IN_FORM, type=openapi.TYPE_STRING),
             openapi.Parameter('confirm_password', openapi.IN_FORM, type=openapi.TYPE_STRING),
-        ]
+        ],
     )
     def post(self, request, *args, **kwargs):
-        ## Validate Required Fields
-        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "email", "method": "post", "error_message": "Please enter email"},
-            {"field_name": "new_password", "method": "post", "error_message": "Please enter new password"},
-            {"field_name": "confirm_password", "method": "post", "error_message": "Please enter confirm password"},
-        ])
+        uidb64 = request.data.get("uid")
+        token = request.data.get("token")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
 
-        user = get_or_none(User, "User doesn't exist!",status=ACTIVE,email = request.data.get('email'))
+        if not uidb64 or not token or not new_password:
+            return Response({"error": "All fields (uid, token, new_password,confirm_password) are required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            uid = User.objects.get(id=uidb64).id
+            user = User.objects.get(id=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({"error": "Invalid UID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify token
+        if not Token.objects.get(key=token):
+            return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+        
         if not (request.data.get("new_password") == request.data.get("confirm_password")):
             return Response({"message": "Passwords do not match!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST) 
         
         if user.check_password(request.data.get("new_password")):
             return Response({"message": "New password should be different from current password.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
         
-        user.password = make_password(request.data.get("new_password"))
+        # Set new password
+        user.password = make_password(new_password)
         user.save()
         Token.objects.filter(user=user).delete()
         logout(request)
-        return Response({"message":"Password reset successfully!","status":status.HTTP_200_OK}, status=status.HTTP_200_OK)
+        return Response({"message": "Password has been reset successfully."}, status=status.HTTP_200_OK)
 
 class ChangePassword(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -861,11 +873,11 @@ class UpdateProfileDetails(APIView):
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='first name'),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='last name'),
             openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='1:Slim 2:Athletic 3:Curvy'),
-            openapi.Parameter('height', openapi.IN_FORM, type=openapi.TYPE_STRING,description='height'),
+            openapi.Parameter('height', openapi.IN_FORM, type=openapi.TYPE_STRING,description='height in cm'),
             openapi.Parameter('gender', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Male:1 Female:2, Other:3 '),
             openapi.Parameter('skin_tone', openapi.IN_FORM, type=openapi.TYPE_STRING,description='skin tone'),
             openapi.Parameter('hair_color', openapi.IN_FORM, type=openapi.TYPE_STRING,description='hair color'),
-            openapi.Parameter('images', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_FILE), description="['multiplart_image']"),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description="Add Image"),
             openapi.Parameter('others', openapi.IN_FORM, type=openapi.TYPE_STRING,description="to enhance personalization"),
         ],
     )
@@ -875,11 +887,12 @@ class UpdateProfileDetails(APIView):
         first_name = data.get('first_name')
         last_name = data.get('last_name')
         gender = data.get('gender',MALE)
-        user_images = request.FILES.getlist('images',None)
+        user_image = request.FILES.get('image',None)
         body_type = data.get('body_type')
         skin_tone = data.get('skin_tone')
         hair_color = data.get('hair_color')
         others = data.get('others')
+        hieght_cm = data.get('hieght_cm')
         
         # Update name
         if first_name: user.first_name = first_name
@@ -893,7 +906,8 @@ class UpdateProfileDetails(APIView):
         user.skin_tone = skin_tone
         user.hair_color = hair_color
         user.others = others
-        user.user_images.set([Image.objects.create(image=img) for img in user_images])
+        user.hieght_cm = hieght_cm
+        user.user_image = user_image
         # Profile setup status
         message = "Profile updated successfully!"
         if not user.is_profile_setup:

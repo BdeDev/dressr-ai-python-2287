@@ -173,13 +173,30 @@
                             </li>
                         </ul>
                     </li>
+
+                    <li class="submenu {% if head_title == 'Subscription Plan Management' or head_title == 'Purchased Plans' %}active{% endif %}">
+                        <a href="javascript:void(0);"><i class="fad fa-bell"></i><span> Subscription</span>
+                        <span class="menu-arrow"></span></a>
+                        <ul>
+                            <li>
+                                <a {% if head_title == 'Subscription Plan Management' %} class="active" {% endif %} href="{% url 'subscription:all_plans' %}">
+                                    Subscription Plans
+                                </a>
+                            </li>
+                            <li>
+                                <a {% if head_title == 'Purchased Plans' %} class="active" {% endif %} href="{% url 'subscription:purchased_plans' %}">
+                                    Purchased Plans
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                    
                     <li {% if head_title == "Contact Us Management" %} class="active" {% endif %}>
-                        <a href="{% url 'contact_us:contactus_list' %}" onclick="Loader()"><i class="fas fa-address-book"></i><span>Contact Us</span></a>
+                        <a href="{% url 'contact_us:contactus_list' %}" onclick="Loader()"><i class="fad fa-address-book"></i><span>Contact Us</span></a>
                     </li>
                     
                     <li class="submenu {% if head_title == "Email Campaigns Management" or head_title == "SMS Campaigns Management"  %}active{% endif %}">
-                        <a href="javascript:void(0);"><i class="fas fa-mail-bulk"></i><span> Campaigns</span>
+                        <a href="javascript:void(0);"><i class="fad fa-mail-bulk"></i><span> Campaigns</span>
                             <span class="menu-arrow"></span>
                         </a>
                         <ul>
@@ -196,7 +213,7 @@
                         </ul>
                     </li>
                     <li class="submenu {% if head_title == 'SMTP Management' or head_title == 'Stripe Management' or head_title == 'Firebase Management' or head_title == 'Paypal Management' or head_title == 'Adyen Keys Management' %}active {% endif %}">
-                        <a href="javascript:void(0);"><i class="far fa-key-skeleton"></i><span> Credentials</span>
+                        <a href="javascript:void(0);"><i class="fad fa-key-skeleton"></i><span> Credentials</span>
                             <span class="menu-arrow"></span></a>
                         <ul>
                             <li>
@@ -223,7 +240,7 @@
                     </li>
 
                     <li class="submenu {% if   head_title == 'Help & Support Management' or head_title == 'Social Links Management' or head_title == 'Domain Management' %}active{% endif %}">
-                        <a href="javascript:void(0);"><i class="fa fa-globe"></i><span> Website</span>
+                        <a href="javascript:void(0);"><i class="fad fa-globe"></i><span> Website</span>
                         <span class="menu-arrow"></span></a>
                         <ul>
                             <li>
@@ -239,8 +256,8 @@
                         </ul>
                     </li>
 
-                    <li class="submenu {% if head_title == 'Login History' or head_title == 'Widgets Management' or head_title == 'Notifications Management' or head_title == 'Pages Management' or head_title == 'Backup Management' %}active {% endif %}">
-                        <a href="javascript:void(0);"><i class="fas fa-users-cog"></i><span> Settings</span>
+                    <li class="submenu {% if head_title == 'Login History' or head_title == 'Notifications Management' or head_title == 'Pages Management' or head_title == 'Backup Management' %}active {% endif %}">
+                        <a href="javascript:void(0);"><i class="fad fa-users-cog"></i><span> Settings</span>
                             <span class="menu-arrow"></span></a>
                         <ul>
                             <li>
@@ -281,7 +298,7 @@
                         </ul>
                     </li>
                     <li class="submenu {% if head_title == 'Website Error Logs Management' or head_title == 'Email Logs Management' or head_title == 'Application Error Logs Management' %}active{% endif %}">
-                        <a href="javascript:void(0);"><i class="fas fa-exclamation-circle"></i><span> Logger</span>
+                        <a href="javascript:void(0);"><i class="fad fa-exclamation-circle"></i><span> Logger</span>
                             <span class="menu-arrow"></span></a>
                         <ul>
                             <li>

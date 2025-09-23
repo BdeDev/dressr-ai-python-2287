@@ -16,7 +16,6 @@ urlpatterns = [
     re_path(r'^forgot-password-email/$', ForgotPasswordEmail.as_view(), name='forgot_password_email'),
     re_path(r'^verify-account/(?P<token>[-\w]+)/$',VerifyUserAccount.as_view(),name="verify_account"),
 
-
     ## Users
     re_path(r'^change-password/$', PasswordChange.as_view(), name='change_password'),
     re_path(r'^validations/$', Validations, name='validations'),

@@ -22,7 +22,6 @@ SITE_ID = 1
 
 ALLOWED_HOSTS = ["*"]
 
-
 INSTALLED_APPS = [
     'django_crontab',
     'django.contrib.admin',
@@ -47,6 +46,9 @@ INSTALLED_APPS = [
     'backup',
     'contact_us',
     'credentials',
+    'wardrobe',
+    'subscription',
+    'ecommerce',
 ]
 
 MIDDLEWARE = [
