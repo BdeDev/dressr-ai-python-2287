@@ -1,0 +1,4 @@
+{% load static %}{% load extras %}
+{% if total_objects %}
+    <span> Showing <b>{{ listing_objects.start_index }}-{{ listing_objects.end_index }}</b> of <b>{{ total_objects }}</b> {% if total_objects > 1 %}Items. {% else %}Item.{% endif %}  </span>
+{% endif %}

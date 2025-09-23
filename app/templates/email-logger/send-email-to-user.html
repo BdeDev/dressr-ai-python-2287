@@ -1,0 +1,177 @@
+{% include "admin-includes/header.html" %}{% load static %}{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>SMTP Credentials</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'users:users_list' %}">Users</a> </li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'users:view_user' user.id %}">User Profile</a> </li>
+                        <li class="breadcrumb-item active">Send Custom Email</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary me-2"  href="{% url 'users:view_user' user.id %}" ><i class="fa fa-angle-left me-1"></i>Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="productdetails">
+                            <form  id="custome-email-form" onsubmit="Loader(this.id)" action="" method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-6 col-12">
+                                        <div class="form-group required-field">
+                                            <label class="form-label">User Name</label>
+                                            <input type="text" placeholder="User Name" value="{{user.full_name}}" name="full_name" id="full_name" class="form-control" maxlength="30">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-6 col-12">
+                                        <div class="form-group required-field">
+                                            <label class="form-label">Email</label>
+                                            <input type="text" value="{{user.email}}" readonly disable placeholder="Email" name="to_email" id="to_email" class="form-control" maxlength="100">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-6 col-12">
+                                        <div class="form-group required-field">
+                                            <label class="form-label">Email Subject</label>
+                                            <input type="text" placeholder="Enter Email Subject" name="title" id="title" class="form-control" maxlength="150">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12 col-12">
+                                        <div class="form-group required-field">
+                                            <label class="form-label">Email Description</label>
+                                            <textarea rows="10" cols="50"  placeholder="Enter Email Description" name="content" id="content" class="form-control"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <a onclick="PreviewEmail()" class="btn btn-primary me-2">Preview</a>
+                                        <button type="submit" class="btn btn-primary me-2">Send</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fff; font-family: 'Open Sans', Arial, sans-serif; border-radius: 20px; box-shadow: 2px 2px 20px 4px rgba(0,0,0,0.07); max-width: 700px; margin: 40px auto;">
+                            <tr>
+                                <td align="center" style="padding: 30px 10px 10px 10px; background: #14285a; border-radius: 0 0 0 0;">
+                                    <a href="{% url 'frontend:index' %}" title="logo" target="_blank">
+                                        <img width="100" src="{% static 'admin-assets/images/230x0w.webp' %}" title="logo" alt="logo" style="display:block; margin:auto;">
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 0 35px;">
+                                    <img src="{% static 'admin-assets/images/email-confirmed.png' %}" style="width: 250px; max-width: 100%; height: auto; display: block; margin: 30px auto 0 auto;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="height:20px;">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td class="content-td" style="padding:0 35px;">
+                                    <h1 id="mail_title" name="mail_title" style="color: #000; font-weight: 500; margin: 0; font-size: 22px; font-family: 'Rubik',sans-serif; text-align:left;">
+                                        Email Subject...
+                                    </h1>
+                                    <p style="font-size:15px; color:#000; margin:0; line-height:24px; padding: 20px 0 20px 0; text-align:left;">
+                                        Dear <span style="text-decoration-line: underline;" id="email_user_name">{{user.full_name}}</span>,
+                                    </p>
+                                    <pre id="mail_description" style="font-size:15px; color:#000; margin:0; line-height:24px; padding-bottom:10px; text-align:left; white-space:pre-line; font-family: 'Open Sans', Arial, sans-serif; background:none; border:none;">Email description...</pre>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="height:40px;">&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 20px 0; border-top: 2px solid #cbcbcb4a; background-color: #14285a; border-radius:0 0 0 0;">
+                                    <p style="font-size:14px; color:#fff; line-height:18px; margin:0;">
+                                        Copyright  © <span id="full_year">{% now "Y" as current_year %}{{current_year}}</span>
+                                        <a style="color: #fff; text-decoration: none; font-weight: 600;" target="_blank" href="{% url 'frontend:index' %}"> Dressr AI </a> | All Rights Reserved. Developed by
+                                        <a style="color: #fff; text-decoration: none; font-weight: 600;" href="https://toxsl.com/" target="_blank">TOXSL Technologies</a>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="https://cdn.ckeditor.com/4.17.2/standard/ckeditor.js"></script>
+<script>
+    function PreviewEmail(){
+        var title = $("#title").val()
+        var idname = $(content).attr('id')
+        var description = $('#content').val().trim();
+        $("#mail_title").html(title)
+        $("#mail_description").html(description)
+
+        //to set email or full bane
+        var full_name = $("#full_name").val()
+        $("#email_user_name").text(full_name)
+        $("#email_user_name").css("text-decoration-line", "");
+
+    }
+
+$("#custome-email-form").validate({
+    ignore:[],
+    rules: {
+        title: {
+            required: true,
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            maxlength:150,
+        },
+        to_email: {
+            required: true,
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            email:true,
+        },
+        full_name: {
+            required: true,
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            maxlength:50,
+        },
+        content: {
+            required: true,
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+        }
+    },
+    messages: {            
+        title: {
+            required: "Please enter email subject",
+        },
+        to_email: {
+            required: "Please enter email",
+        },
+        full_name: {
+            required: "Please enter user name",
+        },
+        content: {
+            required: "Please enter description"
+        }
+    },
+    
+});  
+
+
+</script>

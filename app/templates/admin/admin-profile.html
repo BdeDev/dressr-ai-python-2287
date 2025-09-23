@@ -1,0 +1,155 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Admin Profile</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'frontend:index' %}"class="white-text">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'users:view_user' user.id %}" class="white-text">Admin</a></li>
+                        <li class="breadcrumb-item active">Profile</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#bulk-message" ><i class="fas fa-envelope"></i> Bulk Message</a>
+                <a class="btn btn-primary me-2" href="{% url 'accounts:notifications_list' user.id %}" ><i class="fas fa-bell me-1"></i></i> Notifications</a>
+                <a class="btn btn-primary me-2" href="{% url 'users:edit_admin' user.id %}" ><i class="fa fa-edit me-1"></i>Update</a>
+                <a class="btn btn-secondary"  href="{% url 'admin:index' %}" ><i class="fa fa-angle-left me-1"></i>Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 mt-3">
+                <div class="card product-profile-wrapper">
+                    <div class="product-detail-wrapper">
+                        <div class="profile-imgbox">
+                            {% if user.profile_pic %}
+                            <a class="product-img" href="{{ user.profile_pic.url }}" data-fancybox="gallery">
+                                <img style="height: auto;" src="{{ user.profile_pic.url }}" alt="image">
+                            </a>
+                            {% else %}
+                            <a class="product-img" href="{% static 'admin-assets/images/dp.png' %}" data-fancybox="gallery">
+                                <img style="height: auto;" src="{% static 'admin-assets/images/dp.png' %}" alt="image">
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 productdetails">
+                                <ul class="product-bar">
+                                    <li>     
+                                        <h4>User Id </h4>
+                                        <h6>{% if user.id %}{{user.id}}{% else %}-{% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Username </h4>
+                                        <h6>{% if user.username %}{{user.username}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Email </h4>
+                                        <h6>{% if user.email %}{{user.email}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6 productdetails">
+                                <ul class="product-bar">
+                                    <li>
+                                        <h4>User Role </h4>
+                                        <h6>
+                                            {% if user.role_id == 1 %}
+                                            <span class="badge bg-info">ADMIN</span>
+                                            {% elif user.role_id == 2 %}
+                                            <span class="badge bg-dark">CUSTOMER</span>
+                                            {% elif user.role_id == 3 %}
+                                            <span class="badge bg-dark">SUB-ADMIN</span>
+                                            {% endif %}
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Last Login </h4>
+                                        <h6>
+                                            {% if user.last_login %}
+                                            <script>
+                                                var date = ConvertDateTime("{{ user.last_login|date:'Y-m-d' }}", "{{ user.last_login|time:'H:i' }}");
+                                                document.write(date);
+                                            </script>
+                                            {% else %}-{% endif %}
+                                        </h6>
+                                    </li>
+                                     <li>
+                                        <h4>Activity Logs</h4>
+                                        <h6>
+                                            {% if activities %}<a href="{% url 'accounts:activity_logs' user.id %}" >View [ {{activities}} ]</a>{% else %} [ {{activities}} ] {% endif %}
+                                        </h6>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="bulk-message" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Send Bulk Message</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form id="add-message" onsubmit="Loader(this.id)" action="{% url 'accounts:bulk_notification' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="form-group mb-3 col-md-12 required-field">
+                                <label class="form-label">Message</label>
+                                <textarea type="text" rows="10" cols="12" placeholder="Enter Message " name="message" class="form-control" ></textarea>
+                            </div>
+                            <div class="text-end col-md-12">
+                                <button id="form-btn" class="btn btn-primary" type="submit">Send</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "admin-includes/footer.html" %}
+<script>
+$('.action_confirm').click(function(event) {
+    event.preventDefault();        
+    swal({
+        title: $(this).attr('message'),
+        text: "",
+        icon: "warning",
+        buttons: true,
+    })
+    .then((willDelete) => {
+        if (willDelete) {
+            location.href=$(this).attr('href')
+        }
+    });
+});
+$("#add-message").validate({
+        rules: {
+            message: {
+                required: true,
+                normalizer: function (value) {
+                    return $.trim(value);
+                }
+            },
+        },
+        messages: {
+            message: {
+                required: "Please enter message.",
+            },
+        },
+    }); 
+</script>

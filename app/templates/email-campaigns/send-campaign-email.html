@@ -1,0 +1,81 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Email Campaigns</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'logger:campaign_templates' %}">Email Campaigns</a></li>
+                        <li class="breadcrumb-item active">Send Campaign Email</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary"  href="{% url 'logger:campaign_templates' %}" ><i class="fa fa-angle-left me-1"></i>Back</a>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    <form id="send-campaign-email-form" onsubmit="Loader(this.id)" action="" method="POST"  enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="">Select users to send email</h5>
+                                <a class="btn btn-sm btn-primary" onclick="AddOnEmailField()" ><i class="fas fa-plus"></i> Add Addon Email</a>
+                            </div>
+                            <hr>
+                            <div class="productdetails">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="mb-3 form-check">
+                                            <input type="checkbox" class="form-check-input" {% if not user_count_data.active_users %}disabled{% endif %} name="active_users" id="active_users" />
+                                            <label class="form-check-label" for="active_users">Active users [ <a href="{% url "users:users_list" %}?status=1">{{user_count_data.active_users}}</a> ]</label>
+                                        </div>
+                                        <div class="mb-3 form-check">
+                                            <input type="checkbox" class="form-check-input" {% if not user_count_data.inactive_users %}disabled{% endif %}  name="inactive_users" id="inactive_users" />
+                                            <label class="form-check-label" for="inactive_users">Inactive users [ <a href="{% url "users:users_list" %}?status=2">{{user_count_data.inactive_users}}</a> ]</label>
+                                        </div>
+                                        <div class="mb-4 form-check">
+                                            <input type="checkbox" class="form-check-input" {% if not user_count_data.deleted_users %}disabled{% endif %}  name="deleted_users" id="deleted_users" />
+                                            <label class="form-check-label" for="deleted_users">Deleted users [ <a href="{% url "users:users_list" %}?status=3">{{user_count_data.deleted_users}}</a> ]</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="add-email-list row" id="add-email-list"></div>
+                            <button type="button" onclick="ValidateSendEmail()" class="btn btn-success btn-sm">Send Email</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    <h4 class="mx-3 mt-2">Campaign Email </h4><hr>
+                    <iframe class="card-body" id="email_div" style="width:100%;height:830px;border:none;">
+                        {{campaign_template.description|safe}}
+                    </iframe>
+                </div>
+            </div>
+          
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/customized-js/email-campaigns-mails.js' %}"></script>
+<script>
+    // Get the email HTML from Django context (escaped for JS)
+    var emailHtml = `{{ campaign_template.description|safe }}`;
+    // Wrap in a full HTML document
+    var fullHtml = `${emailHtml}`;
+    // Inject into iframe
+    var iframe = document.getElementById('email_div');
+    iframe.contentWindow.document.open();
+    iframe.contentWindow.document.write(fullHtml);
+    iframe.contentWindow.document.close();
+</script>
+

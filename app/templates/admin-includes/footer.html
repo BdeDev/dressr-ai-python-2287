@@ -1,0 +1,56 @@
+<footer class="footer-mobile-ml">{% load static %}
+    <div class="copyright-footer">
+        <p class="mb-0 text-center">Copyright  © <span id="full_year">{% now 'Y' as current_year %}{{current_year}}</span><a href="{% url 'frontend:index' %}"> Dressr AI </a> | All Rights Reserved. Developed by <a href="https://toxsl.com/" target="_blank">ToXSL Technologies</a>
+        </p>
+    </div>
+</footer>
+</div>
+</div>
+<script src="{% static 'admin-assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/bootstrap4.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/jquery.fancybox.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/script.js' %}"></script>
+<script src="{% static 'admin-assets/js/validate.js' %}"></script>
+<script src="{% static 'admin-assets/js/additional-methods.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/selectize.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/selectize_no_results.js' %}"></script>
+<script src="{% static 'admin-assets/js/jquery-ui.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/highcharts.src.js' %}"></script>
+<script src="{% static 'admin-assets/js/intlTelInput-jquery.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/sweetalert.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/sweet-alerts.js' %}"></script>
+<script src="{% static 'admin-assets/js/ckeditor-validation.js' %}"></script>
+<script src="{% static 'admin-assets/js/swiper-js/swiper-bundle.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/swiper.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/common.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/loader.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
+<script src="{% static 'admin-assets/js/customized-js/show-more.js' %}"></script>
+</body>
+</html>
+<script src="{% static 'admin-assets/js/customized-js/dark_mode.js' %}"></script>
+<script>
+$.validator.addMethod("customEmail", function(value, element) {
+    var res = this.optional(element) || /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i.test(value);
+    return res
+}, "Please enter valid email address!");
+$(document).ready( function () {
+    var dtToday = new Date();
+    var month = dtToday.getMonth() + 1;
+    var day = dtToday.getDate();
+    var year = dtToday.getFullYear();
+    if (month < 10)
+        month = '0' + month.toString();
+    if (day < 10)
+        day = '0' + day.toString();
+    var maxDate = year + '-' + month + '-' + day;
+    
+    $('input[name=created_on]').attr('max', maxDate);
+    $('input[name=updated_on]').attr('max', maxDate);
+
+});
+</script>

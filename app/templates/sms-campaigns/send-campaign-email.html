@@ -1,0 +1,66 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>SMS Campaigns</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'logger:sms_campaign_templates' %}">SMS Campaigns</a></li>
+                        <li class="breadcrumb-item active">Send Campaign SMS</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary"  href="{% url 'logger:sms_campaign_templates' %}" ><i class="fa fa-angle-left me-1"></i>Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    <form id="send-campaign-email-form" onsubmit="Loader(this.id)" action="" method="POST"  enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="">Select users to send sms</h5>
+                                <a class="btn btn-sm btn-primary" onclick="AddOnMobileField()" ><i class="fas fa-plus"></i> Add Addon Mobile Number</a>
+                            </div>
+                            <hr>
+                            <div class="productdetails">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="mb-3 form-check">
+                                            <input type="checkbox" class="form-check-input" {% if not user_count_data.active_users %}disabled{% endif %} name="active_users" id="active_users" />
+                                            <label class="form-check-label" for="active_users">Active users [ <a href="{% url "users:users_list" %}?status=1">{{user_count_data.active_users}}</a> ]</label>
+                                        </div>
+                                        <div class="mb-3 form-check">
+                                            <input type="checkbox" class="form-check-input" {% if not user_count_data.inactive_users %}disabled{% endif %}  name="inactive_users" id="inactive_users" />
+                                            <label class="form-check-label" for="inactive_users">Inactive users [ <a href="{% url "users:users_list" %}?status=2">{{user_count_data.inactive_users}}</a> ]</label>
+                                        </div>
+                                        <div class="mb-4 form-check">
+                                            <input type="checkbox" class="form-check-input" {% if not user_count_data.deleted_users %}disabled{% endif %}  name="deleted_users" id="deleted_users" />
+                                            <label class="form-check-label" for="deleted_users">Deleted users [ <a href="{% url "users:users_list" %}?status=3">{{user_count_data.deleted_users}}</a> ]</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="add-mobile-list row" id="add-mobile-list"></div>
+                            <button type="button" onclick="ValidateSendMessage()" class="btn btn-success btn-sm">Send SMS</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-6 col-sm-12">
+                <div class="card">
+                    <div class="card-body" id="email_div">
+                        <h4>Campaign Message </h4><hr>
+                        {{campaign_template.description|safe}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/customized-js/sms-campaigns-message.js' %}"></script>

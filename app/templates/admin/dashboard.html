@@ -1,0 +1,101 @@
+{% load static %} {% load extras %}{% load humanize %}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="row state-overview">
+            <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
+                <a href="{% url 'users:users_list' %}" style="color: inherit;" class="d-flex">
+                    <div class="dash-count">
+                        <div class="dash-counts">
+                            <h5>Total Customers</h5>
+                            <h4>{{'total_user'|users_count}}</h4>
+                        </div>
+                        <div class="dash-imgs">
+                            <span><i class="fas fa-users"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
+                <a href="#" style="color: inherit;" class="d-flex">
+                    <div class="dash-count">
+                        <div class="dash-counts">
+                            <h5>Active Subscription</h5>
+                            <h4>{{'0'}}</h4>
+                        </div>
+                        <div class="dash-imgs">
+                            <span><i class="fas fa-users"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
+                <a href="#" style="color: inherit;" class="d-flex">
+                    <div class="dash-count">
+                        <div class="dash-counts">
+                            <h5>Total Wardrobe</h5>
+                            <h4>{{'0'}}</h4>
+                        </div>
+                        <div class="dash-imgs">
+                            <span><i class="fas fa-piggy-bank"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
+                <a href="#" style="color: inherit;" class="d-flex">
+                    <div class="dash-count">
+                        <div class="dash-counts">
+                            <h5>Total Virtual Try-ons</h5>
+                            <h4>{{'0'}}</h4>
+                        </div>
+                        <div class="dash-imgs">
+                            <span><i class="fas fa-ban"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="row my-2">
+            <div class="col-xl-12 col-lg-12 col-sm-12">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0 d-md-flex justify-content-between align-items-center">
+                        <h5 class="card-title">Customers Registered in <span id="selected_year"></span>{% if selected_month %}(<span id="selected_month"></span>){% endif %}</h5>
+                        <div class="graph-sets mt-md-0 mt-2">
+                            <div class="dropdown d-flex">
+                                <select class="graph-dropdown me-2" name="months" id="months" onchange="GetGraphData(this.value)">
+                                    <option value="">Select</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                                <select class="graph-dropdown" name="years" id="years" onchange="GetGraphData(this.value)"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/customized-js/graph.js' %}"></script>
+<script>
+    GetGraphData() // user graph
+</script>

@@ -1,0 +1,91 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Social Links Management</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active"><a href="{% url 'contact_us:social_links' %}" class="white-text">Social Links Management</a></li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#website-contact" ><i class="fas fa-pencil me-1"></i> Update </a>
+                <a class="btn btn-secondary" href="{% url 'frontend:index' %}" ><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="productdetails">
+                    <ul class="product-bar">
+                        <li>
+                            <h4>Facebook </h4>
+                            <h6>{% if social_link.facebook %}<a href="{{ social_link.facebook }}" target="_blank">{{ social_link.facebook }}</a>{% else %}-{% endif %}</h6>
+                        </li>
+                        <li>
+                            <h4>Instagram </h4>
+                            <h6>{% if social_link.instagram %}<a href="{{ social_link.instagram }}" target="_blank">{{ social_link.instagram }}</a>{% else %}-{% endif %}</h6>
+                        </li>
+                        <li>
+                            <h4>Twitter </h4>
+                            <h6>{% if social_link.twitter %}<a href="{{ social_link.twitter }}" target="_blank">{{ social_link.twitter }}</a>{% else %}-{% endif %}</h6>
+                        </li>
+                        <li>
+                            <h4>Updated On </h4>
+                            <h6>
+                                {% if social_link.updated_on %}
+                                <script>
+                                    var date = ConvertDateTime("{{ social_link.updated_on|date:'Y-m-d' }}", "{{ social_link.updated_on|time:'H:i' }}");
+                                    document.write(date);
+                                </script>
+                                {% else %}- {% endif %}
+                            </h6>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- Audit Log History -->
+		{% include "admin-includes/activity-logs.html" with activity_title="Social Links" %}
+        <!-- End Audit Log History -->
+    </div>
+</div>
+<div class="modal fade" id="website-contact"  data-bs-backdrop='static' data-bs-keyboard='false' tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Update Social Media Links</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form id="social-link-form" onsubmit="Loader(this.id)" action="{% url 'contact_us:social_links' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="form-group mb-3 col-md-12">
+                                <label class="form-label">Facebook</label>
+                                <input type="text" value="{% if social_link.facebook %}{{social_link.facebook}}{% endif %}" placeholder="Enter Facebook Link" name="facebook" class="form-control">
+                            </div>
+                            <div class="form-group mb-3 col-md-12">
+                                <label class="form-label">Instagram </label>
+                                <input type="text" value="{% if social_link.instagram %}{{social_link.instagram}}{% endif %}" placeholder="Enter Instagram Link" name="instagram" class="form-control">
+                            </div>
+                            <div class="form-group mb-3 col-md-12">
+                                <label class="form-label">Twitter</label>
+                                <input type="text"  value="{% if social_link.twitter %}{{social_link.twitter}}{% endif %}" placeholder="Enter Twitter Link" name="twitter" class="form-control">
+                            </div>
+                            
+                            <div class="text-end col-md-12">
+                                <button class="btn btn-primary" type="submit">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/validations/social-links.js' %}"></script>

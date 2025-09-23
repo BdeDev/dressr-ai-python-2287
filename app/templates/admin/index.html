@@ -1,0 +1,8 @@
+{% include "admin-includes/header.html" %}{% load static %} {% load extras %}{% load humanize %}
+
+{% if request.user.role_id == 1 %}
+    {% include 'admin/dashboard.html' %}
+{% else %}
+    {% include 'subadmin-panel/dashboard.html' %}
+{% endif %}
+

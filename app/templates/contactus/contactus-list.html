@@ -1,0 +1,94 @@
+{% include 'admin-includes/header.html' %}{% load static %}{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Contact Us Management </h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'contact_us:contactus_list' %}">Contact Us</a></li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class='d-flex flex-wrap justify-content-between'>
+                    <!-- showing_objects-->
+					{% include "admin-includes/showing_objects.html" with listing_objects=contacts %}
+					<!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'contact_us:contactus_list' %}" method="GET">
+                        <div class="table-responsive ">
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Full Name</th>
+                                        <th>Email</th>
+                                        <th>Message</th>
+                                        <th>Reply Status</th>
+                                        <th>Created On</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <thead>
+                                    <tr class="search-row">
+                                        <td><input type="text" value="{{request.GET.full_name}}" class="form-control" name="full_name"></td>
+                                        <td><input type="text" value="{{request.GET.email}}" class="form-control" name="email"></td>
+                                        <td><input type="text" value="{{request.GET.message}}" class="form-control" name="message"></td>
+                                        <td>
+                                            <select class="form-control" name="is_replied" onchange="this.form.submit()">
+                                                <option value=""></option>
+                                                <option {% if request.GET.is_replied == '0' %} selected {% endif %} value="0">Pending</option>
+                                                <option {% if request.GET.is_replied == '1' %} selected {% endif %} value="1">Replied</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="date" onkeydown="return false" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+                                        <td><button type="submit" class="btn btn-primary">Search</button></td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if contacts %}
+                                    {% for contact in contacts %}
+                                    <tr>
+                                        <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">{{ contact.full_name }}</td>
+                                        <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">{{ contact.email }}</td>
+                                        <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">{{ contact.message|truncatechars:25 }}</td>
+                                        <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">
+                                            {% if contact.is_replied %}
+                                                <span  class="badge bg-success">Replied</span>
+                                            {% else %}
+                                                <span  class="badge bg-info">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">
+                                            <script>
+                                                var d = ConvertDateTime("{{ contact.created_on|date:'Y-m-d' }}", "{{ contact.created_on|time:'H:i' }}");
+                                                document.write(d);
+                                            </script>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <a title="View" href="{% url 'contact_us:view_contact' contact.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                
+                                                <a title="Delete" style="margin-right:5px" href="{% url 'contact_us:delete_contact' contact.id %}" message="Are you sure to delete this contact us?" class="btn btn-danger shadow btn-xs sharp action_confirm"><i class="fa fa-trash"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    <!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=contacts %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'admin-includes/footer.html' %}

@@ -1,0 +1,62 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Domain Setting</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active"><a href="" class="white-text">Domain Setting</a></li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#edit-site-settings" ><i class="fas fa-pencil me-1"></i> Update </a>
+                <a class="btn btn-secondary" href="{% url 'frontend:index' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="productdetails">
+                    <ul class="product-bar">
+                        <li>
+                            <h4>Domain</h4>
+                            <h6>{% if site and site.domain %}{{site.domain}}{% else %}-{% endif %}</h6>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- update dajngo site info -->
+<div class="modal fade" id="edit-site-settings" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Update Domain</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form id="edit-site" onsubmit="Loader(this.id)" action="{% url 'accounts:update_django_site' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="form-group mb-3 col-md-12 required-field">
+                                <label class="form-label">Domain</label>
+                                <input type="text" placeholder="Site Domain"{% if site %}value="{{site.domain}}"{% endif %} name="domain"  id="domain" class="form-control">
+                            </div>
+                            <div class="text-end col-md-12">
+                                <button id="form-btn" class="btn btn-primary" type="submit">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/validations/site-setting.js' %}" ></script>
