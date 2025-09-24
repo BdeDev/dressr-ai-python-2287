@@ -8,9 +8,8 @@ from django.contrib.auth import logout,login,authenticate
 from .serializer import *
 from api.helper import *
 import re
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
+from urllib.request import urlopen
+from tempfile import NamedTemporaryFile
 
 """
 Authentication Management
@@ -91,6 +90,16 @@ class UserSignupView(APIView):
         device.save()
         token, created = Token.objects.get_or_create(user = user)
         data = UserSerializer(user,context = {"request":request}).data
+        # send notification to admin
+        send_notification(
+            created_by=user,
+            created_for=None,
+            title=f"New Customer Registered",
+            description=f"New Customer registered with email {user.email}",
+            notification_type=ADMIN_NOTIFICATION,
+            obj_id=str(user.id),
+        )
+        bulk_send_user_email(request,user,'EmailTemplates/registration-success.html','Welcome To Dressr',request.POST.get("email"),"","","","")
         return Response({"message":f"User registered successfully!","data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
 '''
@@ -298,7 +307,7 @@ class UserLoginView(APIView):
 
 class SocialLogin(APIView):
     permission_classes = (permissions.AllowAny,)
-    parser_classes = [MultiPartParser,FormParser]
+    parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(
         tags=["Authentication API's"],
@@ -306,103 +315,111 @@ class SocialLogin(APIView):
         operation_description="Social Login ",
         manual_parameters=[
             openapi.Parameter('email', openapi.IN_FORM, type=openapi.TYPE_STRING),
-            openapi.Parameter('social_id', openapi.IN_FORM, type=openapi.TYPE_INTEGER),
-            openapi.Parameter('social_type', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description=('1:- Google, 2:- Facebook, 3:- Apple, 4:- X, 5:- Linkedin')),
+            openapi.Parameter('profile_pic', openapi.IN_FORM, type=openapi.TYPE_STRING),
             openapi.Parameter('full_name', openapi.IN_FORM, type=openapi.TYPE_STRING),
-            openapi.Parameter('dob', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Formate : YYYY-MM-DD'),
-            openapi.Parameter('gender', openapi.IN_FORM, type=openapi.TYPE_INTEGER,description='MALE : 1 , FEMALE : 2 , OTHER : 3'),
-            openapi.Parameter('device_type', openapi.IN_FORM, type=openapi.TYPE_STRING),
+            #Social Id fields
+            openapi.Parameter('social_id', openapi.IN_FORM, type=openapi.TYPE_STRING),
+            openapi.Parameter('social_type', openapi.IN_FORM, type=openapi.TYPE_INTEGER,description=('1:GOOGLE, 2:FACEBOOK, 3:APPLE')),
+            
+            openapi.Parameter('device_type', openapi.IN_FORM, type=openapi.TYPE_NUMBER, description=('1 for Android and 2 for IOS')),
             openapi.Parameter('device_name', openapi.IN_FORM, type=openapi.TYPE_STRING),
-            openapi.Parameter('device_token', openapi.IN_FORM, type=openapi.TYPE_STRING),
-            openapi.Parameter('mobile_device_id', openapi.IN_FORM, type=openapi.TYPE_STRING),
+            openapi.Parameter('device_token', openapi.IN_FORM, type=openapi.TYPE_STRING)
         ],
     )
     def post(self, request, *args, **kwargs):
         ## Validate Required Fields
-        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "social_id", "method": "post", "error_message": "Please enter social id"},
-            {"field_name": "social_type", "method": "post", "error_message": "Please select social type"},
-            {"field_name": "email", "method": "post", "error_message": "Please enter email"},
-            {"field_name": "device_type", "method": "post", "error_message": "Please enter device type"},
-            {"field_name": "device_name", "method": "post", "error_message": "Please enter device name"},
-            {"field_name": "device_token", "method": "post", "error_message": "Please enter device token"},
-            {"field_name": "mobile_device_id", "method": "post", "error_message": "Please enter mobile device id"},
-        ])
+        required_fields = list(filter(None, [
+            RequiredFieldValidations.validate_field(self,request,'email',"post","Please enter email"),
+            
+            RequiredFieldValidations.validate_field(self,request,'social_id',"post","Please enter social id"),
+            RequiredFieldValidations.validate_field(self,request,'social_type',"post","Please enter social type"),
 
-        social_type = request.data.get('social_type')
-
-        if not social_type in ["1","2", "3", "4", "5"]:
-            return Response({"message":"Please enter valid choice","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        try:
-            email = request.data.get('email')
-            # Check if the user already exists with the social_id
-            user = User.objects.filter(Q(status=ACTIVE)|Q(status=INACTIVE), email=email).order_by('-created_on').first()
-            if user:
-                if user.status == INACTIVE:
-                    return Response({
-                        "message":"Your account has been deactivated. Please contact admin to activate your account.",
-                        "status":status.HTTP_400_BAD_REQUEST},
-                        status=status.HTTP_400_BAD_REQUEST)
+            RequiredFieldValidations.validate_field(self,request,'device_type',"post","Please enter device type"),
+            RequiredFieldValidations.validate_field(self,request,'device_name',"post","Please enter device name"),
+            RequiredFieldValidations.validate_field(self,request,'device_token',"post","Please enter device token"),
+        ]))
+        all_users = User.objects.filter(social_id__isnull=False, status__in=[ACTIVE,INACTIVE]).values_list("social_id",flat=True)
+        socialidList = [i for i in all_users]
+        if request.data.get('social_id') in socialidList:
+            user = User.objects.filter(social_id=request.data.get('social_id')).order_by('created_on').last()
+            if user.status == INACTIVE:
+                return Response(request,{"message":"Your account has been deactivated. Please contact admin to activate your account.","status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+            elif user.status == DELETED:
+                return Response(request,{"message":"Your account has been deleted. Please contact admin.","status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+            elif user.status == ACTIVE:
+                try:
+                    user = user_authenticate(request.data.get('email'),request.data.get('social_id'))
+                except:
+                    return Response(request,{"message":"Invalid Login Credentials.", "status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
                 
-                elif user.status == ACTIVE:
-                    message = "User logged in successfully"
-
-            else:
-                # User does not exist, check if email is already registered
-                dob = request.data.get('dob', None)
-                if dob:
-                    try:
-                        dob = datetime.strptime(request.data.get('dob'), "%Y-%m-%d").date()
-                    except:
-                        return Response({"message":"Please select valid date of birth","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-
-                # Create a new user
-                user = User.objects.create(
-                    email = email ,
-                    social_id=request.data.get('social_id'),
-                    social_type=social_type,
-                    full_name = request.data.get('full_name'),
-                    dob = dob,
-                    gender = int(request.data.get('gender')) if request.data.get('gender') else None,
-                    role_id__in=[CUSTOMER] ,
-                    status=ACTIVE,
-                    is_verified = True if email else False,
-                )
-
-                # send_notification(
-                #     created_by = [user],
-                #     created_for = None,
-                #     title = f"New User Registered",
-                #     description =  f"New Customer registered with email {user.email}",
-                #     notification_type = ADMIN_NOTIFICATION,
-                #     obj_id = str(user.id),
-                # )
-                ## Mail to admin 
-                # admin = User.objects.filter(is_superuser=True,role_id=ADMIN).first()
-                # bulk_send_user_email(
-                #     request, user, 'EmailTemplates/mail-to-admin.html', 'New User Registered', admin.email,
-                #     "", "New User Registered", 'New User Registered', "")
-                message = "User created successfully"
-
-            device, _ = Device.objects.get_or_create(user=user)
-            device.device_type = request.data.get('device_type')
-            device.device_name = request.data.get('device_name')
-            device.device_token = request.data.get('device_token')
-            device.device_brand = request.data.get('device_brand')
-            device.device_model = request.data.get('device_model')
-            device.mobile_device_id = request.data.get('mobile_device_id')
-            device.save()
-
-            # Manage token
-            Token.objects.filter(user=user).delete()
-            login(request,user)
+                if request.data.get("profile_pic"):
+                    img_temp = NamedTemporaryFile(delete = True)
+                    img_temp.write(urlopen(request.data.get("profile_pic")).read())
+                    img_temp.flush()
+                    user.profile_pic.save(f"image_{user.id}", File(img_temp))
+                user.save()
+                message = "Logged in successfully!"
+        elif User.objects.filter(status = ACTIVE, email = request.data.get('email')):
+            user = User.objects.filter(status = ACTIVE, email = request.data.get('email')).order_by('created_on').last()
+            backend='accounts.backend.EmailLoginBackend'
+            login(request,user,backend=backend)
+            if request.data.get("profile_pic"):
+                img_temp = NamedTemporaryFile(delete = True)
+                img_temp.write(urlopen(request.data.get("profile_pic")).read())
+                img_temp.flush()
+                user.profile_pic.save("image_%s" % user.pk, File(img_temp))
             user.save()
-            create_login_history(request,email,None,LOGIN_SUCCESS,None)
-            data = UserSerializer(user, context={"request": request}).data
-            return Response({"message": message, "data": data, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
-        except Exception as e:
-            db_logger.exception(e)
-            return Response({"message":"Something went wrong!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            message = "Logged in successfully!"
+        else:
+            if request.data.get("email"):
+                if User.objects.filter(Q(status=ACTIVE)|Q(status=INACTIVE),email=request.data.get("email")):
+                    return Response(request,{"message":"There is already a registered user with this email id.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+            if request.data.get("social_id"):
+                if User.objects.filter(Q(status=ACTIVE)|Q(status=INACTIVE),social_id=request.data.get("social_id")):
+                    return Response(request,{"message":"There is already a registered user with this social_id.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
+            user = User.objects.create(
+                email = request.data.get("email"),
+                social_id = request.data.get('social_id'),
+                social_type = request.data.get('social_type'),
+                password=make_password(request.data.get('social_id')),
+                role_id = CUSTOMER,
+                status=ACTIVE
+            )
+            # wallet = get_user_wallet(user)
+            if request.data.get("full_name"):
+                user.name = request.data.get("full_name")
+
+            if request.data.get("profile_pic"):
+                img_temp = NamedTemporaryFile(delete = True)
+                img_temp.write(urlopen(request.data.get("profile_pic")).read())
+                img_temp.flush()
+                user.profile_pic.save("image_%s" % user.pk, File(img_temp))
+            user.save()
+            message="Logged in successfully!"
+            # send notification to admin
+            send_notification(
+                created_by=user,
+                created_for=None,
+                title=f"New Customer Registered",
+                description=f"New Customer registered with email {user.email}",
+                notification_type=ADMIN_NOTIFICATION,
+                obj_id=str(user.id),
+            )
+            bulk_send_user_email(request,user,'EmailTemplates/registration-success.html','Welcome To Dressr',request.POST.get("email"),"","","","")
+        try:
+            device = Device.objects.get(created_by = user)
+        except Device.DoesNotExist:
+            device = Device.objects.create(created_by = user)
+        device.device_type = request.data['device_type']
+        device.device_name = request.data['device_name']
+        device.device_token = request.data['device_token']
+        device.save()
+        token, created = Token.objects.get_or_create(user = user)
+
+        data = UserSerializer(user,context = {"request":request}).data
+        return Response({"data":data,"message":message, "url":request.path},status=status.HTTP_200_OK)
 
 
 class UserCheckView(APIView):
@@ -438,7 +455,6 @@ class LogoutView(APIView):
         Token.objects.filter(user=user).delete()
         logout(request)       
         return Response({"message":"Logout Successfully!","status":status.HTTP_200_OK}, status=status.HTTP_200_OK)
-
 
 class ForgotPassword(APIView):
     permission_classes = (permissions.AllowAny,)

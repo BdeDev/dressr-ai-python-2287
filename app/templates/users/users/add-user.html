@@ -61,15 +61,6 @@
                         </div>
                         <div class="col-lg-4 col-md-4 col-12">
                             <div class="form-group required-field">
-                                <label class="form-label">Address</label>
-                                <input type="text" placeholder="Enter Address" maxlength="500" name="address" id="address" class="form-control">
-                                <input type="hidden" name="latitude" id="latitude" >
-                                <input type="hidden" name="longitude" id="longitude">
-                                <span class="edit-details-error error" ></span>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-4 col-12">
-                            <div class="form-group required-field">
                                 <label class="form-label">Password</label>
                                 <div class="pass-group">
                                     <input type="password" name="password" class="pass-input" autocomplete="on" onclick="changetype()"  placeholder="Enter your password">
@@ -93,7 +84,6 @@
     </div>
 </div>
 {% include 'admin-includes/footer.html' %}
-<script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_PLACES_KEY}}&libraries=places&callback=CheckAddress" async defer></script>
 <script src="{% static 'admin-assets/js/validations/user-validation.js' %}"></script>
 <script type="text/javascript">
 

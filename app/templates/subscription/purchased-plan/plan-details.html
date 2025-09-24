@@ -64,7 +64,6 @@
                                 <li>
                                     <h4>Plan Validity </h4>
                                     <h6>
-                                        {{plan.month_year}} 
                                         {% if plan.validity == 1 %}{% if plan.month_year > 1 %}Months{% else %}Month{% endif %} 
                                         {% elif plan.validity == 2 %}{% if plan.month_year > 1 %}Years{% else %}Year{% endif %} 
                                         {% endif %}

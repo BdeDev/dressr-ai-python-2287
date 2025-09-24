@@ -14,6 +14,7 @@ class ListSubscriptionPlan(View):
             "month_year":"month_year",
             "validity":"validity",
             "status":"status",
+            "created_on__date":"created_on",
         })
         if request.GET and not subscription_plans:
             messages.error(request, 'No Data Found')

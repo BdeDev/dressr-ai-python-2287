@@ -2,10 +2,10 @@ from django.db import models
 from accounts.common_imports import *
 
 class Wardrobe(CommonInfo):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wardrobes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wardrobes",blank=True,null=True)
     name = models.CharField(max_length=100, default="My Wardrobe",blank=True, null=True)
     is_shared = models.BooleanField(default=False)
-    shared_with = models.ManyToManyField(User, blank=True, related_name="shared_wardrobes")
+    shared_with = models.ManyToManyField(User, blank=True,related_name="shared_wardrobes")
 
     class Meta:
         db_table = 'wardrobe'
@@ -13,7 +13,7 @@ class Wardrobe(CommonInfo):
 
 class ClothingItem(CommonInfo):
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="items",blank=True, null=True)
-    image = models.ImageField(upload_to="wardrobe/items/",blank=True, null=True)
+    image = models.FileField(upload_to="wardrobe/items/",blank=True, null=True)
     ai_category = models.CharField(max_length=50, blank=True, null=True)
     manual_category = models.CharField(max_length=50,blank=True, null=True)
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
@@ -39,16 +39,16 @@ class Occasion(CommonInfo):
     class Meta:
         db_table = 'occasion'
 
-class Accessory(models.Model):
+class Accessory(CommonInfo):
     clothing_item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name="accessories",blank=True, null=True)
     type = models.CharField(max_length=50,blank=True, null=True)  # e.g., Watch, Sunglasses
 
     class Meta:
         db_table = 'accessories'
 
-class Outfit(models.Model):
+class Outfit(CommonInfo):
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="outfits",blank=True, null=True)
-    items = models.ManyToManyField(ClothingItem, related_name="outfits",blank=True, null=True)
+    items = models.ManyToManyField(ClothingItem, related_name="outfits",blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_outfits")
     notes = models.TextField(blank=True, null=True)  # Style suggestions
     created_at = models.DateTimeField(auto_now_add=True)
@@ -56,10 +56,65 @@ class Outfit(models.Model):
     class Meta:
         db_table = 'outfit'
 
-class WearLog(models.Model):
+class WearLog(CommonInfo):
     clothing_item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name="wear_logs",blank=True, null=True)
     date_worn = models.DateField()
     occasion = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         db_table = 'wearLog'
+
+class VacationPlan(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="vacation_plans")
+    destination = models.CharField(max_length=255,blank=True, null=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    trip_length = models.PositiveIntegerField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'vacation_plan'
+
+
+class ActivityFlag(CommonInfo):
+    name = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    icon = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'activity_flag'
+
+
+class VacationActivity(CommonInfo):
+    vacation_plan = models.ForeignKey(VacationPlan, on_delete=models.CASCADE, related_name="activities")
+    activity_flag = models.ForeignKey(ActivityFlag, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'vacation_activity'
+        unique_together = ("vacation_plan", "activity_flag")
+
+class PackingItem(CommonInfo):
+    name = models.CharField(max_length=255,null=True, blank=True)
+    category = models.PositiveIntegerField(default=CLOTHING,choices=PACKING_CATEGORY)
+    activity_flag = models.ForeignKey(ActivityFlag, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        db_table = 'packing_item'
+
+class VacationPackingList(CommonInfo):
+    vacation_plan = models.ForeignKey(VacationPlan, on_delete=models.CASCADE, related_name="packing_list")
+    packing_item = models.ForeignKey(PackingItem, on_delete=models.CASCADE)
+    source = models.PositiveIntegerField(choices=SOURCE_CHOICES, default=WARDROBE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        db_table = 'vacation_packing'
+
+
+class Recommendation(CommonInfo):
+    vacation_plan = models.ForeignKey(VacationPlan, on_delete=models.CASCADE, related_name="recommendations")
+    recommended_item = models.CharField(max_length=255)
+    category = models.PositiveIntegerField(choices=PACKING_CATEGORY,blank=True, null=True)
+    purchase_link = models.URLField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'recomendation'
