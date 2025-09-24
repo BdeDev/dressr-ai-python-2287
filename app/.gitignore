@@ -126,3 +126,4 @@ dmypy.json
 */migrations/*
 
 !*/migrations/__init__.py
+.gitmodules

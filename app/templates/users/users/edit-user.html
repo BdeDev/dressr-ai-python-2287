@@ -62,15 +62,6 @@
                         </div>
                         <div class="col-lg-4 col-md-6 col-12">
                             <div class="form-group">
-                                <label class="form-label">Address</label>
-                                <input type="text" {% if user.address %}value="{{ user.address }}"{% else %}placeholder="Enter Address"{% endif %} maxlength="150" name="address" id="address" class="form-control">
-                                <input type="hidden" name="latitude" id="latitude" {% if user.latitude %}value="{{user.latitude}}" {% else %}value="30.6800"{% endif %}>
-                                <input type="hidden" name="longitude" id="longitude" {% if user.longitude %}value="{{user.longitude}}"{% else %}value="76.7221"{% endif %}>
-                                <span class="edit-profile-error error" ></span>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-md-6 col-12">
-                            <div class="form-group">
                                 <label class="form-label">Profile Picture</label>
                                 <input type="file" placeholder="Upload Profile Pic" name="profile_pic" id="profile_pic" accept="image/*" class="form-control">
                             </div>
@@ -85,8 +76,6 @@
     </div>
 </div>
 {% include "admin-includes/footer.html" %}
-<script src="https://maps.googleapis.com/maps/api/js?key={{GOOGLE_PLACES_KEY}}&libraries=places&callback=CheckAddress" async defer></script>
-
 <script type="text/javascript">
 
     // For country code picker intlTelInputGlobals

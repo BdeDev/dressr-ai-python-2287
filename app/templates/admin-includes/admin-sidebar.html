@@ -190,6 +190,23 @@
                             </li>
                         </ul>
                     </li>
+
+                     <li class="submenu {% if head_title == 'Fashion Tip category Management' or head_title == 'Fashion Tip Management' %}active{% endif %}">
+                        <a href="javascript:void(0);"><i class="fad fa-shopping-cart"></i><span> E-Commerce</span>
+                        <span class="menu-arrow"></span></a>
+                        <ul>
+                            <li>
+                                <a {% if head_title == 'Fashion Tip category Management' %} class="active" {% endif %} href="{% url 'ecommerce:fashion_category_list' %}">
+                                    Fashion Tip category
+                                </a>
+                            </li>
+                            <li>
+                                <a {% if head_title == 'Fashion Tip Management' %} class="active" {% endif %} href="{% url 'ecommerce:fashion_tip_list' %}">
+                                    Fashion Tip
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                    
                     <li {% if head_title == "Contact Us Management" %} class="active" {% endif %}>
                         <a href="{% url 'contact_us:contactus_list' %}" onclick="Loader()"><i class="fad fa-address-book"></i><span>Contact Us</span></a>

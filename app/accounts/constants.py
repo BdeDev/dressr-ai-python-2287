@@ -172,3 +172,13 @@ PAYMENT_TYPE
 PAYMENT_TYPE = ((1,'PAYMENT_ONLINE'),(2,'PAYMENT_CASH'))
 PAYMENT_ONLINE = 1
 PAYMENT_CASH = 2
+
+PACKING_CATEGORY = [(1, "Clothing"),(2, "Footwear"),(3, "Accessory"),(4, "Gear"),]
+CLOTHING = 1
+FOOTWEAR = 2
+ACCESSORY = 3
+GEAR = 4
+
+SOURCE_CHOICES = [(1,'Wardrobe'),(1,'Recommended')]
+WARDROBE = 1
+RECOMMENDED = 2
