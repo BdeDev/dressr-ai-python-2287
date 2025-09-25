@@ -124,3 +124,172 @@ class ActivateDeActiveSMTP(View):
             messages.success(request,'Key activated Successfully!')
         page.save()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+'''
+Firebase 
+'''
+class FirebaseKeysList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        firebase_credentials = FirebaseCredentials.objects.all().order_by('-created_on').only('id')
+        firebase_credentials = query_filter_constructer(
+            request, firebase_credentials,
+            {
+                "project_id__icontains": "project_id",
+                "active": "active",
+                "created_on__date": "created_on",
+            })
+
+        if not firebase_credentials and request.GET:
+            messages.error(request, 'No Data Found')
+        return render (request,'credentials/firebase/credentials-list.html',{
+            'firebase_credentials':get_pagination(request,firebase_credentials),
+            'head_title':'Firebase Management',
+            "total_objects": firebase_credentials.count(),
+        })
+    
+    @method_decorator(admin_only)
+    def post(self,request,*args,**kwargs):
+        if FirebaseCredentials.objects.filter(project_id=request.POST.get('project_id')):
+            messages.error(request,'FCM already exists with this project Id!')
+            return redirect('credentials:firebase_credentials_list')
+        FirebaseCredentials.objects.create(
+            fcm_file = request.FILES.get('fcm_file'),
+            project_id = request.POST.get('project_id'),
+        )
+        messages.success(request,'FCM file added successfully!')
+        return redirect('credentials:firebase_credentials_list')
+
+class ViewFirebaseKeys(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        firebase_credentials = FirebaseCredentials.objects.get(id=self.kwargs['id'])
+        return render(request,'credentials/firebase/view-credentials.html',{
+            'head_title':'Firebase Management',
+            'firebase_credential':firebase_credentials, 
+        })
+
+class ActivateFirebaseStatus(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        firebase_credentials = FirebaseCredentials.objects.get(id=self.kwargs['id'])
+        if firebase_credentials.active:
+            firebase_credentials.active = False
+            message = 'Deactivated Successfully!'
+        else:
+            FirebaseCredentials.objects.all().update(active=False)
+            firebase_credentials.active = True
+            message = 'Activated Successfully!'
+        firebase_credentials.save()
+        messages.success(request,message)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+class UpdateFirebaseKeys(View):
+    @method_decorator(admin_only)
+    def post(self,request,*args,**kwargs):
+        firebase_credentials = FirebaseCredentials.objects.get(id=request.POST.get('key_id'))
+        if FirebaseCredentials.objects.filter(fcm_file = request.FILES.get('fcm_file')).exclude(id=request.POST.get('key_id')):
+            messages.error(request,'Key already exists!')
+            return redirect('credentials:view_firebase_credentials',id=request.POST.get('key_id'))
+        if request.FILES.get('fcm_file'):
+            firebase_credentials.fcm_file = request.FILES.get('fcm_file')
+        if request.POST.get('project_id'):
+            firebase_credentials.project_id = request.POST.get('project_id')
+        firebase_credentials.save()
+        messages.success(request,'Fcm file updated successfully')
+        return redirect('credentials:view_firebase_credentials',id=request.POST.get('key_id'))
+
+class DeleteFirebase(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        FirebaseCredentials.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Firebase credentials deleted successfully!')
+        return redirect('credentials:firebase_credentials_list')
+    
+
+"""
+Stripe Credentials Management
+"""
+class StripeSettingList(View):
+    """
+    Stripe Keys List
+    """
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        keys = StripeSetting.objects.all().order_by('-created_on')
+        keys = query_filter_constructer(request, keys,
+            {
+                "test_publishkey__icontains": "publish_key",
+                "test_secretkey__icontains": "secret_key",
+                "active": "status",
+                "created_on__date": "created_on",
+            })
+        if not keys and request.GET:
+            messages.error(request, 'No Data Found')
+        return render(request,'credentials/stripe-keys/stripe-keys.html',{
+            'head_title':'Stripe Management',
+            'keys':keys
+        })
+    
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        if int(len(StripeSetting.objects.all())) >= MAX_PROVIDERS_KEY:
+            messages.error(request,f'Sorry ,Maximum {MAX_PROVIDERS_KEY} Keys can be added')
+            return redirect('credentials:stripe_keys')
+        StripeSetting.objects.create(test_publishkey=request.POST.get('publish_key'),test_secretkey=request.POST.get('secret_key'))
+        return redirect('credentials:stripe_keys')
+    
+
+class EditStripeSetting(View):
+    """
+    Edit Stirpe Keys
+    """
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        keys = StripeSetting.objects.get(id=request.POST.get('key_id'))
+        if request.POST.get('publish_key'):
+            keys.test_publishkey = request.POST.get('publish_key')
+        if request.POST.get('secret_key'):
+            keys.test_secretkey = request.POST.get('secret_key')
+        keys.save()
+        return redirect('credentials:stripe_keys')
+
+class ViewStripeSetting(View):
+    """
+    View Stripe Keys
+    """
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        key = StripeSetting.objects.get(id=self.kwargs['id'])
+        return render(request, 'credentials/stripe-keys/view-stripe-keys.html',{
+            "key":key,
+            "head_title":"Stripe Management",
+            })
+
+class DeleteStripeSetting(View):
+    """
+    Delete Stripe Keys
+    """
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        StripeSetting.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request, 'Keys deleted successfully!')
+        return redirect('credentials:stripe_keys')
+    
+class ChangeStripeStatus(View):
+    """
+    Change Stripe Status
+    """
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        key = StripeSetting.objects.get(id=self.kwargs['id'])
+        if key.active:
+            key.active=False
+            messages.success(request,'Key deactivated successfully!')
+        else:
+            StripeSetting.objects.all().update(active = False)
+            key.active = True   
+            messages.success(request,'Key activated auccessfully!')
+        key.save()
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

@@ -191,7 +191,7 @@
                         </ul>
                     </li>
 
-                     <li class="submenu {% if head_title == 'Fashion Tip category Management' or head_title == 'Fashion Tip Management' %}active{% endif %}">
+                    <li class="submenu {% if head_title == 'Fashion Tip category Management' or head_title == 'Discount Ads Management' or head_title == 'Fashion Tip Management' or head_title == 'Partner Store Management'%}active{% endif %}">
                         <a href="javascript:void(0);"><i class="fad fa-shopping-cart"></i><span> E-Commerce</span>
                         <span class="menu-arrow"></span></a>
                         <ul>
@@ -205,9 +205,44 @@
                                     Fashion Tip
                                 </a>
                             </li>
+
+                            <li>
+                                <a {% if head_title == 'Partner Store Management' %} class="active" {% endif %} href="{% url 'ecommerce:partner_store' %}">
+                                    Partner Store
+                                </a>
+                            </li>
+                            <li>
+                                <a {% if head_title == 'Discount Ads Management' %} class="active" {% endif %} href="{% url 'ecommerce:discount_list' %}">
+                                    Discount Offers
+                                </a>
+                            </li>
                         </ul>
                     </li>
                    
+
+                    <li class="submenu {% if head_title == 'Cloth Category Management' or head_title == 'Occasion Management' or head_title == 'Accessory Management' %}active{% endif %}">
+                        <a href="javascript:void(0);"><i class="fad fa-tshirt"></i><span>Wardrobe Essentials</span>
+                        <span class="menu-arrow"></span></a>
+                        <ul>
+                            <li>
+                                <a {% if head_title == 'Cloth Category Management' %} class="active" {% endif %} href="{% url 'wardrobe:cloth_category' %}">
+                                    Cloth category
+                                </a>
+                            </li>
+                            <li>
+                                <a {% if head_title == 'Occasion Management' %} class="active" {% endif %} href="{% url 'wardrobe:occasion' %}">
+                                    Occasion
+                                </a>
+                            </li>
+                            <li>
+                                <a {% if head_title == 'Accessory Management' %} class="active" {% endif %} href="{% url 'wardrobe:accessory' %}">
+                                    Accessory
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    
                     <li {% if head_title == "Contact Us Management" %} class="active" {% endif %}>
                         <a href="{% url 'contact_us:contactus_list' %}" onclick="Loader()"><i class="fad fa-address-book"></i><span>Contact Us</span></a>
                     </li>
@@ -238,11 +273,6 @@
                                     Smtp Settings 
                                 </a>
                             </li>
-                            {% comment %} <li>
-                                <a {% if head_title == 'Twilio Management' %} class="active" {% endif %} href="#" onclick="Loader()">
-                                    Twilio Settings 
-                                </a>
-                            </li>
                             <li>
                                 <a {% if head_title == 'Stripe Management' %} class="active" {% endif %} href="{% url 'credentials:stripe_keys' %}" onclick="Loader()">
                                     Stripe Settings 
@@ -252,7 +282,7 @@
                                 <a {% if head_title == 'Firebase Management' %} class="active" {% endif %} href="{% url 'credentials:firebase_credentials_list' %}" onclick="Loader()">
                                     Firebase
                                 </a>
-                            </li> {% endcomment %}
+                            </li>
                         </ul>
                     </li>
 

@@ -1,0 +1,106 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Discounts</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'ecommerce:discount_list' %}">Discounts</a></li>
+					</ol>
+				</nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary" href="{% url 'ecommerce:add_discount' %}"><i class="fas fa-plus ms-1"></i>
+                    Discount
+				</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=discount_ads%}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'ecommerce:discount_list' %}" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+                                        <th><strong>Title</strong></th>
+										<th><strong>Discount Code</strong></th>
+										<th><strong>Start date</strong></th>
+										<th><strong>End Date</strong></th>
+										<th><strong>Is Published</strong></th>
+										<th><strong>Created On</strong></th>
+										<th><strong>Actions </strong></th>
+									</tr>
+								</thead>
+								<thead>
+									<tr class="search-row">
+                                        <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
+										<td><input type="text" value="{{search_filters.discount_code}}" class="form-control" name="discount_code" maxlength="20"></td>
+										<td><input type="date" value="{{search_filters.start_date}}" class="position-relative form-control" onchange="this.form.submit()" name="start_date"></td>
+										<td><input type="date" value="{{search_filters.end_date}}" class="position-relative form-control" onchange="this.form.submit()" name="end_date"></td>
+										<td>
+											<select class="form-control" name="is_published" onchange="this.form.submit()">
+												<option  value=""></option>
+												<option {% if search_filters.is_published == '0' %} selected {% endif %} value="0">PUBLISHED</option>
+												<option {% if search_filters.is_published == '1' %} selected {% endif %} value="1">UNPUBLISHED</option>
+											</select>
+										</td>
+										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if discount_ads %}
+										{% for discount in discount_ads %}
+										<tr>
+                                            <td class='clickable-row' data-href="{% url 'ecommerce:view_discount' discount.id %}"> {{discount.title|default:"-"}}</td>
+											<td class='clickable-row' data-href="{% url 'ecommerce:view_discount' discount.id %}"> {{discount.discount_code|default:"-"}}</td>
+											<td class='clickable-row' data-href="{% url 'ecommerce:view_discount' discount.id %}">{{ discount.start_date|date }}</td>
+											<td class='clickable-row' data-href="{% url 'ecommerce:view_discount' discount.id %}"> {{ discount.end_date|date }}</td>
+											<td class='clickable-row' data-href="{% url 'ecommerce:view_discount' discount.id %}">
+												{% if discount.is_published %}
+													<span class="badge bg-success">PUBLISHED</span>
+												{% else %}
+													<span class="badge bg-warning">UNPUBLISHED</span>
+												{% endif %}
+											</td>
+											
+											<td class='clickable-row' data-href="{% url 'ecommerce:view_discount' discount.id %}">
+												<script>
+													var date = ConvertDateTime("{{ discount.created_on|date:'Y-m-d' }}", "{{ discount.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											<td>
+												<div class="d-flex">
+													<a title="View Discount Ads" href="{% url 'ecommerce:view_discount' discount.id %}"
+														id="update-btn" class="btn btn-success shadow btn-xs sharp me-1">
+														<i class="fa fa-eye"></i>
+													</a>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=discount_ads %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

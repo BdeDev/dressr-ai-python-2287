@@ -3,7 +3,6 @@ import logging
 import pytz
 from django.db.models import Q,F,Count,Sum,Min,Max
 import os
-from django.core.mail import get_connection
 from credentials.models import *
 from accounts.models import *
 from logger.models import *
@@ -20,26 +19,23 @@ from django.db.models import Q
 from rest_framework.authtoken.models import Token 
 from twilio.rest import Client
 from PIL import Image
-from django.http.request import HttpRequest
 from django.db.models import Exists,OuterRef,F
 from django.db.models.functions import Radians, Power, Sin, Cos, ATan2, Sqrt, Radians
-from typing import List,Literal,Type,Iterable
+from typing import List,Iterable
 from pathlib import Path
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpRequest
 from django.core.files.storage import FileSystemStorage
 from weasyprint import HTML
 from django.contrib.sites.models import Site
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
-from decimal import Decimal
 from dateutil.relativedelta import relativedelta
-from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
 from user_agents import parse
 from subscription.models import *
-from django.http.request import HttpRequest
+from ecommerce.models import DiscountAd
 import random
+import string
 
 
 db_logger = logging.getLogger('db')
@@ -646,3 +642,12 @@ def render_to_pdf_file(request:HttpRequest,template_src:str, context:dict={},fil
             response['Content-Disposition'] = f'attachment; filename="{file_name}.pdf"'
             return response
     return None
+
+def generate_discount_code(prefix="DIS", length=6, suffix=None):
+    chars = string.ascii_uppercase + string.digits
+    code_body = ''.join(random.choices(chars, k=length))
+    code = f"{prefix}-{code_body}"
+    if DiscountAd.objects.filter(discount_code = code):
+        generate_discount_code()
+    else:
+        return code

@@ -1,0 +1,177 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Cloth Category</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'wardrobe:cloth_category' %}">Cloth Category</a></li>
+					</ol>
+				</nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a title="Add" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#add-category"><i class="fas fa-plus ms-1"></i> Add</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=cloth_category %}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'wardrobe:cloth_category' %}" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+                                        <th><strong>Title</strong></th>
+										<th><strong>Created On</strong></th>
+										<th><strong>Actions </strong></th>
+									</tr>
+								</thead>
+								<thead>
+									<tr class="search-row">
+                                        <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
+										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if cloth_category %}
+										{% for cloth in cloth_category %}
+										<tr>
+                                            <td> {{cloth.title|default:"-"}}</td>
+											<td>
+												<script>
+													var date = ConvertDateTime("{{ cloth.created_on|date:'Y-m-d' }}", "{{ cloth.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											<td>
+												<div class="d-flex">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{cloth.id}}','{{cloth.title}}')"  data-bs-target="#edit-cloth" class="btn btn-info shadow btn-xs sharp me-1">
+														<i class="fa fa-edit"></i>
+													</a>
+                                                    <a title="Delete" href="{% url 'wardrobe:delete_cloth_category' cloth.id %}"
+														id="delete-btn" class="btn btn-danger shadow btn-xs sharp">
+														<i class="fa fa-trash"></i>
+													</a>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=cloth_category %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="add-category" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Cloth Category</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="add-cloth-category" action="{% url 'wardrobe:cloth_category' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" placeholder="Publish Title" name="title" id="title" class="form-control" maxlength="100" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="edit-cloth" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Cloth Category</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="edit-cloth-category" action="{% url 'wardrobe:cloth_category' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="category_id" id="edit_category_id" value="">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" name="title" id="edit_title" class="form-control" maxlength="100" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Update</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "admin-includes/footer.html" %}
+<script>
+function GetValue(id, title){
+    $('#edit_category_id').val(id);
+    $('#edit_title').val(title);
+}
+</script>
+<script type="text/javascript">
+$("#add-cloth-category").validate({
+	ignore: [],
+	rules: {
+		title: {
+			required: true,
+			},
+		},
+	messages: {
+		title: {
+			required: "Please Enter Title",
+			},
+        }
+	});  
+
+
+$("#edit-cloth-category").validate({
+	ignore: []
+	rules: {
+		title: {
+			required: true,
+			},
+		},
+	messages: {
+		title: {
+			required: "Please Enter Title",
+			},
+		},
+})
+</script>

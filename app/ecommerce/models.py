@@ -1,5 +1,8 @@
 from django.db import models
 from accounts.common_imports import *
+from accounts.models import *
+from accounts.constants import *
+from subscription.models import *
 
 
 class ProductCategory(CommonInfo):
@@ -25,7 +28,7 @@ class Product(CommonInfo):
     color = models.CharField(max_length=50, blank=True, null=True)
     size = models.CharField(max_length=50, blank=True, null=True)
     gender = models.PositiveIntegerField(choices=GENDER,default=UNISEX, blank=True, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    price = models.FloatField(default=0.0, null=True, blank=True)
     currency = models.CharField(max_length=10, default="USD")
     # Assets for try-on
     image = models.FileField(upload_to="products/images/", blank=True, null=True)  # 2D preview
@@ -63,3 +66,27 @@ class FashionTip(CommonInfo):
 
     class Meta:
         db_table = 'fashion_tip'
+
+
+class PartnerStore(CommonInfo):
+    name = models.CharField(max_length=255)
+    website = models.URLField(blank=True, null=True)
+    logo = models.FileField(upload_to="stores/logos/", blank=True, null=True)
+
+    class  Meta:
+        db_table = 'partner_store'
+
+class DiscountAd(CommonInfo):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    image = models.ManyToManyField(Image)
+    discount_code = models.CharField(max_length=50, blank=True, null=True)
+    partner_store = models.ForeignKey(PartnerStore, on_delete=models.CASCADE, related_name="discount_ads")
+    target_segments = models.ManyToManyField(SubscriptionPlans, blank=True, related_name="discount_ads") #'Students', 'Premium Users', 'First-time Buyers'
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'discount_ad'

@@ -1,0 +1,235 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Partner Store</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'ecommerce:partner_store' %}">Partner Store</a></li>
+					</ol>
+				</nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a title="Add" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#add-store"><i class="fas fa-plus ms-1"></i> Add</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=partner_store%}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'ecommerce:partner_store' %}" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+                                        <th><strong>Name</strong></th>
+										<th><strong>Website</strong></th>
+										<th><strong>Created On</strong></th>
+										<th><strong>Actions </strong></th>
+									</tr>
+								</thead>
+								<thead>
+									<tr class="search-row">
+                                        <td><input type="text" value="{{search_filters.name}}" class="form-control" name="name" maxlength="20"></td>
+										<td><input type="text" value="{{search_filters.website}}" class="form-control" name="website" maxlength="20"></td>
+										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if partner_store %}
+										{% for store in partner_store %}
+										<tr>
+                                            <td> {{store.name|default:"-"}}</td>
+											<td> {{store.website|default:"-"}}</td>
+											<td>
+												<script>
+													var date = ConvertDateTime("{{ store.created_on|date:'Y-m-d' }}", "{{ store.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											<td>
+												<div class="d-flex">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{store.id}}','{{store.name}}','{{store.website}}','{{store.logo}}')"  data-bs-target="#edit-store" class="btn btn-info shadow btn-xs sharp me-1">
+														<i class="fa fa-edit"></i>
+													</a>
+                                                    <a title="Delete" href="{% url 'ecommerce:delete_store' store.id %}"
+														id="delete-btn" class="btn btn-danger shadow btn-xs sharp">
+														<i class="fa fa-trash"></i>
+													</a>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=partner_store %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="add-store" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Partner Store</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="add-partner-store" action="{% url 'ecommerce:partner_store' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" placeholder="Publish Name" name="name" id="add_name" class="form-control" maxlength="100" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Website</label>
+                                    <input type="text" placeholder="Website" name="website" id="add_website" class="form-control" maxlength="100" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label class="form-label">Logo</label>
+                                    <input type="file" name="logo" id="add_logo" accept="image/*" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="edit-store" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Partner Store</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="edit-partner-store" action="{% url 'ecommerce:partner_store' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="store_id" id="edit_store_id" value="">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" name="name" id="edit_name" class="form-control" maxlength="100" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Website</label>
+                                    <input type="text" name="website" id="edit_website" class="form-control" maxlength="100" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label class="form-label">Logo</label>
+                                    <input type="file" name="logo" id="edit_logo" accept="image/*" class="form-control">
+                                    <img id="edit_logo_preview" src="" alt="Current Logo" class="mt-2" style="max-height: 60px; display:none;">
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Update</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "admin-includes/footer.html" %}
+<script>
+function GetValue(id, name, website, logo){
+    $('#edit_store_id').val(id);
+    $('#edit_name').val(name);
+    $('#edit_website').val(website);
+	$('#edit_logo_preview').val(logo);
+}
+</script>
+<script type="text/javascript">
+$("#add-partner-store").validate({
+	ignore: [],
+	rules: {
+		name: {
+			required: true,
+			},
+		website: {
+			required: true,
+			},
+		logo: {
+			required: true,
+			},
+		},
+	messages: {
+		name: {
+			required: "Please Enter Name",
+			},
+		website: {
+			required: "Please Enter Website",
+			},
+
+		logo: {
+			required: "Please upload logo",
+			},
+		},
+	});  
+
+
+$("#edit-partner-store").validate({
+	ignore: []
+	rules: {
+		name: {
+			required: true,
+			},
+		website: {
+			required: true,
+			},
+		logo: {
+			required: true,
+			},
+		},
+	messages: {
+		name: {
+			required: "Please Enter Name",
+			},
+		website: {
+			required: "Please Enter Website",
+			},
+
+		logo: {
+			required: "Please upload logo",
+			},
+		},
+})
+</script>

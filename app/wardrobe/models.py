@@ -10,6 +10,23 @@ class Wardrobe(CommonInfo):
     class Meta:
         db_table = 'wardrobe'
 
+class ClothCategory(CommonInfo):
+    title = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        db_table = 'cloth_category'
+
+class Occasion(CommonInfo):
+    title = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        db_table = 'occasion'
+
+class Accessory(CommonInfo):
+    title = models.CharField(max_length=50,blank=True, null=True)  # e.g., Watch, Sunglasses
+
+    class Meta:
+        db_table = 'accessories'
 
 class ClothingItem(CommonInfo):
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="items",blank=True, null=True)
@@ -19,7 +36,7 @@ class ClothingItem(CommonInfo):
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
     color = models.CharField(max_length=30)
     brand = models.CharField(max_length=50, blank=True, null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    price = models.FloatField(default=0.0, null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     last_worn = models.DateTimeField(blank=True, null=True)
     wear_count = models.PositiveIntegerField(default=0)
@@ -32,19 +49,7 @@ class ClothingItem(CommonInfo):
             return round(self.price / self.wear_count, 2)
         return None
 
-class Occasion(CommonInfo):
-    clothing_item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name="occasion",blank=True, null=True)
-    title = models.CharField(max_length=100, null=True, blank=True)
 
-    class Meta:
-        db_table = 'occasion'
-
-class Accessory(CommonInfo):
-    clothing_item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name="accessories",blank=True, null=True)
-    type = models.CharField(max_length=50,blank=True, null=True)  # e.g., Watch, Sunglasses
-
-    class Meta:
-        db_table = 'accessories'
 
 class Outfit(CommonInfo):
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="outfits",blank=True, null=True)
