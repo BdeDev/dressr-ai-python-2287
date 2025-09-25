@@ -24,4 +24,15 @@ urlpatterns = [
     re_path(r'^delete-fashion-tip/(?P<id>[-\w]+)/$',DeleteFashionTip.as_view(), name='delete_fashion_tip'),
     re_path(r'^fashion-tip-status/(?P<id>[-\w]+)/$',PublishUnpublishFashionTip.as_view(), name='publish_unpublish_fashion_tip'),
 
+    # Partner Store View from admin panel
+    re_path(r'^partner-store/$', PartnerStoreView.as_view(), name='partner_store'),
+    re_path(r'^delete-store/(?P<id>[-\w]+)/$', DeletePartnerStore.as_view(), name='delete_store'),
+
+    ## Discount Ads Management View from admin panel
+    re_path(r'^discount-list/$', DiscountAdsList.as_view(), name='discount_list'),
+    re_path(r'^add-discount/$', AddDiscountAd.as_view(), name='add_discount'),
+    re_path(r'^view-discount/(?P<id>[-\w]+)/',ViewDiscountAd.as_view(),name="view_discount"),
+    re_path(r'^edit-discount/(?P<id>[-\w]+)/$',EditDiscountAd.as_view(), name='edit_discount'),
+    re_path(r'^delete-discount/(?P<id>[-\w]+)/$',DeleteDiscountAd.as_view(), name='delete_discount'),
+    re_path(r'^discount-status/(?P<id>[-\w]+)/$',PublishUnpublishDiscountAd.as_view(), name='publish_unpublish_discount'),
 ]

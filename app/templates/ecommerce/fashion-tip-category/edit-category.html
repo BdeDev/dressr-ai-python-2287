@@ -22,14 +22,14 @@
                 <form  onsubmit="Loader(this.id)" id="update-category" method="POST" action="{% url 'ecommerce:edit_category' category.id %}" method="POST">
                     {% csrf_token %}
                     <div class="row">
-                        <div class="col-lg-6 col-md-6 col-12">
+                        <div class="col-lg-12 col-md-12 col-12">
                             <div class="form-group required-field">
                                 <label class="form-label">Name </label>
                                 <input type="text" maxlength="10" placeholder="Enter Name" {% if category.name %}value="{{category.name}}"{% endif %} name="name" class="form-control" maxlength="10">
                             </div>
                         </div>
 
-                        <div class="col-lg-6 col-md-6 col-12">
+                        <div class="col-lg-12 col-md-12 col-12">
                             <div class="form-group ">
                                 <label class="form-label">Description</label>
                                 <textarea placeholder="Enter Description" name="description" id="description" class="form-control">{% if category.description %}{{category.description}}{% endif %}</textarea>

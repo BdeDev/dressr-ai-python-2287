@@ -15,4 +15,19 @@ urlpatterns = [
 
     ## Customer Prompt
     re_path(r'^smtp-prompt/$',SMTPPrompt.as_view(),name="smtp_prompt"),
+
+    ##Firebase Credentials
+    re_path(r'^firebase-credentials-list/$',FirebaseKeysList.as_view(),name="firebase_credentials_list"),
+    re_path(r'^view-firebase-credentials/(?P<id>[-\w]+)/$',ViewFirebaseKeys.as_view(),name="view_firebase_credentials"),
+    re_path(r'^change-firebase-status/(?P<id>[-\w]+)/$',ActivateFirebaseStatus.as_view(),name="change_firebase_status"),
+    re_path(r'^update-firebase-credentials/$',UpdateFirebaseKeys.as_view(),name="update_firebase_credentials"),
+    re_path(r'^delete-firebase-credentials/(?P<id>[-\w]+)/$',DeleteFirebase.as_view(),name="delete_firebase_credentials"),
+
+    # #Stripe Keys
+    re_path(r'^stripe-keys/$',StripeSettingList.as_view(),name="stripe_keys"),
+    re_path(r'^edit-stripe-keys/$',EditStripeSetting.as_view(),name="edit_stripe_keys"),
+    re_path(r'^view-stripe-keys/(?P<id>[-\w]+)/$',ViewStripeSetting.as_view(),name="view_stripe_keys"),
+    re_path(r'^delete-stripe-keys/(?P<id>[-\w]+)/$',DeleteStripeSetting.as_view(),name="delete_stripe_keys"),
+    re_path(r'^change-stripe-keys/(?P<id>[-\w]+)/$',ChangeStripeStatus.as_view(),name="change_stripe_keys"),
+
 ]
