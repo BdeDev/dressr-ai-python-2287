@@ -66,6 +66,11 @@ urlpatterns = [
 if settings.DEBUG is False:
     urlpatterns += static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
+    
+## Django Debug Toolbar
+from debug_toolbar.toolbar import debug_toolbar_urls
+if settings.LOAD_DEBUG_TOOLBAR:
+    urlpatterns += debug_toolbar_urls()
 
 handler404 = 'frontend.views.handler404'
 handler500 = 'frontend.views.handler500'

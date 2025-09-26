@@ -36,6 +36,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.parsers import MultiPartParser,FormParser
 from .custom_validator import *
+from accounts.celery_model_serializer import *
 
 env = environ.Env()
 environ.Env.read_env()

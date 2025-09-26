@@ -170,3 +170,34 @@ class DeleteAccessory(View):
         accessory = Accessory.objects.get(id=self.kwargs['id']).delete()
         messages.success(request,'Accessory Deleted Successfully!')
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+class WardrobeList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        wardrobs = Wardrobe.objects.all().order_by('-created_on')
+        wardrobs = query_filter_constructer(request,wardrobs,{
+            "name__icontains":"name",
+            "user__full_name__icontains":"user__full_name",
+            "is_shared":"is_shared",
+        })
+
+        if request.GET and not wardrobs:
+            messages.error(request, 'No Data Found')
+        return render(request,'wardrobe/wardrobs/wardrobe-list.html',{
+            "head_title":'Wardrobe Management',
+            "wardrobs" : get_pagination(request, wardrobs),
+            "scroll_required":True if request.GET else False,
+            "total_objects":wardrobs.count()
+        })
+    
+class WardrobeView(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        wardrobe = Wardrobe.objects.get(id=self.kwargs['id'])
+        cloth_items = ClothingItem.objects.filter(wardrobe = wardrobe).order_by('-created_on')
+        return render(request,'wardrobe/wardrobs/view-wardrobe.html',{
+            "head_title":'Wardrobe Management',
+            "wardrobe":wardrobe,
+            "cloth_items":cloth_items
+        })

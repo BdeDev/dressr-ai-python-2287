@@ -2,15 +2,15 @@ FROM python:3.8.5
 
 COPY ./requirements.txt .
 
-RUN pip3 install -r requirements.txt
+# RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Install cron
-RUN apt-get update && apt-get install -y cron
+## To run django server and celery 4 Workers with Concurrency as demon mode
+ENV PYTHONPATH=/app
+WORKDIR /app
 
-RUN apt-get install -y default-mysql-client
-
-COPY ./start.sh /start.sh
-RUN chmod +x /start.sh
-
-# Use the shell script as the CMD
-CMD ["/start.sh"]
+CMD sh -c "\
+celery -A project worker -l info --autoscale=25,5 -n worker1@%h & \
+celery -A project worker -l info --autoscale=25,5 -n worker2@%h & \
+celery -A project beat -l info & \
+python3 manage.py runserver 0.0.0.0:8000"

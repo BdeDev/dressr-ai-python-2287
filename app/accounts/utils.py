@@ -50,43 +50,9 @@ def get_admin():
     admin = User.objects.filter(is_superuser=True,role_id=ADMIN).last()
     return admin
 
-
-def get_fcm_key():
-    '''
-        Get fcm credentails data
-    '''
-    data={'fcm_file':'','project_id':''}
-    BASE_DIR = Path(__file__).resolve().parent.parent
-    fcm=FirebaseCredentials.objects.filter(active=True).last()
-    if fcm:
-        data['fcm_file']=f'{BASE_DIR}/{str(fcm.fcm_file.url)}'
-        data['project_id']=fcm.project_id
-    else:
-        fcm_json_path=os.path.join(BASE_DIR,'dressr-ai-e8352-firebase-adminsdk-1c3q9-268d531f5c.json')
-        data['fcm_file']=fcm_json_path
-        data['project_id']='dressr-ai-e8352'
-    return data
-
-
-def get_twilio_key():
-    '''
-        Get twilio credentails data
-    '''
-    twilio=TwilioSetting.objects.filter(is_active=True).last()
-    data={
-        'account_sid':env('ACCOUNT_SID'),
-        'from_num':env('AUTH_TOKEN'),
-        'auth_token':env('AUTH_TOKEN')
-        }
-    if twilio:
-        data['account_sid']= twilio.account_sid
-        data['from_num'] = twilio.number
-        data['auth_token'] = twilio.token
-    return data
-
 def bulk_send_user_email(
         request:HttpRequest, user:User, template_name:str, mail_subject:str, to_email:str,
-        token:str, description:str, title:str, password:str, temp:bool=True,addon_context={},attachments=[]
+        token:str, description:str, title:str, password:str, temp:bool=True,addon_context={},attachments=[],assign_to_celery:bool=True
         ):
     '''
         Sends email to user
@@ -103,7 +69,11 @@ def bulk_send_user_email(
             password (str): Password
             temp (bool): `False` if user is anonymous else `True` 
     '''
-    Thread(target=send_user_email,args=(request,user,template_name,mail_subject,to_email,token,description,title,password,temp,addon_context,attachments)).start()
+    if assign_to_celery:
+        request = None ## for celery set request to None
+        send_user_email.apply_async(args=(request,user,template_name,mail_subject,to_email,token,description,title,password,temp,addon_context,attachments)) 
+    else:
+        Thread(target=send_user_email,args=(request,user,template_name,mail_subject,to_email,token,description,title,password,temp,addon_context,attachments)).start()
 
 def send_user_email(
     request: HttpRequest,
@@ -373,24 +343,10 @@ def get_pages_data(page:int, data):
     }
     return start,end,meta_data
 
-def send_push_notification(device_token,title,description,data_payload={}):
-    try:
-        fcm=get_fcm_key()
-        push_service = FCMNotification(service_account_file=fcm['fcm_file'], project_id=fcm['project_id'])
-        device_token = device_token
-        push_service.notify(
-            fcm_token=device_token,
-            notification_title=title,
-            notification_body=description,
-            data_payload = data_payload
-        )
-    except Exception as e :
-        db_logger.exception(e)
-    return None
 
 
 def bulk_send_notification(
-        created_by:User, created_for:List[User], title:str, description:str, notification_type:int, obj_id:str
+        created_by:User, created_for:List[User], title:str, description:str, notification_type:int, obj_id:str,assign_to_celery:bool=True
         ):
     '''
         Sends FCM and database notification to user
@@ -403,7 +359,13 @@ def bulk_send_notification(
             notification_type (int): Notification Type `int` object
             obj_id (str): object id to redirect
     '''
-    Thread(target=send_notification,args=(created_by,created_for,title,description,notification_type,obj_id)).start()
+    if created_for:
+        created_for = [str(i.id) for i in created_for]
+    
+    if assign_to_celery:
+        send_notification.apply_async(args=(created_by,created_for,title,description,notification_type,obj_id))
+    else:
+        Thread(target=send_notification,args=(created_by,created_for,title,description,notification_type,obj_id)).start()
 
 def send_notification(
         created_by:User, created_for:List[User], title:str, description:str, notification_type:int, obj_id:str

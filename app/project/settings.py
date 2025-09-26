@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 pymysql.install_as_MySQLdb()
 
 DEBUG = True
+LOAD_DEBUG_TOOLBAR = False
 
 if DEBUG:
     env.read_env(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env_testing'))
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
     'wardrobe',
     'subscription',
     'ecommerce',
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -204,13 +206,44 @@ LOGGING = {
 ## Custom SMTP settings
 EMAIL_BACKEND = 'credentials.smtp.CustomEmailBackend'
 EMAIL_USE_TLS = True  
-EMAIL_HOST = env('EMAIL_HOST') 
+EMAIL_HOST = env('EMAIL_HOST')
 EMAIL_PORT = env('EMAIL_PORT')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+## REDIS & CELERY & CELERY CRONTAB SETTING 
+INSTALLED_APPS += [
+    'django_celery_beat',
+    'django_celery_results',
+]
 
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    "weekly_backup": {
+        "task": "accounts.cron.WeeklyDataBaseBackup",
+        "schedule": crontab(minute=0, hour=0, day_of_week=0),  # Sunday
+    },
+    "delete_old_data": {
+        "task": "accounts.cron.DeleteUnnecessaryData",
+        "schedule": crontab(minute=0, hour=0, day_of_month='*/10'),
+    },
+}
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+# CELERY_BROKER_URL = 'redis://redis:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
+
+CELERY_RESULT_EXTENDED = True
+
+## Django Debug Toolbar
+if LOAD_DEBUG_TOOLBAR:
+    INSTALLED_APPS += ['debug_toolbar']
+    MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
+    INTERNAL_IPS = ['127.0.0.1', 'localhost']
+    import mimetypes
+    mimetypes.add_type("application/javascript", ".js", True)

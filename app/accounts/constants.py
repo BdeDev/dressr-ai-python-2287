@@ -118,11 +118,12 @@ PARTY = 3
 STREET_STYLE = 4
 CLASSIC = 5
 
-WEATHER_TYPE = [(1, "Summer"),(2, "Winter"),(3, "Rainy"),(4, "All Seasons")]
+WEATHER_TYPE = [(1, "Summer"),(2, "Winter"),(3, "Rainy"),(4, "Spring"),(5, "All Seasons")]
 SUMMER = 1
 WINTER = 2
 RAINY = 3
-ALL_SEASONS = 4
+SPRING  = 4
+ALL_SEASONS = 5
 
 PLAN_VALIDITY = [(1,'Monthly'),(2,'Yearly')]
 MONTHLY_PLAN = 1
