@@ -76,7 +76,7 @@ class DeleteCategory(View):
     def get(self,request,*args,**kwargs):
         category = FashionTipCategory.objects.get(id=self.kwargs['id']).delete()
         messages.success(request,message='Category deleted successfully!')
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        return redirect('ecommerce:fashion_category_list')
 
 class CategoryStatus(View):
     @method_decorator(admin_only)
@@ -191,8 +191,8 @@ class DeleteFashionTip(View):
     def get(self,request,*args,**kwargs):
         fashion_tip = FashionTip.objects.get(id=self.kwargs['id']).delete()
         messages.success(request,message='Fashion tip deleted successfully!')
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
+        return redirect('ecommerce:fashion_tip_list')
+    
 class PublishUnpublishFashionTip(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
@@ -309,7 +309,7 @@ class AddDiscountAd(View):
         })
     
     def post(self,request,*args,**kwargs):
-        store = get_object_or_404(PartnerStore, id=request.POST.get('store'))
+        store = PartnerStore.objects.get(id=request.POST.get('store'))
         if DiscountAd.objects.filter(title=request.POST.get('title').strip(),target_segments__in = request.POST.getlist('target_sigment')).exists():
             messages.error(request, "Discount ads already exists!")
             return redirect('ecommerce:add_discount')
@@ -318,7 +318,6 @@ class AddDiscountAd(View):
             title = request.POST.get('title').strip(),
             description = request.POST.get('description'),
             partner_store = store,
-            
             discount_code = generate_discount_code(),
             start_date = request.POST.get('start_date'),
             end_date = request.POST.get('end_date'),
@@ -339,7 +338,7 @@ class EditDiscountAd(View):
     def get(self, request, *args, **kwargs):
         partner_stores = PartnerStore.objects.all().order_by('-created_on')
         subscription_plans = SubscriptionPlans.objects.all()
-        discount_ad = get_object_or_404(DiscountAd, id=self.kwargs['id'])
+        discount_ad = DiscountAd.objects.get(id=self.kwargs['id'])
         return render(request, 'ecommerce/discount-ads/edit-discount.html', {
             "discount_ad": discount_ad,
             "stores": partner_stores,
@@ -349,27 +348,26 @@ class EditDiscountAd(View):
 
     @method_decorator(admin_only)
     def post(self, request, *args, **kwargs):
-        discount_ad = get_object_or_404(DiscountAd, id=self.kwargs['id'])
-        store = get_object_or_404(PartnerStore, id=request.POST.get('store'))
-        start_date_str = request.POST.get('start_date')
-        end_date_str = request.POST.get('end_date')
+        discount_ad = DiscountAd.objects.get(id=self.kwargs['id'])
+        store = PartnerStore.objects.get(id=request.POST.get('store'))
         title = request.POST.get('title', '').strip()
         target_segment_ids = request.POST.getlist('target_sigment')
-        if DiscountAd.objects.filter(
-            title=title,
-            target_segments__in=target_segment_ids
-        ).exclude(id=discount_ad.id).exists():
+
+        if DiscountAd.objects.filter(title=title,target_segments__in=target_segment_ids).exclude(id=discount_ad.id).exists():
             messages.error(request, "Discount ad already exists!")
             return redirect('ecommerce:edit_discount', id=discount_ad.id)
 
         discount_ad.title = title
-        discount_ad.description = request.POST.get('description')
-        discount_ad.partner_store = store
-        if start_date_str:
-            discount_ad.start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-        if end_date_str:
-            discount_ad.end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
-        discount_ad.target_segments.set(target_segment_ids)
+        if request.POST.get('description'):
+            discount_ad.description = request.POST.get('description')
+        if request.POST.get('store'):
+            discount_ad.partner_store = store
+        if request.POST.get('start_date'):
+            discount_ad.start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d')
+        if request.POST.get('end_date'):
+            discount_ad.end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d')
+        if request.POST.getlist('target_sigment'):
+            discount_ad.target_segments.set(target_segment_ids)
         if request.FILES.getlist('image'):
             for img in request.FILES.getlist('image'):
                 discount_ad.image.add(Image.objects.create(image=img))
@@ -391,7 +389,7 @@ class DeleteDiscountAd(View):
     def get(self,request,*args,**kwargs):
         discount_ad = DiscountAd.objects.get(id=self.kwargs['id']).delete()
         messages.success(request,message='Discount ads deleted successfully!')
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        return redirect('ecommerce:discount_list')
 
 class PublishUnpublishDiscountAd(View):
     @method_decorator(admin_only)

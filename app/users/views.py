@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.sites.models import Site
 from django.db.models.functions import Concat
 from django.contrib.auth import logout
+from wardrobe.models import *
 
 @method_decorator(admin_only,name='dispatch')
 class EditAdmin(View):
@@ -47,6 +48,7 @@ class ViewUser(View):
                 "head_title":"User Management",
                 "isCustomer":True,
                 "user":user,
+                "wardrobe": Wardrobe.objects.filter(user=user).count(),
                 "device":device,
                 "token":Token.objects.filter(user=user).last(),
                 'loginhistory':get_pagination1(request,login_history,1),

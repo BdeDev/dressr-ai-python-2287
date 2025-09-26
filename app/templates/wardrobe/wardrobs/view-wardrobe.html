@@ -1,0 +1,104 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Wardrobe </h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'wardrobe:wardrobe_list' %}">Wardrobs</a></li>
+                        <li class="breadcrumb-item active">Wardrobe Information</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary" href="{% url 'wardrobe:wardrobe_list' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <div class="card my-4">
+                    <div class="card-body">
+                        <div class="row">
+                        <div class=" col-md-6  productdetails">
+                            <ul class="product-bar mb-2">
+                                <li>
+                                    <h4>Id </h4>
+                                    <h6>{{wardrobe.id}}</h6>
+                                </li>
+                                <li>
+                                    <h4> Name </h4>
+                                    <h6>{{wardrobe.name}}</h6>
+                                </li>
+                                <li>
+                                    <h4>User</h4>
+                                    <h6>
+                                        <div class="d-flex align-items-center display-images">
+                                            {% if wardrobe.user.profile_pic %}
+                                                <a href="{{wardrobe.user.profile_pic.url}}" data-fancybox>
+                                                    <img src="{{wardrobe.user.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% else %}
+                                                <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                    class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% endif %}
+                                            <span>{{wardrobe.user.full_name|capfirst}}</span>
+                                        </div>
+                                    </h6>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class=" col-md-6  productdetails">
+                            <ul class="product-bar mb-2">
+                                <li>
+                                    <h4>Is Shared</h4>
+                                    <h6>
+                                        {% if wardrobe.is_shared %}
+                                        <span class="badge bg-primary">Yes</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">No</span>
+                                        {% endif %}
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Created On </h4>
+                                    <h6>
+                                        <script>
+                                            var date = ConvertDateTime("{{ wardrobe.created_on|date:'Y-m-d' }}", "{{ wardrobe.created_on|time:'H:i' }}");
+                                            document.write(date);
+                                        </script>
+                                    </h6>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                {% for item in cloth_items %}
+                <div class="col-md-2 col-lg-2 col-sm-12 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            {% if item.image %}
+                                <a href="{{ item.image.url }}" data-fancybox>
+                                    <img src="{{ item.image.url }}" class="card-img-top" width="100" alt="">
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{item.occasion.title}}</h5>
+                            <p class="card-text" >{{ item.brand }}</p>
+                            <p class="card-text" >{{ item.price }}</p>
+                        </div>
+                        
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

@@ -30,6 +30,7 @@
 							<table class="table datatable">
 								<thead>
 									<tr>
+                                        <th><strong>ID</strong></th>
                                         <th><strong>Title</strong></th>
 										<th><strong>Created On</strong></th>
 										<th><strong>Actions </strong></th>
@@ -37,6 +38,7 @@
 								</thead>
 								<thead>
 									<tr class="search-row">
+                                        <td><input disabled type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
                                         <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
 										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
@@ -46,6 +48,7 @@
 									{% if cloth_category %}
 										{% for cloth in cloth_category %}
 										<tr>
+                                            <td> {{cloth.id|default:"-"}}</td>
                                             <td> {{cloth.title|default:"-"}}</td>
 											<td>
 												<script>
@@ -124,7 +127,7 @@
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" name="title" id="edit_title" class="form-control" maxlength="100" required>
+                                    <input type="text" name="title" id="edit_category_title" class="form-control" maxlength="100" required>
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -142,7 +145,7 @@
 <script>
 function GetValue(id, title){
     $('#edit_category_id').val(id);
-    $('#edit_title').val(title);
+    $('#edit_category_title').val(title);
 }
 </script>
 <script type="text/javascript">

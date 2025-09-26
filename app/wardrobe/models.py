@@ -31,8 +31,11 @@ class Accessory(CommonInfo):
 class ClothingItem(CommonInfo):
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="items",blank=True, null=True)
     image = models.FileField(upload_to="wardrobe/items/",blank=True, null=True)
-    ai_category = models.CharField(max_length=50, blank=True, null=True)
-    manual_category = models.CharField(max_length=50,blank=True, null=True)
+    cloth_category = models.ForeignKey(ClothCategory,on_delete=models.SET_NULL, null=True,blank=True)
+    occasion = models.ForeignKey(Occasion,on_delete=models.SET_NULL, null=True,blank=True)
+    accessory = models.ForeignKey(Accessory,on_delete=models.SET_NULL,null=True,blank=True)
+    # ai_category = models.CharField(max_length=50, blank=True, null=True)
+    # manual_category = models.CharField(max_length=50,blank=True, null=True)
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
     color = models.CharField(max_length=30)
     brand = models.CharField(max_length=50, blank=True, null=True)
@@ -48,8 +51,6 @@ class ClothingItem(CommonInfo):
         if self.price and self.wear_count > 0:
             return round(self.price / self.wear_count, 2)
         return None
-
-
 
 class Outfit(CommonInfo):
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="outfits",blank=True, null=True)

@@ -9,13 +9,14 @@ from datetime import datetime, timedelta
 from accounts.views import *
 from django_db_logger .models import StatusLog
 from accounts.constants import *
+from celery import shared_task
 
 
 env = environ.Env()
 environ.Env.read_env()
 db_logger = logging.getLogger('db')
 
-
+@shared_task
 def WeeklyDataBaseBackup():
     """
     Create Backup Every Day
@@ -32,7 +33,7 @@ def WeeklyDataBaseBackup():
     except Exception as e:
         db_logger.exception(e)
 
-
+@shared_task
 def DeleteUnnecessaryData():
     """
     Delete Unnecessary Data

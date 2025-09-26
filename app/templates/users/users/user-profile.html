@@ -146,6 +146,12 @@
                                         </h6>
                                     </li>
                                     <li>
+                                        <h4>Wardrobe Count</h4>
+                                        <h6>
+                                            {% if wardrobe %}<a href="#">{{wardrobe}}</a>{% else %}0{% endif %}
+                                        </h6>
+                                    </li> 
+                                    <li>
                                         <h4>Access Token </h4>
                                         <h6>
                                             {% if token and token.key %}Token {{token.key}}{% else %}-{% endif %}

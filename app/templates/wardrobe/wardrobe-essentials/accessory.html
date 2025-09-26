@@ -30,6 +30,7 @@
 							<table class="table datatable">
 								<thead>
 									<tr>
+                                        <th><strong>ID</strong></th>
                                         <th><strong>Title</strong></th>
 										<th><strong>Created On</strong></th>
 										<th><strong>Actions </strong></th>
@@ -37,6 +38,7 @@
 								</thead>
 								<thead>
 									<tr class="search-row">
+                                        <td><input disabled type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
                                         <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
 										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
@@ -46,6 +48,7 @@
 									{% if accessory %}
 										{% for cloth in accessory %}
 										<tr>
+                                            <td> {{cloth.id}}</td>
                                             <td> {{cloth.title|default:"-"}}</td>
 											<td>
 												<script>
