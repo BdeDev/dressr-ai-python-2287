@@ -21,6 +21,7 @@ urlpatterns = [
     re_path(r'^purchased-plans/$',PluchasedPlanList.as_view(),name="purchased_plans"),
     re_path(r'^purchased-plan-info/(?P<id>[-\w]+)/$', PurchasedPlanInfo.as_view(), name='purchased_plan_info'),
     re_path(r'^activate-plan/(?P<id>[-\w]+)/$', ActivatePurchasedPlanNow.as_view(), name='activate_plan'),
+    re_path(r'^webhook/$', SubscriptionWebhook.as_view(), name='subscription_webhook'),
 
     ## Subscription Plans APIs
     re_path(r'^subscriptions-list/$', SubscriptionPlansListing.as_view(), name='subscriptions_list_api'),
@@ -28,5 +29,10 @@ urlpatterns = [
     re_path(r'^my-plans-list/$', MyPurchasedPlansList.as_view(), name='my_plans_list'),
     re_path(r'^view-purchased-plan/$', ViewPurchasedPlan.as_view(), name='view_purchased_plan'),
     re_path(r'^pay-and-renew-plan/$', PayAndRenewPlan.as_view(), name='pay_and_renew_api'),
+
+    ## Stripe Cards API
+    re_path(r'^add-stripe-card/$',AddStripeCardAPI.as_view(),name="add_stripe_card"),
+    re_path(r'^stripe-cards-list/$',StripeAllUserCards.as_view(),name="stripe_cards_list"),
+    re_path(r'^delete-stripe-card/$',DeleteStripeCardAPI.as_view(),name="delete_stripe_card"),
     
 ]

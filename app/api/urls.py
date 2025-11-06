@@ -27,6 +27,8 @@ urlpatterns = [
     ## Profile Management
     re_path(r'^profile-details-api/$',UserProfileDetails.as_view(),name="user_profile_details_api"),
     re_path(r'^update-profile-api/$',UpdateProfileDetails.as_view(),name="update_profile_api"),
+    re_path(r'^skin-tone-api/$',SkinToneListView.as_view(),name="skin_tone_api"),
+    re_path(r'^hair-color-api/$',HairColorListView.as_view(),name="hair_color_api"),
 
     ## Static Pages
     re_path(r'^static-pages-api/$',StaticPages.as_view(),name="static_pages_api"),

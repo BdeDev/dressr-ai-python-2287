@@ -42,10 +42,10 @@ class User(AbstractUser,CommonInfo):
     sms_notification = models.BooleanField(default=False)
     body_type = models.PositiveIntegerField(default=SLIM,choices=BODY_TYPE,null=True, blank=True)
     hieght_cm = models.FloatField(default=0.0, null=True, blank=True)
-    skin_tone = models.CharField(max_length=50, null=True,blank=True)
-    hair_color = models.CharField(max_length=50, null=True,blank=True)
+    skin_tone = models.ForeignKey('SkinTone', on_delete=models.SET_NULL,null=True,blank=True)
+    hair_color = models.ForeignKey('HairColor', on_delete=models.SET_NULL,null=True,blank=True)
     others = models.TextField(null=True,blank=True)
-
+    email = models.CharField(max_length=100, null=True, blank=True)
     ## subscription 
     is_plan_purchased = models.BooleanField(default=False)
     is_subscription_active = models.BooleanField(default=False)
@@ -57,6 +57,23 @@ class User(AbstractUser,CommonInfo):
 
     def __str__(self):
         return str(self.first_name)
+
+class SkinTone(CommonInfo):
+    title = models.CharField(max_length=50, null=True,blank=True)
+    color_code = models.CharField(max_length=20, null=True,blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'skin_tone'
+
+class HairColor(CommonInfo):
+    title = models.CharField(max_length=50, null=True,blank=True)
+    color_code = models.CharField(max_length=20, null=True,blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'hair_color'
+
 
 class Profile(CommonInfo):
     user = models.OneToOneField(User, on_delete=models.CASCADE,blank=True, null=True)

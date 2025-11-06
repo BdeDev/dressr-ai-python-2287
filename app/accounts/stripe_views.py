@@ -2,6 +2,8 @@ import stripe
 from accounts.utils import *
 from accounts.models import *
 from credentials.models import *
+import time
+from django.views.decorators.csrf import csrf_exempt
 
 def GetStripeKeys():
     stripe_keys = StripeSetting.objects.filter(active=True).first()
@@ -155,172 +157,90 @@ def CreateStripeTransaction(request,user:User,amount,description,card_id):
         db_logger.exception(e)
         return None
 
-
-
-def generate_oxxo_reference(request,amount, user):
-    set_stripe_keys()
-    try:
-        # Amount in cents (e.g., 1000 = 10.00 MXN)
-        payment_intent = stripe.PaymentIntent.create(
-            amount=int(amount * 100),  # Stripe uses centavos
-            currency="mxn",
-            payment_method_types=["oxxo"],
-            receipt_email=user.email,
-            metadata={
-                "user_id": str(user.id),
-                "user_email": user.email,  # Helps track fraud patterns
-                "user_ip": request.META.get("REMOTE_ADDR"),  # If available in your model
-                "device_info": request.headers.get("User-Agent"),  # Helps Stripe Radar detect anomalies
-            }
-        )
-        oxxo_display_details = payment_intent.next_action.oxxo_display_details
-        return {
-            "reference": oxxo_display_details.number,
-            "expires_at": oxxo_display_details.expires_after,
-            "barcode_url": oxxo_display_details.hosted_voucher_url,
-            "payment_intent_id": payment_intent.id,
-        }
+def create_connected_account(user):
+    """
+    Create a Connected Account for a loan recipient
+    
+    Parameters:
+        user_email (str): The email of the recipient
+        user_name (str): The full name of the recipient
+    
+    Returns:
+        str: The ID of the created account
+    """
+    try:    
+        if not user.account_id:
+            set_stripe_keys()
+            account = stripe.Account.create(
+                type="custom",
+                country="MX",
+                email=user.email,
+                business_type="individual",
+                individual={
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "dob": {
+                        "day": 1,
+                        "month": 1,
+                        "year": 1980
+                    },
+                    "address": {
+                        "city": "Mexico City",
+                        "state": "Jalisco",
+                        "country": "MX",
+                        "line1": "123 Main Street",
+                        "postal_code": "11560"
+                    },
+                    "phone": "+5215555555555",
+                    "email": user.email,
+                    "id_number": "ABCD123456XYZ",
+                    "political_exposure": "none"
+                },
+                business_profile={
+                    "url": "https://barobarato.com",
+                    "mcc": "6012"
+                },
+                tos_acceptance={
+                    "date": int(time.time()),
+                    "ip": "127.0.0.1"
+                },
+                capabilities={
+                    "transfers": {"requested": True}, 
+                    "card_payments": {"requested": True},  
+                    "mx_bank_transfer_payments": {"requested": True},
+                },
+                settings={"payouts": {"schedule": {"interval": "manual"}}}, ## to manage payout manually
+            )
+            user.account_id = account.id
+            user.save()
+            print(f"New Account Created: {account.id}")
+            return account.id
+        else:
+            return user.account_id  
     except Exception as e:
+        print(f"Error creating new account: {e}")
         db_logger.exception(e)
         return None
     
-
-
+@csrf_exempt
 def stripe_webhook(request):
     payload = request.body
-    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
     try:
         event = stripe.Webhook.construct_event(
-            payload=payload, sig_header=sig_header, secret=endpoint_secret
+            payload, sig_header, endpoint_secret
         )
     except ValueError:
-        return HttpResponse(status=400)
+        return HttpResponse(status=400)  # Invalid payload
     except stripe.error.SignatureVerificationError:
-        return HttpResponse(status=400)
+        return HttpResponse(status=400)  # Invalid signature
 
-    status = process_stripe_event(event)
+    if event['type'] == 'invoice.payment_succeeded':
+        # Subscription renewed
+        data = event['data']['object']
+        customer_id = data['customer']
+        print(f"✅ Subscription renewed for customer {customer_id}")
 
-    return HttpResponse(status=200), status
-
-
-def process_stripe_event(event) -> str:
-    """
-    Process Stripe webhook event and handle wallet/transaction logic.
-    Returns: 'success', 'failed', 'expired', or 'unknown'
-    """
-    event_type = event.get('type')
-    intent = event['data']['object']
-
-    if event_type == 'payment_intent.succeeded':
-        try:
-            metadata = intent.get('metadata', {})
-            user_email = metadata.get('user_email')
-            reference = intent['next_action']['oxxo_display_details']['number']
-            expires_at = intent['next_action']['oxxo_display_details']['expires_after']
-            amount_cents = intent.get('amount', 0)
-            user  = User.objects.filter(email=user_email).first()
-            user_wallet =  get_user_wallet(user)
-            # Prevent duplicates
-            if Transactions.objects.filter(transaction_id=intent['id']).exists():
-                return 'success'
-
-            # Create transaction
-            transaction = Transactions.objects.create(
-                unique_invoice_no=GenerateInvoiceNumber(),
-                transaction_id=intent['id'],
-                amount=amount_cents / 100, # Convert cents to actual amount
-                payment_status=True,
-                transaction_type=AMOUNT_RECIEVED,
-                payment_type=TRANSFER_MONEY_FROM_WALLET,
-                transaction_made_via=TRANSACTION_VIA_OXXO,
-                created_by=user_email,
-                oxxo_code=reference,
-            )
-
-            wallet_history = WalletHistory.objects.filter(wallet=user_wallet, oxxo_code=reference).first()
-            if wallet_history:
-                wallet_history.wallet_transaction_id = generate_wallet_transaction_id()
-                wallet_history.transaction = transaction
-                wallet_history.wallet_transaction_type = AMOUNT_RECIEVED
-                wallet_history.save()
-
-            oxxo_payment = OxxoPayment.objects.filter(created_by=user, barcode_url=intent['next_action']['oxxo_display_details']['hosted_voucher_url'], expires_at=expires_at).last()
-            if oxxo_payment:
-                oxxo_payment.is_paid = True
-                oxxo_payment.save()
-                
-            # Manage wallet
-            admin_wallet = get_user_wallet(None)  # None for system wallet
-            WalletHistory.objects.create(
-                wallet_transaction_id=generate_wallet_transaction_id(),
-                wallet=admin_wallet,
-                transaction=transaction,
-                amount=transaction.amount,
-                wallet_transaction_type=AMOUNT_PAID,
-                payment_for=WALLET_TRANSFER_MONEY,
-            )
-            admin_wallet.balance -= transaction.amount
-            admin_wallet.save()
-
-            return 'success'
-
-        except Exception as e:
-            # Log error if needed
-            db_logger.exception("Error processing Stripe success event: %s", str(e))
-            return 'failed'
-
-    elif event_type == 'payment_intent.payment_failed':
-        return 'failed'
-
-    elif event_type == 'payment_intent.canceled':
-        return 'expired'
-
-    return 'unknown'
-
-
-def get_payment_from_oxxo(request, oxxo_reference):
-    oxxo_reference = oxxo_reference.strip()
-    try:
-        set_stripe_keys()
-        payment_intent = stripe.PaymentIntent.list(
-            limit=100,
-            status='succeeded',
-            next_action='oxxo_display_details',
-            metadata={'oxxo_reference': oxxo_reference}
-        )
-        intent = payment_intent['data']['objects']
-        amount_cents = intent.get('amount', 0)
-
-        # Create transaction
-        transaction = Transactions.objects.create(
-            unique_invoice_no=GenerateInvoiceNumber(),
-            transaction_id=payment_intent['id'],
-            amount=amount_cents / 100, # Convert cents to actual amount
-            payment_status=True,
-            transaction_type=AMOUNT_RECIEVED,
-            payment_type=TRANSFER_MONEY_FROM_WALLET,
-            transaction_made_via=TRANSACTION_VIA_OXXO,
-            created_by=get_admin(),
-            oxxo_code=oxxo_reference,
-        )
-
-        # admin wallet management
-        wallet=get_user_wallet(None)
-        wallet_history = WalletHistory.objects.create(
-            oxxo_code=oxxo_reference,
-            wallet_transaction_id=generate_wallet_transaction_id(),
-            wallet=wallet,
-            transaction=transaction,
-            amount=transaction.amount,
-            wallet_transaction_type=AMOUNT_RECIEVED,
-            payment_for=WALLET_ADD_MONEY,
-
-            )
-    
-        wallet.balance += transaction.amount
-        wallet.save()
-    except Exception as e:
-        db_logger.exception(e)
-
+    return HttpResponse(status=200)

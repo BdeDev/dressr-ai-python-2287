@@ -1,51 +1,4 @@
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dresser AI - Admin Login</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .input-field {
-            transition: all 0.3s ease;
-        }
-        .input-field:focus {
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
-        }
-    </style>
-</head>
-<body class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-
-    <nav class="bg-white shadow-sm fixed w-full z-10 position-absolute top-0">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-box h-8 w-8 text-indigo-600"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                        <a href="/" class="ml-2 text-xl font-bold text-indigo-600">Dresser AI</a>
-                    </div>
-                </div>
-                <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
-                    <a href="#" class="text-indigo-600 border-b-2 border-indigo-600 px-3 py-2 text-sm font-medium">Home</a>
-                    <a href="#" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Features</a>
-                    <a href="#" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Pricing</a>
-                    <a href="#" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">About</a>
-                </div>
-                <div class="flex items-center">
-                    <a href="/accounts/user-login/" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-all">Get Started</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+{% include 'registration/includes/new-header.html' %}{% load static %}{% load extras %}
 
     <div class="w-full max-w-md" >
         <div class="bg-white rounded-xl shadow-2xl overflow-hidden" data-aos="zoom-in">
@@ -60,12 +13,8 @@
             </div>
             
             <div class="px-8 py-6">
-                <form id="login" 
-                    action="{% url 'accounts:login' %}{% if next %}?next={{ next }}{% endif %}" 
-                    method="POST" 
-                    class="mt-30">
-                    {% csrf_token %}
-                    
+                <form id="login" onsubmit="Loader(this.id)" action="{% url 'accounts:login' %}{% if next %}?next={{next}}{% endif %}" method="POST" class="mt-30">
+                        {% csrf_token %}
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-medium mb-2" for="email">
                             Email Address
@@ -74,33 +23,25 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i data-feather="mail" class="text-gray-400"></i>
                             </div>
-                            <input id="email" type="email" name="username"
+                            <input id="email" type="email" name="email"
                                 class="input-field w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none"
-                                placeholder="admin@dresserai.com"
+                                placeholder="Enter your email"
                                 {% if username %}value="{{ username }}"{% endif %}>
                         </div>
                     </div>
 
                     <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-medium mb-2" for="password">
-                            Password
-                        </label>
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Password</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i data-feather="key" class="text-gray-400"></i>
                             </div>
-                            <input id="password" type="password" name="password"
-                                class="input-field w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none"
-                                placeholder="••••••••"
-                                {% if password %}value="{{ password }}"{% endif %}>
-                                <button type="button" id="togglePassword"
-                                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
-                                    aria-label="Toggle password visibility">
-                                    <i data-feather="eye" id="eyeIcon"></i>
-                                </button>
+                            <input id="password" type="password" name="password" class="input-field w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter your password">
+                            <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none" aria-label="Toggle password visibility">
+                                <i data-feather="eye-off" id="eyeIcon"></i>
+                            </button>
                         </div>
                     </div>
-
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center">
                             <input id="remember-me" type="checkbox" name="remember_me"
@@ -137,19 +78,57 @@
         duration: 800,
         easing: 'ease-in-out'
     });
+    document.addEventListener("DOMContentLoaded", () => {
     feather.replace();
 
-    // Toggle password visibility
     const passwordInput = document.getElementById('password');
     const toggleBtn = document.getElementById('togglePassword');
-    const eyeIcon = document.getElementById('eyeIcon');
+    const eyeIconContainer = document.getElementById('eyeIcon').parentElement;
+
+    let isPasswordVisible = false;
 
     toggleBtn.addEventListener('click', () => {
-        const type = passwordInput.type === 'password' ? 'text' : 'password';
-        passwordInput.type = type;
+        isPasswordVisible = !isPasswordVisible;
+        passwordInput.type = isPasswordVisible ? 'text' : 'password';
 
-        // Toggle icon
-        eyeIcon.setAttribute('data-feather', type === 'password' ? 'eye' : 'eye-off');
-        feather.replace(); // re-render icons
+        // 👇 Corrected icon direction
+        eyeIconContainer.innerHTML = isPasswordVisible
+        ? '<i data-feather="eye"></i>'        // show eye when password is visible
+        : '<i data-feather="eye-off"></i>';   // show crossed eye when hidden
+
+        feather.replace();
     });
+});
+
+
+$("#login").validate({
+    rules: {
+        email: {
+            required: true,
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            email:true,
+        },
+        password: {
+            required: true, 
+            minlength: 8,
+            maxlength: 35,
+            normalizer: function (value) {
+                return $.trim(value);
+            }
+        },
+    },
+    messages: {
+        email: {
+            required: "Please enter your email address",
+        },
+        password: {
+            required: "Please enter password",
+            minlength: "At least 8 characters required!",
+            maxlength: "At most 35 characters only!"
+        },
+    }
+});
+
 </script>

@@ -13,15 +13,15 @@ class GetWardrobs(APIView):
         manual_parameters=[]
     )
     def get(self, request, *args, **kwargs):
-        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "wardrobe_id", "method": "get", "error_message": "Please enter wardrobe id"},
-        ])
+        # response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+        #     {"field_name": "wardrobe_id", "method": "get", "error_message": "Please enter wardrobe id"},
+        # ])
         wardrobe = Wardrobe.objects.filter(user=request.user)
         if not wardrobe:
             return Response({"data":[],"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
         
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), wardrobe)
-        data = ClothItemSerializer(wardrobe[start : end],many=True,context = {"request":request}).data
+        data = WardrobeSerializer(wardrobe[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
 
