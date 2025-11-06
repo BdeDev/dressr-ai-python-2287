@@ -37,6 +37,7 @@ from ecommerce.models import DiscountAd
 import random
 import string
 from accounts.tasks import *
+from wardrobe.models import *
 
 
 db_logger = logging.getLogger('db')
@@ -398,3 +399,6 @@ def generate_discount_code(prefix="DIS", length=6, suffix=None):
         generate_discount_code()
     else:
         return code
+    
+
+    

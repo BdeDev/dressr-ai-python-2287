@@ -60,11 +60,8 @@ class LoginView(View):
         # Check allowed roles
         if user.is_superuser and user.role_id == ADMIN:
             login(request, user)
-
-            # Remember Me logic
             if remember_me:
                 request.session.set_expiry(1209600)  # 2 weeks
-
             # create_login_history(request, username, None, LOGIN_SUCCESS, None)
             messages.success(request, "Logged in successfully!")
 

@@ -25,3 +25,25 @@ class WardrobeSerializer(ModelSerializer):
             return data
         else:
             return None
+        
+
+class AccessorySerializer(ModelSerializer):
+    class Meta:
+        model = Accessory
+        fields = ('__all__')
+
+
+class OccasionSerializer(ModelSerializer):
+    class Meta:
+        model = Occasion
+        fields = ('__all__')
+
+class ClothCategorySerializer(ModelSerializer):
+    class Meta:
+        model = ClothCategory
+        fields = ('__all__')
+
+class MyOutFitSerializer(ModelSerializer):
+    class Meta:
+        model = Outfit
+        fields = ('__all__')
