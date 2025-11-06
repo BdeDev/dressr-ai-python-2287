@@ -57,10 +57,11 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -113,10 +114,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CRONJOBS = [
-    ('0 0 * * 7', 'accounts.cron.WeeklyDataBaseBackup'),
-    ('0 0 */10 * *', 'accounts.cron.DeleteUnnecessaryData'),
-]
+# CRONJOBS = [
+#     ('0 0 * * 7', 'accounts.cron.WeeklyDataBaseBackup'),
+#     ('0 0 */10 * *', 'accounts.cron.DeleteUnnecessaryData'),
+# ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LANGUAGE_CODE = 'en-us'
@@ -214,36 +215,45 @@ SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 ## REDIS & CELERY & CELERY CRONTAB SETTING 
-INSTALLED_APPS += [
-    'django_celery_beat',
-    'django_celery_results',
-]
+# INSTALLED_APPS += [
+#     'django_celery_beat',
+# ]
 
-from celery.schedules import crontab
-CELERY_BEAT_SCHEDULE = {
-    "weekly_backup": {
-        "task": "accounts.cron.WeeklyDataBaseBackup",
-        "schedule": crontab(minute=0, hour=0, day_of_week=0),  # Sunday
-    },
-    "delete_old_data": {
-        "task": "accounts.cron.DeleteUnnecessaryData",
-        "schedule": crontab(minute=0, hour=0, day_of_month='*/10'),
-    },
-}
-CELERY_TIMEZONE = 'UTC'
-CELERY_ENABLE_UTC = True
+# from celery.schedules import crontab
+# CELERY_BEAT_SCHEDULE = {
+#     "weekly_backup": {
+#         "task": "accounts.cron.WeeklyDataBaseBackup",
+#         "schedule": crontab(minute=0, hour=0, day_of_week=0),  # Sunday
+#     },
+#     "delete_old_data": {
+#         "task": "accounts.cron.DeleteUnnecessaryData",
+#         "schedule": crontab(minute=0, hour=0, day_of_month='*/10'),
+#     },
+# }
+# CELERY_TIMEZONE = 'UTC'
+# CELERY_ENABLE_UTC = True
 # CELERY_BROKER_URL = 'redis://redis:6379/0'
-# CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_RESULT_BACKEND = 'django-cache'
 
-CELERY_RESULT_EXTENDED = True
+# CELERY_CACHE_BACKEND = 'default'
+
+# # django setting.
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+#         'LOCATION': 'my_cache_table',
+#     }
+# }
+
+# CELERY_RESULT_EXTENDED = True
 
 ## Django Debug Toolbar
-if LOAD_DEBUG_TOOLBAR:
-    INSTALLED_APPS += ['debug_toolbar']
-    MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
-    INTERNAL_IPS = ['127.0.0.1', 'localhost']
-    import mimetypes
-    mimetypes.add_type("application/javascript", ".js", True)
+# if LOAD_DEBUG_TOOLBAR:
+#     INSTALLED_APPS += ['debug_toolbar']
+#     MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
+#     INTERNAL_IPS = ['127.0.0.1', 'localhost']
+#     import mimetypes
+#     mimetypes.add_type("application/javascript", ".js", True)

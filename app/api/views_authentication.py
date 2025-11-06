@@ -1,4 +1,4 @@
-from accounts.utils import *
+
 from contact_us.models import *
 from static_pages.models import *
 from accounts.common_imports import *
@@ -10,6 +10,7 @@ from api.helper import *
 import re
 from urllib.request import urlopen
 from tempfile import NamedTemporaryFile
+from accounts.utils import *
 
 """
 Authentication Management
@@ -99,7 +100,7 @@ class UserSignupView(APIView):
             notification_type=ADMIN_NOTIFICATION,
             obj_id=str(user.id),
         )
-        bulk_send_user_email(request,user,'EmailTemplates/registration-success.html','Welcome To Dressr',request.POST.get("email"),"","","","")
+        bulk_send_user_email(request,user,'EmailTemplates/registration-success.html','Welcome To Dressr',request.POST.get("email"),"","","","",assign_to_celery=False)
         return Response({"message":f"User registered successfully!","data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
 '''
@@ -170,7 +171,7 @@ class ResendVerificationLink(APIView):
             OTP = generate_otp()
             user.temp_otp =  OTP
             user.save()
-            bulk_send_user_email(request,user,'EmailTemplates/VerifyOTP.html','Account Verification',request.POST.get("email"),token,"",user.temp_otp,"")
+            bulk_send_user_email(request,user,'EmailTemplates/VerifyOTP.html','Account Verification',request.POST.get("email"),token,"",user.temp_otp,"",assign_to_celery=False)
             message=f"An verification link has been sent on your email to verify your account."
         except Exception as e:
             db_logger.exception(e)
@@ -210,7 +211,7 @@ class ResendOTP(APIView):
             temp_otp = OTP
             # send_text_message(f"Enter {OTP} on Dressr AI to verify your account.", to_num )
             if user.email:
-                bulk_send_user_email(request,user,'EmailTemplates/OTP_Verification.html','Account Verification',request.POST.get("email"),"","",user.temp_otp,"")
+                bulk_send_user_email(request,user,'EmailTemplates/OTP_Verification.html','Account Verification',request.POST.get("email"),"","",user.temp_otp,"",assign_to_celery=False)
             message=f"An OTP {user.temp_otp} has been sent on your email to verify your account."
         except Exception as e:
             db_logger.exception(e)
@@ -303,7 +304,6 @@ class UserLoginView(APIView):
         data = UserSerializer(user,context = {"request":request}).data
         return Response({"message":"Logged in successfully","data":data,"status":status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
-    
 
 class SocialLogin(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -407,7 +407,7 @@ class SocialLogin(APIView):
                 notification_type=ADMIN_NOTIFICATION,
                 obj_id=str(user.id),
             )
-            bulk_send_user_email(request,user,'EmailTemplates/registration-success.html','Welcome To Dressr',request.POST.get("email"),"","","","")
+            bulk_send_user_email(request,user,'EmailTemplates/registration-success.html','Welcome To Dressr',request.POST.get("email"),"","","","",assign_to_celery=False)
         try:
             device = Device.objects.get(created_by = user)
         except Device.DoesNotExist:
@@ -420,7 +420,6 @@ class SocialLogin(APIView):
 
         data = UserSerializer(user,context = {"request":request}).data
         return Response({"data":data,"message":message, "url":request.path},status=status.HTTP_200_OK)
-
 
 class UserCheckView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -438,7 +437,6 @@ class UserCheckView(APIView):
         if user.role_id == CUSTOMER:
             data = UserSerializer(user,context = {"request":request}).data
         return Response({"data":data,"status":status.HTTP_200_OK}, status=status.HTTP_200_OK)
-
 
 class LogoutView(APIView): 
     permission_classes = (permissions.IsAuthenticated,) 
@@ -469,21 +467,20 @@ class ForgotPassword(APIView):
         ],
     )
     def post(self, request, *args, **kwargs):
-        email = request.data.get("email")
+        email = request.data.get("email").strip()
         if not email:
             return Response({"error": "Please enter email"}, status=status.HTTP_400_BAD_REQUEST)
-
         user = get_or_none(User, "Please enter a registered email address", status=ACTIVE, email=email)
         if not user:
             return Response({"error": "Email not found"}, status=status.HTTP_404_NOT_FOUND)
         token,_ = Token.objects.get_or_create(user=user)
         # Build reset link
-        reset_path = reverse("api:reset_password_api")
-        reset_link = f"{request.build_absolute_uri(reset_path)}?uid={user.id}&token={token}"
+        reset_path = reverse("accounts:reset_password_user", kwargs={"uid": user.id, "token": token})
+        reset_link = request.build_absolute_uri(reset_path)
         # Send reset link via email
-        bulk_send_user_email(request,user,'EmailTemplates/reset_password.html','Reset Password',email,"","","",reset_link)
+        bulk_send_user_email(request,user,'EmailTemplates/ResetPassword.html','Reset Password',email,"","","",reset_link,assign_to_celery=False)
         message = f"A password reset link has been sent to {email}."
-        return Response({"message": message, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+        return Response({"message": message,"reset_link":reset_link, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
 
 class ForgotPasswordResendLink(APIView):
@@ -510,9 +507,9 @@ class ForgotPasswordResendLink(APIView):
         # Build reset link
         reset_path = reverse("api:reset_password_api")
         reset_link = f"{request.build_absolute_uri(reset_path)}?uid={user.id}&token={token}"
-        bulk_send_user_email(request,user,'EmailTemplates/reset_password.html','Reset Password',email,"","","",reset_link)
+        bulk_send_user_email(request,user,'EmailTemplates/ResetPassword.html','Reset Your Password',email,reset_link,"","","",assign_to_celery=False)
         message = f"A password reset link has been sent to {email}."
-        return Response({"message":message,"temp_otp":user.temp_otp,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+        return Response({"message":message,"temp_otp":user.temp_otp,"reset_link":reset_link,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
 class ResetPasswordView(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -891,8 +888,8 @@ class UpdateProfileDetails(APIView):
             openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='1:Slim 2:Athletic 3:Curvy'),
             openapi.Parameter('height', openapi.IN_FORM, type=openapi.TYPE_STRING,description='height in cm'),
             openapi.Parameter('gender', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Male:1 Female:2, Other:3 '),
-            openapi.Parameter('skin_tone', openapi.IN_FORM, type=openapi.TYPE_STRING,description='skin tone'),
-            openapi.Parameter('hair_color', openapi.IN_FORM, type=openapi.TYPE_STRING,description='hair color'),
+            openapi.Parameter('skin_tone_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='skin tone id'),
+            openapi.Parameter('hair_color_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='hair color id'),
             openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description="Add Image"),
             openapi.Parameter('others', openapi.IN_FORM, type=openapi.TYPE_STRING,description="to enhance personalization"),
         ],
@@ -900,13 +897,18 @@ class UpdateProfileDetails(APIView):
     def post(self, request, *args, **kwargs):
         user = request.user
         data = request.data
+        skin_tone = SkinTone.objects.filter(id=data.get('skin_tone_id'))
+        hair_color = HairColor.objects.filter(id=data.get('hair_color_id'))
+        if not skin_tone:
+            return Response(request,{"message":"Skin tone not found !","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        if not hair_color:
+            return Response(request,{"message":"Hair colour not found !","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        
         first_name = data.get('first_name')
         last_name = data.get('last_name')
         gender = data.get('gender',MALE)
         user_image = request.FILES.get('image',None)
         body_type = data.get('body_type')
-        skin_tone = data.get('skin_tone')
-        hair_color = data.get('hair_color')
         others = data.get('others')
         hieght_cm = data.get('hieght_cm')
         
@@ -953,3 +955,40 @@ class CheckDate(APIView):
         data['datecheck']=RELEASE_DATE
         data['copyrights']="Toxsl Technologies"
         return Response(data)
+
+class SkinToneListView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=["Profile Management"],
+        operation_id="Skin Tone List",
+        operation_description="Skin Tone List",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        skin_tone = SkinTone.objects.filter(is_active=True).order_by("-created_on")
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None),skin_tone)
+        data = SkinToneSerializer(skin_tone[start : end],many=True,context={"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+
+class HairColorListView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=["Profile Management"],
+        operation_id="Hair Colour List",
+        operation_description="Hair Colour List",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        hair_color = HairColor.objects.filter(is_active=True).order_by("-created_on")
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None),hair_color)
+        data = SkinToneSerializer(hair_color[start : end],many=True,context={"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)

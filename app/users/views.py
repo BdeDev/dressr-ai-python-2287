@@ -4,6 +4,7 @@ from django.contrib.sites.models import Site
 from django.db.models.functions import Concat
 from django.contrib.auth import logout
 from wardrobe.models import *
+from accounts.stripe_views import *
 
 @method_decorator(admin_only,name='dispatch')
 class EditAdmin(View):
@@ -219,6 +220,32 @@ class EditUser(View):
         user.save()
         messages.success(request, 'Profile updated successfully.')
         return redirect('users:view_user', id=user.id)
+
+class ModifyCustomerStipeAccount(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        user = User.objects.get(id=self.kwargs['id'])
+        type = request.GET.get('type')
+        if type not in ['customer','account']:
+            messages.error(request, 'Invalid Request')
+            return redirect(request.META.get('HTTP_REFERER'))
+        
+        if type == 'customer' and not user.customer_id:
+            is_created = CreateStripeCustomer(request,user)
+            if is_created:
+                messages.success(request, 'Stripe customer created successfully')
+            else:
+                messages.error(request, 'Failed to create stripe customer')
+        elif type == 'account' and not user.account_id:
+            is_created = create_connected_account(user)
+            if is_created:
+                messages.success(request, 'Stripe account created successfully')
+            else:
+                messages.error(request, 'Failed to create stripe account')
+        else:
+            messages.error(request, 'Stripe ID already exists')
+
+        return redirect(request.META.get('HTTP_REFERER'))
 
 class NotificationOnOff(View):
     @method_decorator(admin_only)

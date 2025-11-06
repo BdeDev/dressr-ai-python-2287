@@ -12,18 +12,16 @@ from pathlib import Path
 from django.http.request import HttpRequest
 from django.core.mail import EmailMultiAlternatives
 from typing import List,Literal,Type,Iterable
-from device_management.models import MobileVibrationTiming
 from pyfcm import FCMNotification
 from django.contrib.sites.models import Site
 from twilio.rest import Client
 from accounts.celery_model_serializer import CustomModelTask
-
+from .cron import *
 from celery import shared_task
 
 db_logger = logging.getLogger('db')
 env = environ.Env()
 environ.Env.read_env()
-
 
 def get_fcm_key():
     '''
@@ -41,23 +39,6 @@ def get_fcm_key():
         data['fcm_file']=fcm_json_path
         data['project_id']='dressr-ai-267d5'
     return data
-
-def get_twilio_key():
-    '''
-        Get twilio credentails data
-    '''
-    twilio=TwilioSetting.objects.filter(is_active=True).last()
-    data={
-        'account_sid':env('ACCOUNT_SID'),
-        'from_num':env('AUTH_TOKEN'),
-        'auth_token':env('AUTH_TOKEN')
-        }
-    if twilio:
-        data['account_sid']= twilio.account_sid
-        data['from_num'] = twilio.number
-        data['auth_token'] = twilio.token
-    return data
-
 
 @shared_task(base=CustomModelTask)
 def send_push_notification(device_token,title,description,data_payload={}):
@@ -85,9 +66,6 @@ def send_push_notification(device_token,title,description,data_payload={}):
         db_logger.exception("Exception: %s , Device token : %s. ", e, device_token)
         return f'Failed : Failed to sent push notification'
     return None
-
-
-
 
 @shared_task(base=CustomModelTask)
 def send_user_email(
@@ -192,8 +170,6 @@ def resend_email_function(email_log):
         email_log.sent_status = EMAIL_FAILED
         email_log.save()  
         return f'Failed : Failed To Sent Email ( {recievers_emails} )'
-    
-
 
 @shared_task(base=CustomModelTask)
 def send_email_with_template_html(user,email_subject,to_email,email_template_html):
@@ -204,7 +180,7 @@ def send_email_with_template_html(user,email_subject,to_email,email_template_htm
         # Get sender email from SMTP settings or environment fallback
         smtp = SMTPSetting.objects.filter(is_active=True).first()
         from_email = smtp.from_email if smtp else settings.DEFAULT_FROM_EMAIL
-        from_email_formatted = f"Baro Barato <{from_email}>"
+        from_email_formatted = f"Dreassr AI <{from_email}>"
 
         # Render email content
         html_email = email_template_html
@@ -235,10 +211,6 @@ def send_email_with_template_html(user,email_subject,to_email,email_template_htm
     except Exception as exc:
         db_logger.exception(f"Exception in send_email_with_template_html: {exc}")
         return f'Failed : Exception in send_email_with_template_html: {exc}'
-    
-
-
-
 
 @shared_task(base=CustomModelTask)
 def send_notification(
@@ -294,3 +266,76 @@ def send_notification(
         except Exception as exception:
             db_logger.exception(exception)
     return None
+
+@shared_task(base=CustomModelTask)
+def send_email_campaign_emails(campaign_template,user_emails_list):
+    ## Send Email 
+    smtp=SMTPSetting.objects.filter(is_active=True).first()
+    from_email = smtp.email_host_user if smtp else settings.DEFAULT_FROM_EMAIL
+    ## create log for email 
+    email_subject = campaign_template.subject
+    html_email = campaign_template.description
+    
+    email_to_log = ' , '.join(user_emails_list)
+    email_log = EmailLogger.objects.create(
+        reciever =  None,
+        email_subject = email_subject,
+        email_template = html_email,
+        recievers_email = email_to_log, ## list of all emails
+        sender_email = from_email,
+        sent_status = EMAIL_PENDING
+    )
+    try :
+        from_email_mail = f"Dreassr AI  <{from_email}>"  ## this formate is use to show : custom sender name along with email address to user email inbox
+        email_message = EmailMultiAlternatives(email_subject, None, from_email_mail, user_emails_list )
+        email_message.attach_alternative(html_email, 'text/html')
+        status = email_message.send()
+        email_log.sent_status = EMAIL_SENT
+    except Exception as e:
+        email_log.sent_status = EMAIL_FAILED
+        db_logger.exception(e)
+    email_log.save()  
+
+    return None
+
+
+# def get_twilio_key():
+#     '''
+#         Get twilio credentails data
+#     '''
+#     twilio=TwilioSetting.objects.filter(is_active=True).last()
+#     data={
+#         'account_sid':env('ACCOUNT_SID'),
+#         'from_num':env('AUTH_TOKEN'),
+#         'auth_token':env('AUTH_TOKEN')
+#         }
+#     if twilio:
+#         data['account_sid']= twilio.account_sid
+#         data['from_num'] = twilio.number
+#         data['auth_token'] = twilio.token
+#     return data
+
+
+
+# def send_campaign_sms(campaign_template,user_list):
+    # title = campaign_template.subject
+    # html_description = campaign_template.description
+    
+    # body = f"{title}\n\n{html_description}"
+
+    # twilio_config = get_twilio_key()
+    # account_sid = twilio_config.get('account_sid')
+    # auth_token = twilio_config.get('auth_token')
+    # from_num = twilio_config.get('from_num')
+
+    # client = Client(account_sid, auth_token) 
+    # results = []
+    # for to_num in user_list:
+    #     try:
+    #         message = client.messages.create(from_=from_num, body=body, to=to_num)
+    #         results.append({"number": to_num, "status": "success", "sid": message.sid})
+    #     except Exception as e:
+    #         db_logger.exception(e)
+    #         results.append({"number": to_num, "status": "failed", "error": str(e)})
+    
+    # return results

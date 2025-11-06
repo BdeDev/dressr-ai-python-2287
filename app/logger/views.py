@@ -3,6 +3,7 @@ from django_db_logger .models import StatusLog
 from .serializer import *
 from .models import *
 from accounts.utils import get_pagination
+from accounts.tasks import *
 
 
 """
@@ -140,17 +141,19 @@ class SendCustomEmail(View):
         description = request.POST.get('content').strip()
         full_name = request.POST.get('full_name').strip()
         # send email
-        bulk_send_user_email(
-            request = request,
-            user = None,
-            template_name = "EmailTemplates/notification-email.html",
-            mail_subject = subject,
-            to_email = to_email,
-            token = full_name,
-            description =description,
-            title = subject,
-            password = "",
-            )
+        send_email_with_template_html.apply_async(args=(user,subject,to_email,description))
+        # bulk_send_user_email(
+        #     request = request,
+        #     user = None,
+        #     template_name = "EmailTemplates/notification-email.html",
+        #     mail_subject = subject,
+        #     to_email = to_email,
+        #     token = full_name,
+        #     description =description,
+        #     title = subject,
+        #     password = "",
+        #     assign_to_celery=True
+        #     )
         messages.success(request,'Email sending process initiated successfully')
         return redirect('logger:email_logs_list')
     
@@ -366,7 +369,7 @@ class SendCampaignEmails(View):
         if user_status:
             users = User.objects.filter(status__in = user_status).values_list('email',flat=True)
             all_on_emails.extend(users)
-   
+
         Thread(target=send_email_campaign_emails,args=(campaign_template,all_on_emails)).start()
         messages.success(request,'Email sending process initiated successfully')
         return redirect('logger:send_campaign_email',id=campaign_template.id)

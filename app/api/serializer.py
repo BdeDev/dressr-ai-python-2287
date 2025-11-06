@@ -79,3 +79,15 @@ class DeviceSerializer(ModelSerializer):
     class Meta:
         model = Device
         fields = ("id", "user", "device_type", "device_name", "device_token", "device_details", "created_on")
+
+class SkinToneSerializer(ModelSerializer):
+
+    class Meta:
+        model = SkinTone
+        fields = '__all__'
+
+class HairColorSerializer(ModelSerializer):
+
+    class Meta:
+        model = HairColor
+        fields = '__all__'

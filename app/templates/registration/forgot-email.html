@@ -1,60 +1,80 @@
-{% load static %}
-{% include 'registration/includes/header.html' %}
-
-<div class="login">
-    <div class="container">
-        <div class="login_box">
-        <div class="row">
-            <div class="col-lg-6 col-sm-12 col-pad-0 align-self-center">
-                <div class="form-section">
-                 
-                    <h3 class="mb-3">RECOVER YOUR PASSWORD</h3>
-                    <p class="text-start mb-3 ">
-                        Don’t worry! it happens. Please enter the address
-                        associated with your account
-                    </p>
-                    <form onsubmit="Loader(this.id)" id="forget_password" method="POST" action="{% url 'accounts:forgot_password_email' %}"
-                        class="mt-50">
-                        {% csrf_token %}
-
-                        <div class="form-group form-box required-field">
-                            <label class="form-label">Email</label>
-                            <div class="form-addons">
-                                <input type="text" class="form-control"
-                                    placeholder="Enter your email address"
-                                    name="email" id="email">
-                                <label class="email-error error"></label>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <button type="submit"
-                                class="btn btn-login btn-theme w-100 mb-4">Send
-                                Mail</button>
-                        </div>
-                    </form>
-                    <p class="text-center">Back to <a
-                            href="{% url 'accounts:login' %}"
-                            class="thembo">Sign In</a></p>
-                </div>
-            </div>
-            <div class="col-lg-6 col-md-12 col-sm-12 col-pad-0 bg-img align-self-center">
-                <div class="inner">
-                    <div class="logo-2 mb-0">
-                        <a href="{% url 'frontend:index' %}" class="login-logo mb-0">
-                            <img src="{% static 'admin-assets/images/logo.png' %}" alt='logo'>
-                        </a>
+{% include 'registration/includes/new-header.html' %}{% load static %}{% load extras %}
+    <div class="w-full max-w-md" >
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden" data-aos="zoom-in">
+            <div class="gradient-bg py-6 px-8 text-center">
+                <div class="flex justify-center mb-4">
+                    <div class="bg-white p-3 rounded-full shadow-lg">
+                        <a href="/"><i data-feather="lock" class="text-indigo-600 w-8 h-8"></i></a>
                     </div>
-                    <h3 class="animate-charcter">Welcome To Dressr AI</h3>
-                    <p>Dressr AI is your personal wardrobe assistant. 
-                    Digitize your closet, explore AI-driven outfit suggestions, 
-                    and try on clothes virtually. 
-                    Sign in now to get started</p>
-                    <div class="clearfix"></div>
-                   
                 </div>
-                </div>
+                <h1 class="text-2xl font-bold text-white">Recover Your Password</h1>
+                <p class="text-indigo-100 mt-1">Don’t worry! it happens. Please enter the address associated with your account.</p>
+            </div>
+            
+            <div class="px-8 py-6">
+                <form onsubmit="Loader(this.id)" id="forget_password" method="POST" action="{% url 'accounts:forgot_password_email' %}"
+                    class="mt-50">
+                    {% csrf_token %}
+                    <div class="form-group form-box required-field">
+                        <label class="form-label">Email</label>
+                        <div class="form-addons">
+                            <input id="email" type="email" name="email" class="input-field w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter your email address" >
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mb-6">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="w-full gradient-bg text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition duration-300 flex items-center justify-center">
+                            Send Mail
+                        </button>
+                    </div>
+                </form>
+                <p class="text-center"><a href="{% url 'accounts:login' %}" class="thembo">Back to Sign In</a></p>
+            </div>
         </div>
+        <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-screen bg-white shadow-sm py-4">
+            {% include "admin-includes/footer.html" %}
         </div>
     </div>
-</div>
-{% include 'registration/includes/footer.html' %}
+</body>
+</html>
+
+<script>
+    AOS.init({
+        duration: 800,
+        easing: 'ease-in-out'
+    });
+    feather.replace();
+
+    // Toggle password visibility
+    const passwordInput = document.getElementById('password');
+    const toggleBtn = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    toggleBtn.addEventListener('click', () => {
+        const type = passwordInput.type === 'password' ? 'text' : 'password';
+        passwordInput.type = type;
+
+        // Toggle icon
+        eyeIcon.setAttribute('data-feather', type === 'password' ? 'eye' : 'eye-off');
+        feather.replace(); // re-render icons
+    });
+</script>
+<script>
+    $("#forget_password").validate({
+    rules: {
+        email: {
+            required: true,
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            email:true,
+        },
+    },
+    messages: {
+        email: {
+            required: "Please enter email",
+        },
+    }
+});
+</script>

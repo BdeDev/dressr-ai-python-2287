@@ -1,6 +1,105 @@
 from api.views_authentication import *
 from subscription.models import *
 from .serializer import *
+from accounts.stripe_views import *
+
+"""
+User Stripe Cards API
+"""
+
+class AddStripeCardAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=["Stripe Card Management"],
+        operation_id="Add Stripe Card ",
+        operation_description="Add Stripe Card",
+        manual_parameters=[
+            openapi.Parameter('card_token', openapi.IN_FORM, type=openapi.TYPE_STRING,description="card_token")
+        ]
+    )
+    def post(self, request, *args, **kwargs):
+        ## validate all required fields 
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "card_token", "method": "post", "error_message": "Please enter card token"},
+        ])
+        try:
+            check_duplicate = CheckDuplicateCard(
+                user = request.user,
+                card_token=request.data.get('card_token').strip()
+            )
+            if check_duplicate[0]:
+                return Response({"message":"Sorry this card is already linked with your account or something went wrong please try again later","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST) 
+            else:
+                create_card=CreateStripeCard(request.user,request.data.get('card_token').strip())
+                if create_card:
+                    return Response({"message":"Card added successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK) 
+                else:
+                    return Response({"message":"Sorry,something went wrong please try again later.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST) 
+        except:
+            return Response({"message":"Please enter valid card details","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+class StripeAllUserCards(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser,FormParser]
+    @swagger_auto_schema(
+        tags=["Stripe Card Management"],
+        operation_id="All Stripe Cards List ",
+        operation_description="All Stripe Cards List",
+        manual_parameters=[]
+    )
+    def get(self, request, *args, **kwargs):
+        try:
+            set_stripe_keys()
+            cards = stripe.Customer.list_sources(request.user.customer_id,object="card",limit=15)
+            customer = stripe.Customer.retrieve(request.user.customer_id)
+            data = []
+            for card in cards.data:
+                data.append({
+                    "id":card.id,
+                    "brand":card.brand,
+                    "country":card.country,
+                    "customer":card.customer,
+                    "cvc_check":card.cvc_check,
+                    "exp_month":card.exp_month,
+                    "exp_year":card.exp_year,
+                    "last4":card.last4,
+                    "name":card.name,
+                    "default": True if customer.default_source == card.id else False,
+                })
+            return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message":"data not found!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)      
+
+class DeleteStripeCardAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser,FormParser]
+    @swagger_auto_schema(
+        tags=["Stripe Card Management"],
+        operation_id="Delete Stripe Card by ID ",
+        operation_description="Delete Stripe Card by ID ",
+        manual_parameters=[
+            openapi.Parameter('card_id', openapi.IN_QUERY, type=openapi.TYPE_STRING),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        ## validate all required fields 
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "card_id", "method": "get", "error_message": "Please enter card id"},
+        ])
+        try:
+            card_id = request.query_params.get('card_id')
+            card_deleted = DeleteStripeCard(
+                user = request.user ,
+                card_id = card_id
+            )
+            if card_deleted:
+                return Response({"message":"Card Removed successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)    
+            else:
+                return Response({"message":"Please enter valid card id!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message":"Please enter valid card id","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
 
 """
 Subscriptions List

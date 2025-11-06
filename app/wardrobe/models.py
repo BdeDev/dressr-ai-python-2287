@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.common_imports import *
+from accounts.models import CommonInfo
 
 class Wardrobe(CommonInfo):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wardrobes",blank=True,null=True)
@@ -37,7 +38,7 @@ class ClothingItem(CommonInfo):
     # ai_category = models.CharField(max_length=50, blank=True, null=True)
     # manual_category = models.CharField(max_length=50,blank=True, null=True)
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
-    color = models.CharField(max_length=30)
+    color = models.CharField(max_length=30,blank=True, null=True)
     brand = models.CharField(max_length=50, blank=True, null=True)
     price = models.FloatField(default=0.0, null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)

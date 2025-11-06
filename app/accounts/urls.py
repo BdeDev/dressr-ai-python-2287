@@ -12,7 +12,7 @@ urlpatterns = [
     ## Authentication
     re_path(r'^user-login/$', LoginView.as_view(), name='login'),
     re_path(r'^logout/$', LogOutView.as_view(), name='logout'),
-    re_path(r'^reset-password/(?P<token>[-\w]+)/$',ResetPassword.as_view(),name="reset_password_user"),
+    re_path(r'^reset-password/(?P<uid>[-\w]+)/(?P<token>[-\w]+)/$',ResetPassword.as_view(),name="reset_password_user"),
     re_path(r'^forgot-password-email/$', ForgotPasswordEmail.as_view(), name='forgot_password_email'),
     re_path(r'^verify-account/(?P<token>[-\w]+)/$',VerifyUserAccount.as_view(),name="verify_account"),
 

@@ -1,11 +1,22 @@
 import re
 import subprocess
 from django.contrib.auth import authenticate, login,logout
-from accounts.utils import *
-from accounts.common_imports import *
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.sites.models import Site
+from django.utils.decorators import method_decorator
 from cron_descriptor import get_description
+from .decorators import *
+from django.views.generic import TemplateView,View
+from accounts.management.commands.hair_color import default_hair_colors
+from accounts.models import *
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views import View
+from django.contrib import messages
+from accounts.common_imports import *
+from rest_framework.authtoken.models import Token
+from accounts.utils import *
+
+
 
 db_logger = logging.getLogger('db')
 env = environ.Env()
@@ -30,21 +41,21 @@ class LoginView(View):
         return render(request, 'registration/login.html', {'next': request.GET.get('next')})
 
     def post(self, request, *args, **kwargs):
-        username = request.POST.get("username", "").strip()
+        username = request.POST.get("email", "").strip()
         password = request.POST.get("password", "").strip()
         remember_me = request.POST.get('remember_me') == 'on'
 
         # Handle missing fields
         if not username or not password:
-            messages.error(request, "Please enter both username and password.")
+            messages.error(request, "Please enter both email and password.")
             return render(request, 'registration/login.html', {"username": username, "password": password})
 
         # Authenticate user
         user = authenticate(username=username, password=password)
         if not user:
-            create_login_history(request, username, None, LOGIN_FAILURE, None)
+            # create_login_history(request, username, None, LOGIN_FAILURE, None)
             messages.error(request, 'Invalid login details.')
-            return render(request, 'registration/login.html', {"username": username, "password": password})
+            return render(request, 'registration/login.html', {"email": username, "password": password})
 
         # Check allowed roles
         if user.is_superuser and user.role_id == ADMIN:
@@ -54,7 +65,7 @@ class LoginView(View):
             if remember_me:
                 request.session.set_expiry(1209600)  # 2 weeks
 
-            create_login_history(request, username, None, LOGIN_SUCCESS, None)
+            # create_login_history(request, username, None, LOGIN_SUCCESS, None)
             messages.success(request, "Logged in successfully!")
 
             redirect_url = request.GET.get('next','admin:index') 
@@ -121,31 +132,42 @@ def Validations(request):
 """
 Password Management
 """
+
+  # or wherever your token model is
+
 class ResetPassword(View):
     def get(self, request, *args, **kwargs):
-        try:
-            token = Token.objects.get(key=self.kwargs.get('token'))
-            token.user  # This will raise an exception if the user doesn't exist
-            return render(request, 'registration/ResetPassword.html', {"token": token})
-        except:
-            messages.error(request, 'Sorry! Your link has been expired. Please generate a new link to proceed further.')
-            return redirect('accounts:login')
+        uid = kwargs.get('uid')
+        token_key = kwargs.get('token')
+        user = get_object_or_404(User, id=uid)
+        token = Token.objects.get(key=token_key, user=user)
+        return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
+      
 
     def post(self, request, *args, **kwargs):
+        uid = kwargs.get('uid')
+        token_key = kwargs.get('token')
+        password = request.POST.get("password").strip()
         try:
-            token = Token.objects.get(key=self.kwargs.get('token'))
-            user = token.user
-            password = request.POST.get("password")
+            user = get_object_or_404(User, id=uid)
+            token = Token.objects.get(key=token_key, user=user)
+
             if not password:
                 messages.error(request, 'Password is required.')
-                return render(request, 'registration/ResetPassword.html', {"token": token})
+                return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
+
             user.set_password(password)
             user.save()
             token.delete()
-            messages.success(request, 'Password reset successfully!')
+
+            messages.success(request, 'Password reset successfully! Please log in.')
             return redirect('accounts:login')
-        except:
-            messages.error(request, 'Sorry! Your link has been expired. Please generate a new link to proceed further.')
+
+        except Token.DoesNotExist:
+            messages.error(request, 'Sorry! Your reset link has expired or is invalid.')
+            return redirect('accounts:login')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
             return redirect('accounts:login')
 
 
@@ -160,7 +182,10 @@ class ForgotPasswordEmail(View):
         else:
             user = User.objects.filter(Q(status=ACTIVE)|Q(status=INACTIVE),email=request.POST.get("email")).last()
             token, _ = Token.objects.get_or_create(user=user)
-            bulk_send_user_email(request,user,'EmailTemplates/reset_password_admin.html','Reset Password',request.POST.get("email"),token,"","","")
+            reset_path = reverse("accounts:reset_password_user", kwargs={"uid": user.id, "token": token})
+            reset_link = request.build_absolute_uri(reset_path)
+            # Send reset link via email
+            bulk_send_user_email(request,user,'EmailTemplates/reset_password_admin.html','Reset Password',request.POST.get("email"),reset_link,"","","",assign_to_celery=False)
             messages.success(request,'A link has been sent on your email to reset your password.')
             return redirect('accounts:login')
 
@@ -184,7 +209,6 @@ class VerifyUserAccount(View):
         except:
             return render(request,'frontend/failed-verification.html',{'protocol': 'https' if USE_HTTPS else 'http','domain':env('SITE_DOMAIN')})
 
-
 """
 Notification Management
 """
@@ -195,7 +219,7 @@ class NotificationsList(View):
         notifications = Notifications.objects.filter(created_for=user).order_by('-created_on')
         return render(request, "admin/notifications.html",{
             "head_title": "Notifications Management",
-            "notifications": get_pagination(request, notifications),
+            "notifications":  notifications,
             "total_objects": notifications.count(),
             "user":user
         })
@@ -353,5 +377,41 @@ class UpdateDjangoSite(View):
         site.domain = request.POST.get('domain').strip()
         site.name = request.POST.get('domain').strip()
         site.save()
+
         messages.success(request,'Domain information updated successfully.')
         return redirect('accounts:update_django_site')
+
+
+
+class ImportHairColorView(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        for color in default_hair_colors:
+            obj, created = HairColor.objects.get_or_create(
+                title=color["name"],
+                defaults={
+                    "color_code": color["hex"],
+                }
+            )
+            if created:
+                messages.success(request,f"Added hair color: {color['name']}")
+            else:
+                messages.error(request,f"Hair color already exists: {color['name']}")
+        return redirect('seatmap:charts_list')
+    
+
+class ImportSkinToneView(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        for color in default_hair_colors:
+            obj, created = HairColor.objects.get_or_create(
+                title=color["name"],
+                defaults={
+                    "color_code": color["hex"],
+                }
+            )
+            if created:
+                messages.success(request,f"Added hair color: {color['name']}")
+            else:
+                messages.error(request,f"Hair color already exists: {color['name']}")
+        return redirect('seatmap:charts_list')

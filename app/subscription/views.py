@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from accounts.common_imports import *
 from .models import *
-
+from accounts.common_imports import *
+from accounts.utils import *
 
 class ListSubscriptionPlan(View):
     @method_decorator(admin_only)
@@ -214,3 +214,32 @@ class ActivatePurchasedPlanNow(View):
         # )
 
         return redirect('subscriptions:purchased_plan_info',id=purchase_plan.id)
+    
+from django.views.decorators.csrf import csrf_exempt
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SubscriptionWebhook(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            payload = json.loads(request.body.decode('utf-8'))
+            event_type = payload.get("event")  # depends on your provider (e.g., Stripe sends 'type')
+            data = payload.get("data", {})
+
+            # Example: handle subscription renewal
+            if event_type == "subscription.renewed":
+                subscription_id = data.get("subscription_id")
+                user_id = data.get("user_id")
+                # Update your subscription model
+                subscription = UserPlanPurchased.objects.get(subscription_plan_id=subscription_id)
+                subscription.status = "active"
+                subscription.save()
+                print(f"✅ Subscription renewed for user {user_id}")
+
+            # You can handle other events here as well
+            elif event_type == "subscription.canceled":
+                print("Subscription canceled")
+
+            return HttpResponse(status=200)
+        except Exception as e:
+            print(f"❌ Error processing webhook: {e}")
+            return HttpResponse(status=500)
