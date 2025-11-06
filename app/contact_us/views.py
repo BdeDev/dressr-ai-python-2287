@@ -1,6 +1,6 @@
 from .models import *
 from accounts.views import *
-
+from accounts.common_imports import *
 
 class ContactUsList(View):
     @method_decorator(admin_only)
@@ -49,7 +49,7 @@ class ContactUsReplyView(View):
         )
         contact.is_replied = True
         contact.save()
-        bulk_send_user_email(request, None, 'EmailTemplates/contactus-reply.html', 'Contact Us Revert', contact.email, contact.message, reply.reply_message, 'Contact Us Revert', '', temp=False)
+        bulk_send_user_email(request, None, 'EmailTemplates/contactus-reply.html', 'Contact Us Revert', contact.email, contact.message, reply.reply_message, 'Contact Us Revert', '', temp=False,assign_to_celery=False)
         messages.success(request,"Reply sent successfully!")
         return redirect('contact_us:view_contact',id=contact.id)
 

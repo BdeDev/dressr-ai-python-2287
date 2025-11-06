@@ -49,10 +49,10 @@ class ViewUser(View):
                 "head_title":"User Management",
                 "isCustomer":True,
                 "user":user,
-                "wardrobe": Wardrobe.objects.filter(user=user).count(),
                 "device":device,
                 "token":Token.objects.filter(user=user).last(),
                 'loginhistory':get_pagination1(request,login_history,1),
+                'wardrobe':Wardrobe.objects.filter(user=user).last(),
             })
         else:
             logout(request)
@@ -72,7 +72,7 @@ class InactivateUser(View):
         bulk_send_user_email(
             request, user, 'EmailTemplates/AccountStatus.html',
             'Account Deactivated', user.email, "", "Your account has been deactivated. Please contact admin to activate your account.",
-            'Account Deactivated', "")
+            'Account Deactivated', "",assign_to_celery=False)
         return redirect('users:view_user',id=user.id)
 
 
@@ -90,7 +90,7 @@ class DeleteUser(View):
         user.save()
 
         messages.success(request,'Account deleted successfully!')
-        bulk_send_user_email(request, user, 'EmailTemplates/AccountStatus.html', 'Account Deleted', user.email, "", "Your account has been deleted. Please contact admin to activate your account.", 'Account Deleted', "")
+        bulk_send_user_email(request, user, 'EmailTemplates/AccountStatus.html', 'Account Deleted', user.email, "", "Your account has been deleted. Please contact admin to activate your account.", 'Account Deleted', "",assign_to_celery=False)
         return redirect('users:view_user',id=user.id)
 
 
@@ -103,7 +103,7 @@ class ActivateUser(View):
         user.status = ACTIVE
         user.save()
         messages.success(request,'Account activated successfully!')
-        bulk_send_user_email(request, user, 'EmailTemplates/AccountStatus.html', 'Account Activated', user.email, "", "Your account has been activated.", 'Account Activated', "")
+        bulk_send_user_email(request, user, 'EmailTemplates/AccountStatus.html', 'Account Activated', user.email, "", "Your account has been activated.", 'Account Activated', "",assign_to_celery=False)
         return redirect('users:view_user',id=user.id)
 
 
@@ -173,7 +173,7 @@ class AddUser(View):
             user.full_name = user.first_name + " " + user.last_name
             user.save()
             messages.success(request, 'User created successfully !')
-            bulk_send_user_email(request, user, "EmailTemplates/login-crenditials.html", 'Login credentials', user.email, request.POST.get("password"), '', '', '')
+            bulk_send_user_email(request, user, "EmailTemplates/login-crenditials.html", 'Login credentials', user.email, request.POST.get("password"), '', '', '',assign_to_celery=False)
             return redirect('users:users_list')
         except Exception as e:
             messages.error(request, 'Failed to create user.')
