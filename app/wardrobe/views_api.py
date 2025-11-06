@@ -2,29 +2,6 @@ from accounts.common_imports import *
 from .serializer import *
 from .healper import *
 
-class GetWardrobs(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = [MultiPartParser]
-
-    @swagger_auto_schema(
-        tags=["WarDrobe management"],
-        operation_id="Get Wardrobs",
-        operation_description="Get Wardrobs",
-        manual_parameters=[]
-    )
-    def get(self, request, *args, **kwargs):
-        # response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-        #     {"field_name": "wardrobe_id", "method": "get", "error_message": "Please enter wardrobe id"},
-        # ])
-        wardrobe = Wardrobe.objects.filter(user=request.user)
-        if not wardrobe:
-            return Response({"data":[],"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-        
-        start,end,meta_data = get_pages_data(request.query_params.get('page', None), wardrobe)
-        data = WardrobeSerializer(wardrobe[start : end],many=True,context = {"request":request}).data
-        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-    
-
 class GetWardrobe(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
@@ -42,32 +19,6 @@ class GetWardrobe(APIView):
         data = WardrobeSerializer(wardrobe,context = {"request":request}).data
         return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
-class AddWardrobe(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = [MultiPartParser]
-
-    @swagger_auto_schema(
-        tags=["WarDrobe management"],
-        operation_id="Add Wardrobe",
-        operation_description="Add Wardrobe",
-        manual_parameters=[
-            openapi.Parameter('name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Wardrobe Name'),
-        ],
-    )
-    def post(self, request, *args, **kwargs):
-        ## Validate Required Fields
-        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "name", "method": "post", "error_message": "Please enter wardrobe name"},
-        ])
-        user = request.user        
-        if Wardrobe.objects.filter(user=user,name = request.data.get('name')).exists():
-            return Response({"message": "Wardrobe already exist with the same name", "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
-        wardrobe = Wardrobe.objects.create(
-            name = request.data.get('name'),
-            user = user
-        )
-        return Response({"message": "Wardrobe created successfully!", "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
-    
 class EditWardrobe(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
@@ -97,26 +48,6 @@ class EditWardrobe(APIView):
         wardrobe.save()
         data = WardrobeSerializer(wardrobe,context = {"request":request}).data
         return Response({"data":data,"message": "Wardrobe updated successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-    
-class DeleteWardrobe(APIView):
-    permission_classes = [permissions.IsAuthenticated,]
-    parser_classes = [MultiPartParser,FormParser]
-
-    @swagger_auto_schema(
-        tags=['WarDrobe management'],
-        operation_id="Delete wardrobe",
-        operation_description="Delete wardrobe",
-        manual_parameters=[
-            openapi.Parameter('wardrobe_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)
-        ],
-    )
-    def delete(self, request, *args, **kwargs):
-        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "wardrobe_id", "method": "get", "error_message": "Please enter wardrobe id"},
-        ])
-        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", id=request.query_params.get('wardrobe_id'))
-        wardrobe.delete()
-        return Response({"message":"Wardrobe Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
 class AddClothItem(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -302,3 +233,135 @@ class EditWardrobeItem(APIView):
         cloth_item.save()
         data = ClothItemSerializer(cloth_item,context = {"request":request}).data
         return Response({"data":data,"message": "Wardrobe updated successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+
+class GetAccessoriesAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="Get All Accessories",
+        operation_description="Get All Accessories",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        accessories = Accessory.objects.all().order_by('-created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), accessories)
+        data = AccessorySerializer(accessories[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+
+class GetOccasionsAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="Get All Occasions",
+        operation_description="Get All Occasions",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        occasions = Occasion.objects.all().order_by('-created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), occasions)
+        data = OccasionSerializer(occasions[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+class GetClothCategoriesAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="Get All ClothCategories",
+        operation_description="Get All ClothCategories",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        occasions = ClothCategory.objects.all().order_by('-created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), occasions)
+        data = ClothCategorySerializer(occasions[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+
+class CreateOutFitAPI(APIView): ############### not completed yet 
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Outfit management"],
+        operation_id="Create Outfit",
+        operation_description="Create Outfit",
+        manual_parameters=[
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING,description='title'),
+            openapi.Parameter('cloth_items', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Cloth Items Id ([item_id1,item_id2,..])'),
+            openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Occasion Id'),
+            openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Accessory Id'),
+            openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='1:Summer , 2:Winter , 3:Rainy , 4:Spring , 5:All Season'),
+            openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Color'),
+        ],
+    )
+
+    def post(self, request, *args, **kwargs):
+        ## Validate Required Fields
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "title", "method": "post", "error_message": "Please enter title"},
+            {"field_name": "occasion_id", "method": "post", "error_message": "Please enter occasion id"},
+            {"field_name": "accessory_id", "method": "post", "error_message": "Please enter accessory id"},
+            {"field_name": "weather_type", "method": "post", "error_message": "Please enter  weather type "},
+            {"field_name": "color", "method": "post", "error_message": "Please enter color"},
+            {"field_name": "cloth_items", "method": "post", "error_message": "Please enter Cloth Items Id ([item_id1,item_id2,..])"},
+        ])
+        user = request.user 
+        category = ClothCategory.objects.get(id = request.data.get('category_id'))
+        occasion = Occasion.objects.get(id = request.data.get('occasion_id'))
+        accessory = Accessory.objects.get(id = request.data.get('accessory_id'))
+        if not category:
+            return Response({"message": "Category does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        if not occasion:
+            return Response({"message": "Occasion does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        if not accessory:
+            return Response({"message": "Accessory does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        if not int(request.data.get('weather_type')) in [1,2,3,4,5]:
+            return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        cloth_items = Outfit.objects.create(
+            title = request.data.get('title').strip(),
+            cloth_category = category,
+            occasion = occasion,
+            accessory  = accessory,
+            weather_type = int(request.data.get('weather_type')),
+            color = request.data.get('color'),
+            created_by = request.user
+        )
+        for item in request.data.get('cloth_items'):
+            cloth_items.items.set(item)
+        cloth_items.save()
+        return Response({"message": "Cloth item addedd successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+
+class MyOutFitListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Outfit management"],
+        operation_id="Get All My Outfit",
+        operation_description="Get All My Outfit",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        outfits = Outfit.objects.filter(created_by=request.user).order_by('-created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), outfits)
+        data = MyOutFitSerializer(outfits[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    

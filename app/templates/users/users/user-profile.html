@@ -96,11 +96,11 @@
                                     </li> 
                                     <li>
                                         <h4>Skin Tone </h4>
-                                        <h6>{{user.skin_tone|default:"-"}}</h6>
+                                        <h6>{{user.skin_tone.title|default:"-"}}</h6>
                                     </li>
                                      <li>
                                         <h4>Hair Color </h4>
-                                        <h6>{{user.hair_color|default:"-"}}</h6>
+                                        <h6>{{user.hair_color.title|default:"-"}}</h6>
                                     </li>
                                     </li>
                                     {% if user.status == 3 %}
@@ -146,9 +146,9 @@
                                         </h6>
                                     </li>
                                     <li>
-                                        <h4>Wardrobe Count</h4>
+                                        <h4>Wardrobe</h4>
                                         <h6>
-                                            {% if wardrobe %}<a href="#">{{wardrobe}}</a>{% else %}0{% endif %}
+                                            {% if wardrobe %}<a href="{% url 'wardrobe:view_wardrobe'  wardrobe.id %}">{{wardrobe.id}}</a>{% else %}{% endif %}
                                         </h6>
                                     </li> 
                                     <li>
@@ -203,8 +203,9 @@
                                         </h6>
                                     </li>
                                 </ul>
+                                {% endif %}
                             </div>
-                            {% endif %}
+                            
                         </div>
                         <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
                             {% if user.status == 1 %}

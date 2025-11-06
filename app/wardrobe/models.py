@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.common_imports import *
-from accounts.models import CommonInfo
+from accounts.models import CommonInfo,User
 
 class Wardrobe(CommonInfo):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wardrobes",blank=True,null=True)
@@ -54,11 +54,15 @@ class ClothingItem(CommonInfo):
         return None
 
 class Outfit(CommonInfo):
-    wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="outfits",blank=True, null=True)
+    title = models.CharField(max_length=200,blank=True, null=True)
     items = models.ManyToManyField(ClothingItem, related_name="outfits",blank=True)
+    cloth_category = models.ForeignKey(ClothCategory,on_delete=models.SET_NULL, null=True,blank=True)
+    occasion = models.ForeignKey(Occasion,on_delete=models.SET_NULL, null=True,blank=True)
+    accessory = models.ForeignKey(Accessory,on_delete=models.SET_NULL,null=True,blank=True)
+    weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_outfits")
+    color = models.CharField(max_length=30,blank=True, null=True)
     notes = models.TextField(blank=True, null=True)  # Style suggestions
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'outfit'

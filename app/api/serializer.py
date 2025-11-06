@@ -7,6 +7,8 @@ from api.helper import *
 class UserSerializer(ModelSerializer):
     token = SerializerMethodField(read_only=True)
     profile_pic =SerializerMethodField()
+    skin_tone = SerializerMethodField()
+    hair_color = SerializerMethodField()
 
     def get_profile_pic(self,obj):
         url=self.context.get('request').build_absolute_uri(obj.profile_pic.url) if obj.profile_pic else "" 
@@ -18,12 +20,20 @@ class UserSerializer(ModelSerializer):
     def get_token(self, obj):
         token, _ = Token.objects.get_or_create(user=obj)
         return token.key
+    
+    def get_hair_color(self, obj):
+        hair_color= HairColor.objects.filter(user=obj).first()
+        return hair_color.title if hair_color else ""
+    
+    def get_skin_tone(self, obj):
+        skint_tone = SkinTone.objects.filter(user=obj).first()
+        return skint_tone.title if skint_tone else ""
 
     class Meta:
         model=User
         fields= ("id","first_name","last_name","full_name","gender","role_id","last_login","profile_pic","email",
                  "mobile_no","country_code","country_iso_code","status","temp_otp","is_profile_setup","notification_enable","token",
-                 "created_on","updated_on")
+                 "created_on","updated_on",'hair_color','skin_tone','user_image')
 
 
 class MinorUserSerializer(ModelSerializer):

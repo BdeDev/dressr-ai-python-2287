@@ -29,6 +29,7 @@ class SMTPPrompt(View):
             description =description,
             title = subject,
             password = "",
+            assign_to_celery=False
             )
         messages.success(request,'Email sending process initiated successfully')
         return redirect('credentials:smtp_prompt')

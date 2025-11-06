@@ -10,7 +10,9 @@ from api.helper import *
 import re
 from urllib.request import urlopen
 from tempfile import NamedTemporaryFile
+from accounts.models import *
 from accounts.utils import *
+from wardrobe.models import Wardrobe
 
 """
 Authentication Management
@@ -81,6 +83,7 @@ class UserSignupView(APIView):
             password = make_password(request.data.get('password')),
             status = ACTIVE,
         )
+        wardrobe,_ = Wardrobe.objects.get_or_create(user=user)
         try:
             device = Device.objects.get(user = user)
         except Device.DoesNotExist:
@@ -292,7 +295,7 @@ class UserLoginView(APIView):
             
             ## Manage device data
             device, created = Device.objects.get_or_create(user = user)
-            device.device_type = request.data.get('device_type',ANDROID)
+            device.device_type = request.data.get('device_type')
             device.device_name = request.data.get('device_name')
             device.device_token = request.data.get('device_token')
             device.save()
@@ -343,14 +346,14 @@ class SocialLogin(APIView):
         if request.data.get('social_id') in socialidList:
             user = User.objects.filter(social_id=request.data.get('social_id')).order_by('created_on').last()
             if user.status == INACTIVE:
-                return Response(request,{"message":"Your account has been deactivated. Please contact admin to activate your account.","status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":"Your account has been deactivated. Please contact admin to activate your account.","status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
             elif user.status == DELETED:
-                return Response(request,{"message":"Your account has been deleted. Please contact admin.","status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message":"Your account has been deleted. Please contact admin.","status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
             elif user.status == ACTIVE:
                 try:
                     user = user_authenticate(request.data.get('email'),request.data.get('social_id'))
                 except:
-                    return Response(request,{"message":"Invalid Login Credentials.", "status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"message":"Invalid Login Credentials.", "status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
                 
                 if request.data.get("profile_pic"):
                     img_temp = NamedTemporaryFile(delete = True)
@@ -373,11 +376,11 @@ class SocialLogin(APIView):
         else:
             if request.data.get("email"):
                 if User.objects.filter(Q(status=ACTIVE)|Q(status=INACTIVE),email=request.data.get("email")):
-                    return Response(request,{"message":"There is already a registered user with this email id.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"message":"There is already a registered user with this email id.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
 
             if request.data.get("social_id"):
                 if User.objects.filter(Q(status=ACTIVE)|Q(status=INACTIVE),social_id=request.data.get("social_id")):
-                    return Response(request,{"message":"There is already a registered user with this social_id.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"message":"There is already a registered user with this social_id.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
             
             user = User.objects.create(
                 email = request.data.get("email"),
@@ -897,17 +900,10 @@ class UpdateProfileDetails(APIView):
     def post(self, request, *args, **kwargs):
         user = request.user
         data = request.data
-        skin_tone = SkinTone.objects.filter(id=data.get('skin_tone_id'))
-        hair_color = HairColor.objects.filter(id=data.get('hair_color_id'))
-        if not skin_tone:
-            return Response(request,{"message":"Skin tone not found !","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        if not hair_color:
-            return Response(request,{"message":"Hair colour not found !","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        
         first_name = data.get('first_name')
         last_name = data.get('last_name')
-        gender = data.get('gender',MALE)
-        user_image = request.FILES.get('image',None)
+        gender = data.get('gender')
+        user_image = request.FILES.get('image')
         body_type = data.get('body_type')
         others = data.get('others')
         hieght_cm = data.get('hieght_cm')
@@ -921,11 +917,24 @@ class UpdateProfileDetails(APIView):
         if gender is not None: user.gender = int(gender)
         if body_type is not None: user.body_type = int(body_type)
 
-        user.skin_tone = skin_tone
-        user.hair_color = hair_color
+        if data.get('skin_tone_id'):
+            skin_tone = SkinTone.objects.filter(id=data.get('skin_tone_id')).first()
+            if skin_tone:
+                user.skin_tone = skin_tone
+            else:
+                return Response({"message": "Skin tone not found!", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+        if data.get('hair_color_id'):
+            hair_color = HairColor.objects.filter(id=data.get('hair_color_id')).first()
+            if hair_color:
+                user.hair_color = hair_color
+            else:
+                return Response({"message": "Hair colour not found!", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
         user.others = others
         user.hieght_cm = hieght_cm
-        user.user_image = user_image
+        if request.FILES.get('image'):
+            user.user_image = user_image
         # Profile setup status
         message = "Profile updated successfully!"
         if not user.is_profile_setup:
