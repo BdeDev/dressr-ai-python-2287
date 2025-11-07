@@ -2,7 +2,7 @@ from accounts.common_imports import *
 from .serializer import *
 from .healper import *
 
-class GetWardrobe(APIView):
+class GetWardrobeAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
 
@@ -10,16 +10,14 @@ class GetWardrobe(APIView):
         tags=["WarDrobe management"],
         operation_id="wardrobe view",
         operation_description="wardrobe view",
-        manual_parameters=[
-            openapi.Parameter('wardrobe_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='Wardrobe Id'),
-        ],
+        manual_parameters=[ ],
     )
     def get(self, request, *args, **kwargs):
-        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", id=request.query_params.get('wardrobe_id'),user=request.user)
+        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", user=request.user)
         data = WardrobeSerializer(wardrobe,context = {"request":request}).data
         return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
-class EditWardrobe(APIView):
+class EditWardrobeAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
 
@@ -49,72 +47,68 @@ class EditWardrobe(APIView):
         data = WardrobeSerializer(wardrobe,context = {"request":request}).data
         return Response({"data":data,"message": "Wardrobe updated successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
-class AddClothItem(APIView):
+class AddItemInWardrobeAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(
         tags=["WarDrobe management"],
-        operation_id="Add Cloth Items",
-        operation_description="Add Cloth Items",
+        operation_id="Add Item in Wardrobe",
+        operation_description="Add a clothing or accessory item to the user's wardrobe.",
         manual_parameters=[
-            openapi.Parameter('wardrobe_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Wardrobe Id'),
-            openapi.Parameter('category_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Cloth category Id'),
-            openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Occasion Id'),
-            openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Accessory Id'),
-            openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='1:Summer , 2:Winter , 3:Rainy , 4:Spring , 5:All Season'),
-            openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Color'),
-            openapi.Parameter('brand', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Brand'),
-            openapi.Parameter('price', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Price'),
-            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE,description='image'),
+            openapi.Parameter('category_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Cloth category ID (e.g., Shirts, Jeans, Shoes)'),
+            openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
+            openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Accessory ID (e.g., Watch, Bag, Earrings)'),
+            openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1: Summer, 2: Winter, 3: Rainy, 4: Spring, 5: All Season'),
+            openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
+            openapi.Parameter('brand', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Brand'),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description='Image file'),
         ],
     )
-
     def post(self, request, *args, **kwargs):
-        ## Validate Required Fields
-        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "wardrobe_id", "method": "post", "error_message": "Please enter wardrobe id"},
-            {"field_name": "category_id", "method": "post", "error_message": "Please enter cloth category id"},
-            {"field_name": "occasion_id", "method": "post", "error_message": "Please enter occasion id"},
-            {"field_name": "accessory_id", "method": "post", "error_message": "Please enter accessory id"},
-            {"field_name": "weather_type", "method": "post", "error_message": "Please enter  weather type "},
-            {"field_name": "color", "method": "post", "error_message": "Please enter color"},
-            {"field_name": "brand", "method": "post", "error_message": "Please enter brand"},
-            {"field_name": "price", "method": "post", "error_message": "Please enter price"},
-            {"field_name": "image", "method": "post", "error_message": "Please upload image"},
-        ])
-        user = request.user 
-        wardrobe = Wardrobe.objects.get(id=request.data.get('wardrobe_id'))
-        category = ClothCategory.objects.get(id = request.data.get('category_id'))
-        occasion = Occasion.objects.get(id = request.data.get('occasion_id'))
-        accessory = Accessory.objects.get(id = request.data.get('accessory_id'))
+        user = request.user
 
-        if not wardrobe:
-            return Response({"message": "Wardrobe does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not category:
-            return Response({"message": "Category does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not occasion:
-            return Response({"message": "Occasion does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not accessory:
-            return Response({"message": "Accessory does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            wardrobe = Wardrobe.objects.get(user=user)
+        except Wardrobe.DoesNotExist:
+            return Response({"message": "User wardrobe not found. Please create a wardrobe first.","status": status.HTTP_404_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
+
+        category = None
+        occasion = None
+        accessory = None
+
+        if request.data.get('category_id'):
+            category = ClothCategory.objects.filter(id=request.data.get('category_id')).first()
+            if not category:
+                return Response({"message": "Invalid category ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get('occasion_id'):
+            occasion = Occasion.objects.filter(id=request.data.get('occasion_id')).first()
+            if not occasion:
+                return Response({"message": "Invalid occasion ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if request.data.get('accessory_id'):
+            accessory = Accessory.objects.filter(id=request.data.get('accessory_id')).first()
+            if not accessory:
+                return Response({"message": "Invalid accessory ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
         if not int(request.data.get('weather_type')) in [1,2,3,4,5]:
             return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        
-        cloth_items = ClothingItem.objects.create(
-            wardrobe = wardrobe,
-            cloth_category = category,
-            occasion = occasion,
-            accessory  = accessory,
-            weather_type = int(request.data.get('weather_type')),
-            color = request.data.get('color'),
-            brand = request.data.get('brand'),
-            price = request.data.get('price'),
-            date_added = datetime.now(),
-            image = request.FILES.get('image')
-        )
-        return Response({"message": "Cloth item addedd successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
-class RemoveClothFromWardrobe(APIView):
+        cloth_item = ClothingItem.objects.create(
+            wardrobe=wardrobe,
+            cloth_category=category,
+            occasion=occasion,
+            accessory=accessory,
+            weather_type=int(request.data.get('weather_type')),
+            color=request.data.get('color'),
+            brand=request.data.get('brand'),
+            date_added=datetime.now(),
+            image=request.FILES.get('image')
+        )
+        return Response({"message": "Item added successfully!","status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
+    
+class RemoveItemFromWardrobeAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
     parser_classes = [MultiPartParser,FormParser]
 
@@ -134,7 +128,7 @@ class RemoveClothFromWardrobe(APIView):
         cloth_item.delete()
         return Response({"message":"Coth Item Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
-class GetClothItem(APIView):
+class GetItemAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
 
@@ -154,7 +148,7 @@ class GetClothItem(APIView):
         data = ClothItemSerializer(cloth_item,context = {"request":request}).data
         return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
-class GetCloths(APIView):
+class GetItemsAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
 
@@ -170,13 +164,13 @@ class GetCloths(APIView):
         response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
             {"field_name": "wardrobe_id", "method": "get", "error_message": "Please enter wardrobe id"},
         ])
-        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", id=request.query_params.get('wardrobe_id'),user=request.user)
+        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", id=request.query_params.get('wardrobe_id').strip(),user=request.user)
         cloth_item = ClothingItem.objects.filter(wardrobe = wardrobe)
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item)
         data = ClothItemSerializer(cloth_item[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
-class EditWardrobeItem(APIView):
+class EditWardrobeItemAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
 
@@ -233,7 +227,6 @@ class EditWardrobeItem(APIView):
         cloth_item.save()
         data = ClothItemSerializer(cloth_item,context = {"request":request}).data
         return Response({"data":data,"message": "Wardrobe updated successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-    
 
 class GetAccessoriesAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -290,69 +283,60 @@ class GetClothCategoriesAPI(APIView):
         data = ClothCategorySerializer(occasions[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
-
-class CreateOutFitAPI(APIView): ############### not completed yet 
-    permission_classes = (permissions.IsAuthenticated,)
+class CreateOutfitAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(
-        tags=["Outfit management"],
+        tags=["Outfit Management"],
         operation_id="Create Outfit",
         operation_description="Create Outfit",
         manual_parameters=[
-            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING,description='title'),
-            openapi.Parameter('cloth_items', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Cloth Items Id ([item_id1,item_id2,..])'),
-            openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Occasion Id'),
-            openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Accessory Id'),
-            openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='1:Summer , 2:Winter , 3:Rainy , 4:Spring , 5:All Season'),
-            openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Color'),
+            openapi.Parameter('accessory_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Accessory IDs'),
+            openapi.Parameter('category_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Category IDs'),
+            openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
+            openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
+            openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Outfit'),
         ],
     )
+    def post(self, request):
+        user = request.user
+       
+        if request.data.get('accessory_ids'):
+            valid_accessories = Accessory.objects.filter(id__in=request.data.get('accessory_ids').split(','))
+           
+        if request.data.get('category_ids'):
+            valid_categories = ClothCategory.objects.filter(id__in=request.data.get('category_ids').split(','))
 
-    def post(self, request, *args, **kwargs):
-        ## Validate Required Fields
-        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "title", "method": "post", "error_message": "Please enter title"},
-            {"field_name": "occasion_id", "method": "post", "error_message": "Please enter occasion id"},
-            {"field_name": "accessory_id", "method": "post", "error_message": "Please enter accessory id"},
-            {"field_name": "weather_type", "method": "post", "error_message": "Please enter  weather type "},
-            {"field_name": "color", "method": "post", "error_message": "Please enter color"},
-            {"field_name": "cloth_items", "method": "post", "error_message": "Please enter Cloth Items Id ([item_id1,item_id2,..])"},
-        ])
-        user = request.user 
-        category = ClothCategory.objects.get(id = request.data.get('category_id'))
-        occasion = Occasion.objects.get(id = request.data.get('occasion_id'))
-        accessory = Accessory.objects.get(id = request.data.get('accessory_id'))
-        if not category:
-            return Response({"message": "Category does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        occasion = Occasion.objects.filter(id=request.data.get('occasion_id')).first()
         if not occasion:
-            return Response({"message": "Occasion does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not accessory:
-            return Response({"message": "Accessory does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not int(request.data.get('weather_type')) in [1,2,3,4,5]:
-            return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        
-        cloth_items = Outfit.objects.create(
-            title = request.data.get('title').strip(),
-            cloth_category = category,
-            occasion = occasion,
-            accessory  = accessory,
-            weather_type = int(request.data.get('weather_type')),
-            color = request.data.get('color'),
-            created_by = request.user
-        )
-        for item in request.data.get('cloth_items'):
-            cloth_items.items.set(item)
-        cloth_items.save()
-        return Response({"message": "Cloth item addedd successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+            return Response({"message": "Invalid occasion ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
+        if int(request.data.get('weather_type')) not in [1, 2, 3, 4, 5]:
+            return Response({"message": "Invalid weather type","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        items = ClothingItem.objects.filter(wardrobe__user=user).filter(Q(weather_type=int(request.data.get('weather_type')))|Q(occasion_id=request.data.get('occasion_id')),Q(cloth_category__in = valid_categories)|Q(accessory__in = valid_accessories))
+        if request.data.get('color'):
+            items = items.filter(Q(color__iexact=request.data.get('color')) | Q(color__isnull=True))
+        if not items.exists():
+            return Response({"message": "No matching clothing items found for the given filters.", "status": status.HTTP_404_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
+
+        outfit = Outfit.objects.create(
+            title=request.data.get('title').strip() ,
+            occasion=occasion,
+            weather_type=int(request.data.get('weather_type')),
+            created_by=user,
+            color=request.data.get('color')
+        )
+        outfit.items.set(items)
+        return Response({"message": "Outfit created successfully!","outfit_id": outfit.id,"total_items": items.count(),"status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
 
 class MyOutFitListAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(
-        tags=["Outfit management"],
+        tags=["Outfit Management"],
         operation_id="Get All My Outfit",
         operation_description="Get All My Outfit",
         manual_parameters=[
@@ -365,3 +349,153 @@ class MyOutFitListAPI(APIView):
         data = MyOutFitSerializer(outfits[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
+class GetMyOutfitAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Outfit Management"],
+        operation_id="Get outfit",
+        operation_description="Get outfit",
+        manual_parameters=[
+            openapi.Parameter('outfit_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "outfit_id", "method": "get", "error_message": "Please enter outfit id"},
+        ])
+        outfit = get_or_none(Outfit, "Invalid outfit id", id=request.query_params.get('outfit_id'))
+        data = MyOutFitSerializer(outfit,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+class DeleteOutfitAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Outfit Management'],
+        operation_id="Delete outfit",
+        operation_description="Delete outfit",
+        manual_parameters=[
+            openapi.Parameter('outfit_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)
+        ],
+    )
+    def delete(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "outfit_id", "method": "get", "error_message": "Please enter outfit id"},
+        ])
+        outfit = get_or_none(Outfit, "Invalid outfit id", id=request.query_params.get('outfit_id'))
+        outfit.delete()
+        return Response({"message":"Outfit Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+class EditOutfitAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="Edit Wardrobe",
+        operation_description="Edit Wardrobe",
+        manual_parameters=[
+            openapi.Parameter('outfit_id', openapi.IN_FORM, type=openapi.TYPE_STRING),
+            openapi.Parameter('accessory_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Accessory IDs'),
+            openapi.Parameter('category_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Category IDs'),
+            openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
+            openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
+            openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Outfit'),
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        ## Validate Required Fields
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "outfit_id", "method": "post", "error_message": "Please enter outfit id"},
+        ])
+        user = request.user 
+        outfit = get_or_none(Outfit, "Invalid outfit id", id=request.data.get('outfit_id'),created_by=request.user)
+
+        if request.data.get('accessory_ids'):
+            valid_accessories = Accessory.objects.filter(id__in=request.data.get('accessory_ids').split(','))
+           
+        if request.data.get('category_ids'):
+            valid_categories = ClothCategory.objects.filter(id__in=request.data.get('category_ids').split(','))
+
+        occasion = Occasion.objects.filter(id=request.data.get('occasion_id')).first()
+        if not occasion:
+            return Response({"message": "Invalid occasion ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+        if int(request.data.get('weather_type')) not in [1, 2, 3, 4, 5]:
+            return Response({"message": "Invalid weather type","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        items = ClothingItem.objects.filter(wardrobe__user=user).filter(Q(weather_type=int(request.data.get('weather_type')))|Q(occasion_id=request.data.get('occasion_id')),Q(cloth_category__in = valid_categories)|Q(accessory__in = valid_accessories))
+        if request.data.get('color'):
+            items = items.filter(Q(color__iexact=request.data.get('color')) | Q(color__isnull=True))
+        if not items.exists():
+            return Response({"message": "No matching clothing items found for the given filters.", "status": status.HTTP_404_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.data.get('title'):
+            outfit.title = request.data.get('title').strip()
+        if request.data.get('color'):
+            outfit.color = request.data.get('color').strip()
+        if request.data.get('occasion_id'):
+            occasion = Occasion.objects.filter(id=request.data.get('occasion_id')).first()
+            if not occasion:
+                return Response({"message": "Invalid occasion ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+            outfit.occasion = occasion
+        if request.data.get('weather_type'):
+            outfit.weather_type = int(request.data.get('weather_type'))
+        if items:
+            outfit.items.set(items)
+        outfit.save()
+        data = MyOutFitSerializer(outfit,context = {"request":request}).data
+        return Response({"data":data,"message": "Outfit updated successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+class RemoveItemsFromOutfitAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Outfit Management'],
+        operation_id="Delete item from outfit",
+        operation_description="Delete item from outfit",
+        manual_parameters=[
+            openapi.Parameter('outfit_id', openapi.IN_QUERY, type=openapi.TYPE_STRING),
+            openapi.Parameter('item_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)
+        ],
+    )
+    def delete(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "outfit_id", "method": "get", "error_message": "Please enter outfit id"},
+            {"field_name": "item_id", "method": "get", "error_message": "Please enter item id"},
+        ])
+        outfit = get_or_none(Outfit, "Invalid outfit id", id=request.query_params.get('outfit_id'))
+        if not outfit.items.filter(id=request.query_params.get('item_id')).exists():
+            return Response({"error": "Item not found in this outfit"}, status=status.HTTP_404_NOT_FOUND)
+        outfit.items.remove(request.query_params.get('item_id'))
+        outfit.save()
+        return Response({"message":"Outfit Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+class AddItemInOutfitAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Outfit Management'],
+        operation_id="Add item from outfit",
+        operation_description="Add item from outfit",
+        manual_parameters=[
+            openapi.Parameter('outfit_id', openapi.IN_FORM, type=openapi.TYPE_STRING),
+            openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="Item id")
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "outfit_id", "method": "get", "error_message": "Please enter outfit id"},
+            {"field_name": "item_id", "method": "get", "error_message": "Please enter item id"},
+        ])
+        outfit = get_or_none(Outfit, "Invalid outfit id", id=request.data.get('outfit_id'))
+        if not outfit.items.filter(id=request.data.get('item_id')).exists():
+            return Response({"error": "Item not found in this outfit"}, status=status.HTTP_404_NOT_FOUND)
+        outfit.items.add(request.data.get('item_id'))
+        outfit.save()
+        return Response({"message":"Outfit Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)

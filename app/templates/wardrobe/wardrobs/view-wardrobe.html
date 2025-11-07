@@ -89,11 +89,8 @@
                             {% endif %}
                         </div>
                         <div class="card-body">
-                            <h5 class="card-title">{{item.occasion.title}}</h5>
-                            <p class="card-text" >{{ item.brand }}</p>
-                            <p class="card-text" >{{ item.price }}</p>
+                            <h5 class="card-title">{{item.occasion.title|default:'-'}}</h5>
                         </div>
-                        
                     </div>
                 </div>
                 {% endfor %}
