@@ -16,7 +16,7 @@ class ClothCategoryView(View):
             "created_on__date":"created_on",
         })
 
-        if request.POST and not cloth_category:
+        if request.GET and not cloth_category:
             messages.error(request, 'No Data Found')
         return render(request,'wardrobe/wardrobe-essentials/cloth-category.html',{
             "head_title":'Cloth Category Management',
@@ -72,7 +72,7 @@ class OccasionView(View):
             "created_on__date":"created_on",
         })
 
-        if request.POST and not occasion:
+        if request.GET and not occasion:
             messages.error(request, 'No Data Found')
         return render(request,'wardrobe/wardrobe-essentials/occasion.html',{
             "head_title":'Occasion Management',
