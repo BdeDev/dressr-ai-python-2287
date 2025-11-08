@@ -173,12 +173,32 @@
                             </li>
                         </ul>
                     </li>
-                    <li {% if head_title == 'Wardrobe Management'%} class="active" {% endif %}>
-                        <a href="{% url 'wardrobe:wardrobe_list' %}" onclick="Loader()">
-                            <i class="fad fa-user-tie"></i><span>User Wardrobe</span>
-                        </a>
-                    </li>
+                    <li class="submenu {% if head_title == 'Wardrobe Management' or head_title == 'Activity Flags Management' %}active{% endif %}">
+                        <a href="javascript:void(0);"><i class="fad fa-user-tie"></i><span>User Wardrobe</span>
+                        <span class="menu-arrow"></span></a>
+                        <ul>
+                            <li>
+                                <a {% if head_title == 'Wardrobe Management' %} class="active" {% endif %} href="{% url 'wardrobe:wardrobe_list' %}" ><span>User Wardrobe</span></a>
+                            </li>
+                            <li>
+                                <a {% if head_title == 'Activity Flags Management' %} class="active" {% endif %} href="{% url 'wardrobe:activity_flags' %}">
+                                    Trip Activity Flag
+                                </a>
+                            </li>
 
+                            <li>
+                                <a {% if head_title == 'Trips Management' %} class="active" {% endif %} href="{% url 'wardrobe:trip_list' %}">
+                                    Trips
+                                </a>
+                            </li>
+                            <li>
+                                <a {% if head_title == 'Outfit Management' %} class="active" {% endif %} href="{% url 'wardrobe:user_outfit_list' %}">
+                                    Outfit
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+    
                     <li class="submenu {% if head_title == 'Subscription Plan Management' or head_title == 'Purchased Plans' %}active{% endif %}">
                         <a href="javascript:void(0);"><i class="fad fa-bell"></i><span> Subscription</span>
                         <span class="menu-arrow"></span></a>
@@ -210,7 +230,6 @@
                                     Fashion Tip
                                 </a>
                             </li>
-
                             <li>
                                 <a {% if head_title == 'Partner Store Management' %} class="active" {% endif %} href="{% url 'ecommerce:partner_store' %}">
                                     Partner Store
@@ -221,6 +240,7 @@
                                     Discount Offers
                                 </a>
                             </li>
+
                         </ul>
                     </li>
                    
