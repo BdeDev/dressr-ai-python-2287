@@ -1001,3 +1001,22 @@ class HairColorListView(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None),hair_color)
         data = SkinToneSerializer(hair_color[start : end],many=True,context={"request":request}).data
         return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+    
+
+class BodyTypeListView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=["Profile Management"],
+        operation_id="Body Type List",
+        operation_description="Body Type List",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        body_type = BodyType.objects.filter(is_active=True).order_by("-created_on")
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None),body_type)
+        data = BodyTypeSerializer(body_type[start : end],many=True,context={"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)

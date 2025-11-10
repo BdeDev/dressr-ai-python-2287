@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from accounts.common_imports import *
 from .models import *
-from accounts.management.commands.default_data import default_activity_flags
+from accounts.management.commands.default_data import default_activity_flags,default_hair_colors,default_skin_tones,default_body_types
 
 # Create your views here.
 
@@ -301,3 +301,101 @@ class ViewOutfitDetails(View):
     def get(self,request,*args,**kwargs):
         outfit = Outfit.objects.get(id=self.kwargs.get('id'))
         return render(request,'ecommerce/outfits/view-outfit-detail.html',{"outfit":outfit,"head_title":"Outfit Management"})
+    
+
+class HairColorList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        hair_colors  = HairColor.objects.filter(is_active=True).order_by('-created_on')
+        hair_colors = query_filter_constructer(request,hair_colors,{
+            "title__icontains":"title",
+            "color_code":"color_code",
+            "created_on__date":"created_on"
+        })
+        if request.GET and not hair_colors:
+            messages.error(request, 'No Data Found')
+        return render(request,'wardrobe/wardrobe-essentials/hair-color.html',{
+            "head_title":'Hair Color Management',
+            "hair_colors" : get_pagination(request, hair_colors),
+            "search_filters":request.GET.copy(),
+            "scroll_required":True if request.GET else False,
+            "total_objects":hair_colors.count()
+        })
+
+class SkinToneList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        skin_tones  = SkinTone.objects.filter(is_active=True).order_by('-created_on')
+        skin_tones = query_filter_constructer(request,skin_tones,{
+            "title__icontains":"title",
+            "color_code":"color_code",
+            "created_on__date":"created_on"
+        })
+        if request.GET and not skin_tones:
+            messages.error(request, 'No Data Found')
+        return render(request,'wardrobe/wardrobe-essentials/skin-tone.html',{
+            "head_title":'Skin Tone Management',
+            "skin_tones" : get_pagination(request, skin_tones),
+            "search_filters":request.GET.copy(),
+            "scroll_required":True if request.GET else False,
+            "total_objects":skin_tones.count()
+        })
+
+class SyncDefaultHairColor(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        for hair_color in default_hair_colors:
+            hair_color, created = HairColor.objects.get_or_create(
+                title=hair_color["name"],
+                defaults={
+                    "color_code": hair_color["hex"],
+                }
+            )
+        messages.success(request, "Hair Color Sync successfully !")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+class SyncDefaultSkinTone(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        for skin_tone in default_skin_tones:
+            skin_tone, created = SkinTone.objects.get_or_create(
+                title=skin_tone["name"],
+                defaults={
+                    "color_code": skin_tone["hex"],
+                }
+            )
+        messages.success(request, "Skin Tone Sync successfully !")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+class BodyTypeList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        body_types  = BodyType.objects.filter(is_active=True).order_by('-created_on')
+        body_types = query_filter_constructer(request,body_types,{
+            "title__icontains":"title",
+            "description__icontains":"description",
+            "created_on__date":"created_on"
+        })
+        if request.GET and not body_types:
+            messages.error(request, 'No Data Found')
+        return render(request,'wardrobe/wardrobe-essentials/body-type.html',{
+            "head_title":'Body Type Management',
+            "body_types" : get_pagination(request, body_types),
+            "search_filters":request.GET.copy(),
+            "scroll_required":True if request.GET else False,
+            "total_objects":body_types.count()
+        })
+
+class SyncDefaultBodyType(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        for type in default_body_types:
+            type, created = BodyType.objects.get_or_create(
+                title=type["name"],
+                defaults={
+                    "color_code": type["description"],
+                }
+            )
+        messages.success(request, "Body Type Sync successfully !")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

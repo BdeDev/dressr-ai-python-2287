@@ -28,9 +28,7 @@
 								<thead>
 									<tr>
                                         <th><strong>Name</strong></th>
-										<th><strong>Description</strong></th>
                                         <th><strong>Created By</strong></th>
-                                        <th><strong>Activity Flag</strong></th>
                                         <th><strong>Trip Length</strong></th>
 										<th><strong>Created On</strong></th>
 										<th><strong>Actions </strong></th>
@@ -39,9 +37,7 @@
 								<thead>
 									<tr class="search-row">
                                         <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
-										<td><input type="text" value="{{search_filters.description}}" class="form-control" name="description" maxlength="20"></td>
                                         <td><input type="text" value="{{search_filters.created_by.full_name}}" class="form-control" name="created_by" maxlength="20"></td>
-										<td><input type="text" value="{{search_filters.activity_flag.name}}" class="form-control" name="activity_flag" maxlength="20"></td>
                                         <td><input type="number" value="{{search_filters.trip_length}}" class="form-control" name="trip_length" maxlength="20"></td>
 										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
@@ -52,9 +48,7 @@
 										{% for trip in trips %}
 										<tr>
                                             <td> {{trip.title|default:"-"}}</td>
-											<td> {{trip.description|default:"-"}}</td>
                                             <td class='clickable-row' data-href="{% url 'users:view_user' trip.created_by.id %}" > {{trip.created_by.full_name|default:"-"}}</td>
-                                            <td class='clickable-row' data-href="{% url 'wardrobe:activity_flags' %}" > {{trip.activity_flag.name|default:"-"}}</td>
                                             <td> {{trip.trip_length|default:"-"}}</td>
 											<td>
 												<script>
@@ -64,8 +58,8 @@
 											</td>
 											<td>
 												<div class="d-flex">
-                                                    <a title="View" href="{% url 'wardrobe:view_trip_detail' trip.id %}"
-														id="view-btn" class="btn btn-sucess shadow btn-xs sharp">
+													<a title="View Wardrobe" href="{% url 'wardrobe:view_trip_detail' trip.id %}"
+														id="update-btn" class="btn btn-success shadow btn-xs sharp me-1">
 														<i class="fa fa-eye"></i>
 													</a>
 												</div>

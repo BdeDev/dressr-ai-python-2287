@@ -17,9 +17,10 @@ RELEASE_DATE = "2026-04-20"
 """
 User role type name
 """
-USER_ROLE = ((1, "Admin"),(2, "Customer"))
+USER_ROLE = ((1, "Admin"),(2, "Customer"),(3, "Affiliate"))
 ADMIN = 1
 CUSTOMER = 2
+AFFILIATE = 3
 
 """
 User Status 
