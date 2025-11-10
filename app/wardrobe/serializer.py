@@ -47,3 +47,8 @@ class MyOutFitSerializer(ModelSerializer):
     class Meta:
         model = Outfit
         fields = ('__all__')
+
+class TripsSerializer(ModelSerializer):
+    class Meta:
+        model = Trips
+        fields = ('__all__')

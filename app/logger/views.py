@@ -288,6 +288,7 @@ class CampaignTemplateList(View):
         return render(request, 'email-campaigns/campaign-template-list.html', {
             'head_title': 'Email Campaigns Management',
             'campaigns_templates':get_pagination(request,campaigns_templates),
+            "search_filters":request.GET.copy(),
             "total_objects":campaigns_templates.count()
         })
 
@@ -396,6 +397,7 @@ class SMSCampaignTemplateList(View):
         return render(request, 'sms-campaigns/campaign-template-list.html', {
             'head_title': 'SMS Campaigns Management',
             'campaigns_templates':get_pagination(request,campaigns_templates),
+            "search_filters":request.GET.copy(),
             "total_objects":campaigns_templates.count()
         })
 

@@ -21,6 +21,7 @@ class CategoryList(View):
             "head_title":'Fashion Tip category Management',
             "fashion_tip_categories" : get_pagination(request, fashion_tip_categories),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":fashion_tip_categories.count()
         })
     
@@ -114,6 +115,7 @@ class FashionTipList(View):
             "head_title":'Fashion Tip Management',
             "fashion_tips" : get_pagination(request, fashion_tips),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":fashion_tips.count()
         })
     
@@ -226,6 +228,7 @@ class PartnerStoreView(View):
             "head_title":'Partner Store Management',
             "partner_store" : get_pagination(request, partner_store),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":partner_store.count()
         })
     
@@ -294,6 +297,7 @@ class DiscountAdsList(View):
             "head_title":'Discount Ads Management',
             "discount_ads" : get_pagination(request, discount_ads),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":discount_ads.count()
         })
     

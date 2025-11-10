@@ -22,6 +22,7 @@ class ListSubscriptionPlan(View):
             "head_title":'Subscription Plan Management',
             "subscription_plans" : get_pagination(request, subscription_plans),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":subscription_plans.count()
         })
     

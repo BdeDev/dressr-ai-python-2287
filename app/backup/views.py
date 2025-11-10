@@ -24,6 +24,7 @@ class BackupsList(View):
         return render(request, 'backup/backup.html',{
             "head_title": "Backup Management",
             "records": get_pagination(request, records),
+            "search_filters":request.GET.copy(),
             "total_objects": records.count(),
         })
 

@@ -22,6 +22,7 @@ class ContactUsList(View):
         return render(request, 'contactus/contactus-list.html',{
             "head_title": "Contact Us Management",
             "contacts": get_pagination(request, contacts),
+            "search_filters":request.GET.copy(),
             "total_objects": contacts.count(),
         })
 

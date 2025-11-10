@@ -72,8 +72,6 @@ class WearLog(CommonInfo):
     class Meta:
         db_table = 'wearLog'
 
-
-
 class ActivityFlag(CommonInfo):
     name = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -82,14 +80,14 @@ class ActivityFlag(CommonInfo):
         db_table = 'activity_flag'
 
 class Trips(CommonInfo):
-    outfit = models.ManyToManyField(Outfit)
+    outfit = models.ForeignKey(Outfit,on_delete=models.SET_NULL, null=True,blank=True)
     title = models.CharField(max_length=200,blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     location = models.TextField(null=True,blank=True)
     latitude=models.FloatField(null=True,blank=True)
     longitude=models.FloatField(null=True,blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_trips")
-    activity_flag = models.ManyToManyField(ActivityFlag)
+    activity_flag = models.ForeignKey(ActivityFlag,on_delete=models.SET_NULL, null=True,blank=True)
     start_date = models.DateField()
     end_date = models.DateField()
     trip_length = models.PositiveIntegerField(blank=True, null=True)
