@@ -1,0 +1,89 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Body Types</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'wardrobe:body_type_list' %}">Body Types</a></li>
+					</ol>
+				</nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a title="Sync" href="{% url 'wardrobe:sync_default_body_type' %}" id="sync-btn" class="btn btn-theme"><i class="fa fa-sync"></i>Sync Default</a>
+                {% comment %} <a title="Add" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#add-occasion"><i class="fas fa-plus ms-1"></i> Add</a> {% endcomment %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=body_types %}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'wardrobe:body_type_list' %}" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+                                        <th><strong>ID</strong></th>
+                                        <th><strong>Title</strong></th>
+                                        <th><strong>Description</strong></th>
+										<th><strong>Created On</strong></th>
+										{% comment %} <th><strong>Actions </strong></th> {% endcomment %}
+									</tr>
+								</thead>
+								<thead>
+									<tr class="search-row">
+                                        <td><input disabled type="text" value="{{request.GET.id}}" class="form-control" name="id" maxlength="20"></td>
+                                        <td><input type="text" value="{{request.GET.title}}" class="form-control" name="title" maxlength="20"></td>
+                                        <td><input type="text" value="{{request.GET.description}}" class="form-control" name="description" maxlength="20"></td>
+										<td><input type="date" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if body_types %}
+										{% for type in body_types %}
+										<tr>
+                                            <td> {{type.id|default:"-"}} </td>
+                                            <td> {{type.title|default:"-"}} </td>
+                                            <td> {{type.description|default:"-"}} </td>
+											<td>
+												<script>
+													var date = ConvertDateTime("{{ type.created_on|date:'Y-m-d' }}", "{{ type.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											{% comment %} <td>
+												<div class="d-flex">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{cloth.id}}','{{cloth.title}}')"  data-bs-target="#edit-cloth" class="btn btn-info shadow btn-xs sharp me-1">
+														<i class="fa fa-edit"></i>
+													</a>
+                                                    <a title="Delete" href="{% url 'wardrobe:delete_occasion' cloth.id %}"
+														id="delete-btn" class="btn btn-danger shadow btn-xs sharp">
+														<i class="fa fa-trash"></i>
+													</a>
+												</div>
+											</td> {% endcomment %}
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=body_types %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

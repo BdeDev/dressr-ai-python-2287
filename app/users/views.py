@@ -132,6 +132,16 @@ class UsersList(View):
             "total_objects":users.count()
         })
 
+class AffiliateList(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        affiliate = User.objects.filter(role_id=AFFILIATE).order_by('-created_on')
+        if request.GET.get('mobile_no'):
+            affiliate = affiliate.annotate(full_mobile=Concat('country_code', 'mobile_no')).filter(full_mobile__icontains=request.GET.get('mobile_no'))
+        return render(request,'users/affiliate/affiliate-list.html',{
+            "head_title":'Affiliate Management',
+            "affiliate" : affiliate,
+        })
 
 class AddUser(View):
     @method_decorator(admin_only)

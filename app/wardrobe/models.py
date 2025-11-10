@@ -30,6 +30,7 @@ class Accessory(CommonInfo):
         db_table = 'accessories'
 
 class ClothingItem(CommonInfo):
+    title = models.CharField(max_length=200,blank=True, null=True)
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="items",blank=True, null=True)
     image = models.FileField(upload_to="wardrobe/items/",blank=True, null=True)
     cloth_category = models.ForeignKey(ClothCategory,on_delete=models.SET_NULL, null=True,blank=True)
@@ -43,6 +44,7 @@ class ClothingItem(CommonInfo):
     date_added = models.DateTimeField(auto_now_add=True)
     last_worn = models.DateTimeField(blank=True, null=True)
     wear_count = models.PositiveIntegerField(default=0)
+    favourite = models.ManyToManyField(User, related_name='favourite_item')
 
     class Meta:
         db_table = 'clothing_item'
@@ -60,6 +62,7 @@ class Outfit(CommonInfo):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_outfits")
     color = models.CharField(max_length=30,blank=True, null=True)
     notes = models.TextField(blank=True, null=True)  # Style suggestions
+    favourite = models.ManyToManyField(User, related_name='favourite_outfit')
 
     class Meta:
         db_table = 'outfit'
@@ -75,21 +78,22 @@ class WearLog(CommonInfo):
 class ActivityFlag(CommonInfo):
     name = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    create_by = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name="activity_flag")
 
     class Meta:
         db_table = 'activity_flag'
 
 class Trips(CommonInfo):
-    outfit = models.ForeignKey(Outfit,on_delete=models.SET_NULL, null=True,blank=True)
+    outfit = models.ManyToManyField(Outfit)
     title = models.CharField(max_length=200,blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     location = models.TextField(null=True,blank=True)
     latitude=models.FloatField(null=True,blank=True)
     longitude=models.FloatField(null=True,blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_trips")
-    activity_flag = models.ForeignKey(ActivityFlag,on_delete=models.SET_NULL, null=True,blank=True)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    activity_flag = models.ManyToManyField(ActivityFlag)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
     trip_length = models.PositiveIntegerField(blank=True, null=True)
 
     class Meta:

@@ -52,3 +52,9 @@ class TripsSerializer(ModelSerializer):
     class Meta:
         model = Trips
         fields = ('__all__')
+
+
+class ActivityFlagSerializer(ModelSerializer):
+    class Meta:
+        model = ActivityFlag
+        fields = ('__all__')

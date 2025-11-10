@@ -29,26 +29,9 @@
                                 </li>
                                 <li>
                                     <h4> Title </h4>
-                                    <h6>{{trip.Title|default:"-"}}</h6>
+                                    <h6>{{trip.title|default:"-"}}</h6>
                                 </li>
-                                 <li>
-                                    <h4> Outfit </h4>
-                                    <h6>{{trip.outfit.title|capfirst}}
-                                        {% comment %} <div class="d-flex align-items-center display-images">
-                                            {% if trip.outfit.profile_pic %}
-                                                <a href="{{trip.created_by.profile_pic.url}}" data-fancybox>
-                                                    <img src="{{trip.created_by.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
-                                                </a>
-                                            {% else %}
-                                                <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
-                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
-                                                    class="rounded-lg me-2" width="50" alt="">
-                                                </a>
-                                            {% endif %}
-                                            <span>{{trip.outfit.title|capfirst}}</span>
-                                        </div> {% endcomment %}
-                                    </h6>
-                                </li>
+                                 
                                 <li>
                                     <h4>Created By</h4>
                                     <h6>
@@ -63,28 +46,29 @@
                                                     class="rounded-lg me-2" width="50" alt="">
                                                 </a>
                                             {% endif %}
-                                            <span>{{trip.created_by.full_name|capfirst}}</span>
+                                            <span><a class="w-100" href="{% url 'users:view_user'  trip.created_by.id %}">{{trip.created_by.full_name|capfirst}}</a></span>
                                         </div>
                                     </h6>
-                                </li>
-                                <li>
-                                    <h4> Trip Duration </h4>
-                                    <h6>{{trip.trip_length|safe|default:"-"}}</h6>
                                 </li>
                                 <li>
                                     <h4> Description </h4>
                                     <h6>{{trip.description|safe|default:"-"}}</h6>
                                 </li>
+                                {% if trip.activity_flag.all.exists %}
+                                <li>
+                                    <h4> Activity Flag </h4>
+                                    <h6>
+                                    {% for activity in trip.activity_flag.all %}
+                                        {{forloop.counter}}. <a href="{% url 'wardrobe:activity_flags' %}"> {{activity.name|default:"-"}}</a>{% if not forloop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                    </h6>
+                                </li>
+                                {% endif %}
+                                
                             </ul>
                         </div>
                         <div class=" col-md-6  productdetails">
                             <ul class="product-bar mb-2">
-                                <li>
-                                    <h4>Activity Flag</h4>
-                                    <h6>
-                                        <a href="{% url 'wardrobe:activity_flags' %}">{{trip.activity_flag.name|default:"-"}}</a>
-                                    </h6>
-                                </li>
                                 <li>
                                     <h4>Start Date</h4>
                                     <h6>
@@ -97,9 +81,10 @@
                                         {{trip.end_date|date}}
                                     </h6>
                                 </li>
-                            </ul>
-                            <h6> Trip Location </h6>
-                            <ul class="product-bar mb-2">
+                                <li>
+                                    <h4> Trip Duration </h4>
+                                    <h6>{{trip.trip_length|safe|default:"-"}}</h6>
+                                </li>
                                 <li>
                                     <h4>Location</h4>
                                     <h6>
@@ -118,28 +103,20 @@
                                        {{trip.longitude|default:"-"}}
                                     </h6>
                                 </li>
+                                {% if trip.outfit.all.exists %}
+                                <li>
+                                    <h4> Outfit </h4>
+                                    <h6>
+                                    {% for outfit in trip.outfit.all %}
+                                        {{forloop.counter}}. <a href="{% url 'wardrobe:view_outfit_detail' outfit.id %}"> {{outfit.title|default:"-"}}</a>{% if not forloop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                    </h6>
+                                </li>
+                                {% endif %}
                             </ul>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                {% for item in cloth_items %}
-                <div class="col-md-2 col-lg-2 col-sm-12 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            {% if item.image %}
-                                <a href="{{ item.image.url }}" data-fancybox>
-                                    <img src="{{ item.image.url }}" class="card-img-top" width="100" alt="">
-                                </a>
-                            {% endif %}
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">{{item.occasion.title|default:'-'}}</h5>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
             </div>
         </div>
     </div>

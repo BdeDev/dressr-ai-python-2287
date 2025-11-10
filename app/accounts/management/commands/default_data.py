@@ -38,3 +38,15 @@ default_activity_flags = [
     # {"name": "Other activities", "description": "Additional activities, such as skiing or yoga."},
 ]
 
+default_body_types = [
+    {"name": "Hourglass", "description": "Balanced bust and hips with a well-defined waist."},
+    {"name": "Pear", "description": "Wider hips compared to shoulders and bust; weight carried in lower body."},
+    {"name": "Apple", "description": "Broader shoulders or bust with narrower hips and less defined waistline."},
+    {"name": "Rectangle", "description": "Bust, waist, and hips are nearly the same width; minimal curves."},
+    {"name": "Inverted Triangle", "description": "Broad shoulders and chest with narrow hips, creating a V-shape."},
+    {"name": "Diamond", "description": "Fuller midsection with narrower shoulders and hips; high waistline."},
+    {"name": "Oval", "description": "Rounded torso with balanced shoulders and hips, lacking a defined waist."},
+    {"name": "Athletic", "description": "Muscular, well-toned body with broad shoulders and a firm frame."},
+    {"name": "Slim", "description": "Lean and narrow frame with lower body fat and delicate proportions."},
+    {"name": "Plus Size", "description": "Fuller figure with soft curves and proportional upper and lower body."}
+]
