@@ -101,3 +101,9 @@ class HairColorSerializer(ModelSerializer):
     class Meta:
         model = HairColor
         fields = '__all__'
+
+class BodyTypeSerializer(ModelSerializer):
+
+    class Meta:
+        model = BodyType
+        fields = '__all__'

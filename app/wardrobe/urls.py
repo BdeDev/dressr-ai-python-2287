@@ -17,6 +17,14 @@ urlpatterns = [
     re_path(r'^accessory/$', AccessoryView.as_view(), name='accessory'),
     re_path(r'^delete-accessory/(?P<id>[-\w]+)/$', DeleteAccessory.as_view(), name='delete_accessory'),
 
+    re_path(r'^sync-default-hair-color/$', SyncDefaultHairColor.as_view(), name='sync_default_hair_color'),
+    re_path(r'^sync-default-skin-tone/$', SyncDefaultSkinTone.as_view(), name='sync_default_skin_tone'),
+    re_path(r'^hair-color-list/$', HairColorList.as_view(), name='hair_color_list'),
+    re_path(r'^skin-tone-list/$', SkinToneList.as_view(), name='skin_tone_list'),
+    re_path(r'^sync-default-body-type/$', SyncDefaultBodyType.as_view(), name='sync_default_body_type'),
+    re_path(r'^body-type-list/$', BodyTypeList.as_view(), name='body_type_list'),
+
+
     re_path(r'^activity-flags/$', ActivityFlags.as_view(), name='activity_flags'),
     re_path(r'^delete-activity-flag/(?P<id>[-\w]+)/$', DeleteActivityFlag.as_view(), name='delete_activity_flag'),
     re_path(r'^sync-default-activity-flag/$', SyncDefaultActivityFlag.as_view(), name='sync_default_activity_flag'),
@@ -34,6 +42,7 @@ urlpatterns = [
     re_path(r'^remove-item-api/$', RemoveItemFromWardrobeAPI.as_view(), name='remove_item_api'),
     re_path(r'^get-item-api/$', GetItemAPI.as_view(), name='get_item_api'),
     re_path(r'^get-items-api/$', GetItemsAPI.as_view(), name='get_items_api'),
+    re_path(r'^marked-favourite-item-api/$', MarkItemFavouriteAPI.as_view(), name='mark_favourite_item_api'),
 
     ###--------------------------------Wardrobe essentials--------------------------####
     re_path(r'^accessories-api/$', GetAccessoriesAPI.as_view(), name='accessories_api'),
@@ -47,11 +56,19 @@ urlpatterns = [
     re_path(r'^delete-my-outfit-api/$', DeleteOutfitAPI.as_view(), name='delete_my_outfit_api'),
     re_path(r'^delete-item-from-my-outfit-api/$', RemoveItemsFromOutfitAPI.as_view(), name='delete_item_drom_my_outfit_api'),
     re_path(r'^add-item-in-my-outfit-api/$', AddItemInOutfitAPI.as_view(), name='add_item_in_outfit_api'),
+    re_path(r'^marked-favourite-outfit-api/$', MarkOutfitFavouriteAPI.as_view(), name='mark_favourite_outfit_api'),
 
     ##--------------------------------Trip Management-------------------------------##
+    re_path(r'^add-activity-flag-api/$', AddAcivityFlagsAPI.as_view(), name='add_activity_flag_api'),
+    re_path(r'^edit-activity-flag-api/$', EditAcivityFlagsAPI.as_view(), name='edit_activity_flag_api'),
+    re_path(r'^activity-flag-list-api/$', ActivityFlagListAPI.as_view(), name='activity_flag_list_api'),
+    re_path(r'^my-activity-flag-list-api/$', MyActivityFlagListAPI.as_view(), name='my_activity_flag_list_api'),
+    re_path(r'^delete-my-activity-flag-api/$', DeleteMyActivityFlagAPI.as_view(), name='delete_my_activity_flag_api'),
+
+
     re_path(r'^add-trip-api/$', AddTripAPI.as_view(), name='add_trip_api'),
     re_path(r'^get-trip-list-api/$', GetMyAllTripAPI.as_view(), name='get_trip_list_api'),
-    re_path(r'^get-trip-api/$', GetMyOutfitAPI.as_view(), name='get_trip_api'),
+    re_path(r'^get-trip-api/$', GetMyTripOutfitsAPI.as_view(), name='get_trip_api'),
     re_path(r'^delete-trip-api/$', DeleteTripAPI.as_view(), name='delete_trip_api'),
 
     ###--------------------------------Wardrobe essentials-----------------------####

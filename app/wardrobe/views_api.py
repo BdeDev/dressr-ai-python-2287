@@ -10,7 +10,7 @@ class GetWardrobeAPI(APIView):
         tags=["WarDrobe management"],
         operation_id="wardrobe view",
         operation_description="wardrobe view",
-        manual_parameters=[ ],
+        manual_parameters=[],
     )
     def get(self, request, *args, **kwargs):
         wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", user=request.user)
@@ -56,6 +56,7 @@ class AddItemInWardrobeAPI(APIView):
         operation_id="Add Item in Wardrobe",
         operation_description="Add a clothing or accessory item to the user's wardrobe.",
         manual_parameters=[
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_FILE, description='title'),
             openapi.Parameter('category_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Cloth category ID (e.g., Shirts, Jeans, Shoes)'),
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
             openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Accessory ID (e.g., Watch, Bag, Earrings)'),
@@ -96,6 +97,7 @@ class AddItemInWardrobeAPI(APIView):
             return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
         cloth_item = ClothingItem.objects.create(
+            title = request.data.get('title').strip(),
             wardrobe=wardrobe,
             cloth_category=category,
             occasion=occasion,
@@ -511,60 +513,60 @@ class AddItemInOutfitAPI(APIView):
         return Response({"message":"Outfit addedd Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
 
-class AddTripAPI(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
+# class AddTripAPI(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
+#     parser_classes = [MultiPartParser, FormParser]
 
-    @swagger_auto_schema(
-        tags=['Trip Management'],
-        operation_id="Add trip",
-        operation_description="Add a new trip for the user",
-        manual_parameters=[
-            openapi.Parameter('activity', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Activity Flag ID"),
-            openapi.Parameter('activity_flag', openapi.IN_FORM, type=openapi.TYPE_STRING, description="{'name':'fgas','description':'dshdhdf'} (if creating a new one)"),
-            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip title"),
-            openapi.Parameter('description', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip description"),
-            openapi.Parameter('location', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip location"),
-            openapi.Parameter('latitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Latitude"),
-            openapi.Parameter('longitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Longitude"),
-            openapi.Parameter('start_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
-            openapi.Parameter('end_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
-            openapi.Parameter('trip_length', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Duration in days"),
-        ],
-    )
-    def post(self, request, *args, **kwargs):
-        required_fields = ['title', 'description', 'location', 'start_date', 'end_date', 'trip_length']
-        missing = [f for f in required_fields if not request.data.get(f)]
-        if missing:
-            return Response(
-                {"message": f"Missing required fields: {', '.join(missing)}", "status": status.HTTP_400_BAD_REQUEST},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+#     @swagger_auto_schema(
+#         tags=['Trip Management'],
+#         operation_id="Add trip",
+#         operation_description="Add a new trip for the user",
+#         manual_parameters=[
+#             openapi.Parameter('activity', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Activity Flag ID"),
+#             openapi.Parameter('activity_flag', openapi.IN_FORM, type=openapi.TYPE_STRING, description="{'name':'fgas','description':'dshdhdf'} (if creating a new one)"),
+#             openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip title"),
+#             openapi.Parameter('description', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip description"),
+#             openapi.Parameter('location', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip location"),
+#             openapi.Parameter('latitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Latitude"),
+#             openapi.Parameter('longitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Longitude"),
+#             openapi.Parameter('start_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
+#             openapi.Parameter('end_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
+#             openapi.Parameter('trip_length', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Duration in days"),
+#         ],
+#     )
+#     def post(self, request, *args, **kwargs):
+#         required_fields = ['title', 'description', 'location', 'start_date', 'end_date', 'trip_length']
+#         missing = [f for f in required_fields if not request.data.get(f)]
+#         if missing:
+#             return Response(
+#                 {"message": f"Missing required fields: {', '.join(missing)}", "status": status.HTTP_400_BAD_REQUEST},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
         
-        activity_flag_obj = None
-        activity_flag_data = request.data.get('activity_flag')
-        activity_id = request.data.get('activity')
-        if activity_flag_data:
-            activity_flag_json = json.loads(activity_flag_data)
-            activity_flag_obj, _ = ActivityFlag.objects.get_or_create(name=activity_flag_json.get('name').strip(),description=activity_flag_json.get('description').strip())
-        elif activity_id:
-            activity_flag_obj = get_or_none(ActivityFlag, "Invalid activity flag ID", id=activity_id)
-        else:
-            return Response({"message": "Please provide either 'activity' or 'activity_flag'.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        trip, created = Trips.objects.get_or_create(
-            title=request.data.get('title').strip(),
-            description=request.data.get('description').strip(),
-            location=request.data.get('location').strip(),
-            latitude=request.data.get('latitude'),
-            longitude=request.data.get('longitude'),
-            created_by=request.user,
-            activity_flag=activity_flag_obj,
-            start_date=request.data.get('start_date'),
-            end_date=request.data.get('end_date'),
-            trip_length=int(request.data.get('trip_length'))
-        )
-        message = "Trip created successfully!" if created else "Trip already exists."
-        return Response({"message": message, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+#         activity_flag_obj = None
+#         activity_flag_data = request.data.get('activity_flag')
+#         activity_id = request.data.get('activity')
+#         if activity_flag_data:
+#             activity_flag_json = json.loads(activity_flag_data)
+#             activity_flag_obj, _ = ActivityFlag.objects.get_or_create(name=activity_flag_json.get('name').strip(),description=activity_flag_json.get('description').strip())
+#         elif activity_id:
+#             activity_flag_obj = get_or_none(ActivityFlag, "Invalid activity flag ID", id=activity_id)
+#         else:
+#             return Response({"message": "Please provide either 'activity' or 'activity_flag'.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+#         trip, created = Trips.objects.get_or_create(
+#             title=request.data.get('title').strip(),
+#             description=request.data.get('description').strip(),
+#             location=request.data.get('location').strip(),
+#             latitude=request.data.get('latitude'),
+#             longitude=request.data.get('longitude'),
+#             created_by=request.user,
+#             activity_flag=activity_flag_obj,
+#             start_date=request.data.get('start_date'),
+#             end_date=request.data.get('end_date'),
+#             trip_length=int(request.data.get('trip_length'))
+#         )
+#         message = "Trip created successfully!" if created else "Trip already exists."
+#         return Response({"message": message, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
 class GetMyAllTripAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -584,7 +586,7 @@ class GetMyAllTripAPI(APIView):
         data = TripsSerializer(trips[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
-class GetMyOutfitAPI(APIView):
+class GetMyTripOutfitsAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
 
@@ -623,3 +625,238 @@ class DeleteTripAPI(APIView):
         trip = get_or_none(Trips, "Invalid outfit id", id=request.query_params.get('outfit_id'))
         trip.delete()
         return Response({"message":"Trip Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+    
+class AddAcivityFlagsAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Activity Flags Management'],
+        operation_id="Add activity flags",
+        operation_description="Add activity flags",
+        manual_parameters=[
+            openapi.Parameter('name', openapi.IN_FORM, type=openapi.TYPE_STRING,description="activity name"),
+            openapi.Parameter('description', openapi.IN_FORM, type=openapi.TYPE_STRING,description="activity description"),
+            openapi.Parameter('is_other', openapi.IN_FORM, type=openapi.TYPE_STRING,description="if choose other option")
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "name", "method": "post", "error_message": "Please enter name"},
+            {"field_name": "description", "method": "post", "error_message": "Please enter description"},
+        ])
+        activity_flags,crested = ActivityFlag.objects.get_or_create(
+            name = request.data.get('title').strip(),
+            description = request.data.get('description').strip(),
+            created_by = request.user
+        )
+        if crested:
+            return Response({"message":"Activity flag already exist !","status": status.HTTP_400_BAD_REQUEST}, status = status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"Activity flag created Successfully !","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+    
+class EditAcivityFlagsAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Activity Flags Management'],
+        operation_id="Edit activity flags",
+        operation_description="Edit activity flags",
+        manual_parameters=[
+            openapi.Parameter('activity_flag_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="activity flag id"),
+            openapi.Parameter('name', openapi.IN_FORM, type=openapi.TYPE_STRING,description="activity name"),
+            openapi.Parameter('description', openapi.IN_FORM, type=openapi.TYPE_STRING,description="activity description"),
+            openapi.Parameter('is_other', openapi.IN_FORM, type=openapi.TYPE_STRING,description="if choose other option")
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "activity_flag_id", "method": "post", "error_message": "Please enter activity flag id"},
+        ])
+
+        activity_flag = get_or_none(ActivityFlag, "Activity flag does not exist !",id = request.data.get('activity_flag_id'),created_by=request.user)
+        if request.data.get('name'):
+            activity_flag.name = request.data.get('name')
+        if request.data.get('description'):
+            activity_flag.description = request.data.get('description')
+        activity_flag.save()
+        return Response({"message":"Activity flag updated Successfully !","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+class ActivityFlagListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Activity Flags Management"],
+        operation_id="Get All activity flags",
+        operation_description="Get All activity flags",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        activity_flags = ActivityFlag.objects.all().order_by('-created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), activity_flags)
+        data = ActivityFlagSerializer(activity_flags[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+class MyActivityFlagListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Activity Flags Management"],
+        operation_id="My activity flags",
+        operation_description="My activity flags",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        activity_flags = ActivityFlag.objects.filter(created_by=request.user).order_by('-created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), activity_flags)
+        data = ActivityFlagSerializer(activity_flags[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+class DeleteMyActivityFlagAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Activity Flags Management'],
+        operation_id="Delete activity flag",
+        operation_description="Delete activity flag",
+        manual_parameters=[
+            openapi.Parameter('activity_flag_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="activity flag id"),
+        ],
+    )
+    def delete(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "activity_flag_id", "method": "get", "error_message": "Please enter activity flag id"},
+        ])
+        activity_flag = get_or_none(ActivityFlag, "Invalid activity flag id", id=request.query_params.get('activity_flag_id'),created_by=request.user)
+        activity_flag.delete()
+        return Response({"message":"Activity Flag Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+class AddTripAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    @swagger_auto_schema(
+        tags=['Trip Management'],
+        operation_id="Add Trip",
+        operation_description="Create a new trip with mapped activities and outfits.",
+        manual_parameters=[
+            openapi.Parameter('activity',openapi.IN_FORM,type=openapi.TYPE_STRING,description=("[{'activity_flag_id':'ed3rrfe45','outfit_id':'0dere44'},{'activity_flag_id':'ed3rfe45f45','outfit_id':'0dere44'})]")),
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip title"),
+            openapi.Parameter('description', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip description"),
+            openapi.Parameter('location', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip location"),
+            openapi.Parameter('latitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Latitude"),
+            openapi.Parameter('longitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Longitude"),
+            openapi.Parameter('start_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
+            openapi.Parameter('end_date', openapi.IN_FORM, type=openapi.TYPE_STRING ,description="YYYY-MM-DD"),
+            openapi.Parameter('trip_length', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description="Duration in days"),
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        activity_data = request.data.get("activity")
+        if not activity_data:
+            return Response({"message": "No activity data provided.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        activity_ids = []
+        outfit_ids = []
+        if isinstance(activity_data, str):
+            try:
+                activities = json.loads(activity_data)
+            except json.JSONDecodeError:
+                return Response(request,{"message": "Invalid JSON format in 'sessions'.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            activities = activity_data
+
+        trip = Trips.objects.create(
+            title=request.data.get('title').strip(),
+            description=request.data.get('description').strip(),
+            location=request.data.get('location').strip(),
+            latitude=request.data.get('latitude'),
+            longitude=request.data.get('longitude'),
+            start_date=request.data.get('start_date'),
+            end_date=request.data.get('end_date'),
+            trip_length=int(request.data.get('trip_length')),
+            created_by=request.user
+        )
+        
+        for activity_value in activities:
+            activity_id = activity_value['activity_flag_id']
+            outfit_id = activity_value['outfit_id']
+        
+            if activity_id:
+                activity_obj = ActivityFlag.objects.filter(id=activity_id).first()
+                if activity_obj:
+                    activity_ids.append(activity_obj.id)
+            if outfit_id:
+                outfit_obj = Outfit.objects.filter(id=outfit_id).first()
+                if outfit_obj:
+                    outfit_ids.append(outfit_obj.id)
+        if activity_ids:
+            trip.activity_flag.add(*activity_ids)
+        if outfit_ids:
+            trip.outfit.add(*outfit_ids)
+        return Response({"message": "Trip created successfully!","status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
+
+
+class MarkItemFavouriteAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['WarDrobe management'],
+        operation_id="Mark Item as favourite",
+        operation_description="Mark Item as favourite",
+        manual_parameters=[
+            openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="item id"),
+            openapi.Parameter('is_favourite', openapi.IN_FORM, type=openapi.TYPE_STRING,description="1: Favourite , 2 : Not favourite"),
+            ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "item_id", "method": "post", "error_message": "Please enter item id"},
+            {"field_name": "is_favourite", "method": "post", "error_message": "Please enter any one choices"},
+        ])
+        item = get_or_none(ClothingItem,"Item id does not exist !" , id = request.data.get('item_id'))
+        if item in request.user.favourite_item.all():
+            item.favourite.remove(request.user)
+            message = "Item unmarked successfully !"
+        else:
+            item.favourite.add(request.user)
+            message = "Item marked as favourite !"
+        item.save()
+        return Response({"message":message,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+    
+
+class MarkOutfitFavouriteAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Outfit Management'],
+        operation_id="Mark Outfit as favourite",
+        operation_description="Mark Outfit as favourite",
+        manual_parameters=[
+            openapi.Parameter('outfit_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="outfit id"),
+            openapi.Parameter('is_favourite', openapi.IN_FORM, type=openapi.TYPE_STRING,description="1: Favourite , 2 : Not favourite"),
+            ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "outfit_id", "method": "post", "error_message": "Please enter item id"},
+            {"field_name": "is_favourite", "method": "post", "error_message": "Please enter any one choices"},
+        ])
+        outfit = get_or_none(Outfit,"Outfit id does not exist !" , id = request.data.get('outfit_id'))
+        if outfit in request.user.favourite_outfit.all():
+            outfit.favourite.remove(request.user)
+            message = "Item unmarked successfully !"
+        else:
+            outfit.favourite.add(request.user)
+            message = "Item marked as favourite !"
+        outfit.save()
+        return Response({"message":message,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)

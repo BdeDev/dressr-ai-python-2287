@@ -13,6 +13,7 @@ urlpatterns = [
     re_path(r'^view-profile/(?P<id>[-\w]+)/$',ViewUser.as_view(), name='view_user'),
     re_path(r'^edit-admin/(?P<id>[-\w]+)/$',EditAdmin.as_view(), name='edit_admin'),
     re_path(r'^users-list/$', UsersList.as_view(), name='users_list'),
+    re_path(r'^affiliate-list/$', AffiliateList.as_view(), name='affiliate_list'),
     re_path(r'^add-user/$', AddUser.as_view(), name='add_user'),
     re_path(r'^edit-user/(?P<id>[-\w]+)/$', EditUser.as_view(), name='edit_user'),
     re_path(r'^modify-customer-stripe-account/(?P<id>[-\w]+)/$', ModifyCustomerStipeAccount.as_view(), name='modify_customer_stripe_account'),

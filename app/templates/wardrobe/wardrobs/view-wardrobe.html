@@ -78,22 +78,19 @@
                 </div>
             </div>
             <div class="row">
-                {% for item in cloth_items %}
-                <div class="col-md-2 col-lg-2 col-sm-12 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            {% if item.image %}
-                                <a href="{{ item.image.url }}" data-fancybox>
-                                    <img src="{{ item.image.url }}" class="card-img-top" width="100" alt="">
-                                </a>
-                            {% endif %}
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">{{item.occasion.title|default:'-'}}</h5>
-                        </div>
-                    </div>
+            {% for item in cloth_items %}
+            <div class="card" style="width: 18rem;">
+                {% if item.image %}
+                <a href="{{ item.image.url }}" data-fancybox>
+                    <img src="{{ item.image.url }}" class="card-img-top" alt="">
+                </a>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{item.title|default:"-"}}</h5>
+                    <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
                 </div>
-                {% endfor %}
+            </div>
+            {% endfor %}
             </div>
         </div>
     </div>

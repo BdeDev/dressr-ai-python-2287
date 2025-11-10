@@ -74,6 +74,13 @@ class HairColor(CommonInfo):
     class Meta:
         db_table = 'hair_color'
 
+class BodyType(CommonInfo):
+    title = models.CharField(max_length=50, null=True,blank=True)
+    description = models.TextField(null=True,blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'body_type'
 
 class Profile(CommonInfo):
     user = models.OneToOneField(User, on_delete=models.CASCADE,blank=True, null=True)
