@@ -17,6 +17,14 @@ urlpatterns = [
     re_path(r'^accessory/$', AccessoryView.as_view(), name='accessory'),
     re_path(r'^delete-accessory/(?P<id>[-\w]+)/$', DeleteAccessory.as_view(), name='delete_accessory'),
 
+    re_path(r'^activity-flags/$', ActivityFlags.as_view(), name='activity_flags'),
+    re_path(r'^delete-activity-flag/(?P<id>[-\w]+)/$', DeleteActivityFlag.as_view(), name='delete_activity_flag'),
+    re_path(r'^sync-default-activity-flag/$', SyncDefaultActivityFlag.as_view(), name='sync_default_activity_flag'),
+
+    re_path(r'^user-trip-list/$', UserTrips.as_view(), name='trip_list'),
+    re_path(r'^view-trip-details/(?P<id>[-\w]+)/$', ViewTripDetails.as_view(), name='view_trip_detail'),
+    re_path(r'^user-outfit-list/$', UserOutfit.as_view(), name='user_outfit_list'),
+    re_path(r'^view-outfit-details/(?P<id>[-\w]+)/$', ViewOutfitDetails.as_view(), name='view_outfit_detail'),
 
     ### -------------------------------Wardrobe Management--------------------------------###
     re_path(r'^get-wardrobe-api/$', GetWardrobeAPI.as_view(), name='get_wardrobe_api'),
@@ -40,17 +48,16 @@ urlpatterns = [
     re_path(r'^delete-item-from-my-outfit-api/$', RemoveItemsFromOutfitAPI.as_view(), name='delete_item_drom_my_outfit_api'),
     re_path(r'^add-item-in-my-outfit-api/$', AddItemInOutfitAPI.as_view(), name='add_item_in_outfit_api'),
 
+    ##--------------------------------Trip Management-------------------------------##
+    re_path(r'^add-trip-api/$', AddTripAPI.as_view(), name='add_trip_api'),
+    re_path(r'^get-trip-list-api/$', GetMyAllTripAPI.as_view(), name='get_trip_list_api'),
+    re_path(r'^get-trip-api/$', GetMyOutfitAPI.as_view(), name='get_trip_api'),
+    re_path(r'^delete-trip-api/$', DeleteTripAPI.as_view(), name='delete_trip_api'),
 
     ###--------------------------------Wardrobe essentials-----------------------####
     re_path(r'^accessories-api/$', GetAccessoriesAPI.as_view(), name='accessories_api'),
     re_path(r'^occasions-api/$', GetOccasionsAPI.as_view(), name='occasions_api'),
-    re_path(r'^cloth-category-listing-api/$', GetClothCategoriesAPI.as_view(), name='clothcategories_api'),
 
-
-
-    ###-----------------------------OutFit Management-----------------------####
-    re_path(r'^create-outfit-api/$', CreateOutFitAPI.as_view(), name='create_outfit_api'),
-    re_path(r'^my-outfit-list-api/$', MyOutFitListAPI.as_view(), name='my_outfit_list_api'),
 
     # admin panel
     re_path(r'^wardrobe-list/$', WardrobeList.as_view(), name='wardrobe_list'),
