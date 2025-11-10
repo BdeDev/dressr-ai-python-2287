@@ -74,7 +74,22 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+            {% comment %} <div class="row">
+                {% for item in outfit.items.all %}
+                <div class="card" style="width: 18rem;">
+                    {% if item.image %}
+                    <a href="{{ item.image.url }}" data-fancybox>
+                        <img src="{{ item.image.url }}" class="card-img-top" alt="">
+                    </a>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{item.title|default:"-"}}</h5>
+                        <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div> {% endcomment %}
+            {% comment %} <div class="row">
                 {% for item in cloth_items %}
                 <div class="col-md-2 col-lg-2 col-sm-12 mb-3">
                     <div class="card">
@@ -91,7 +106,7 @@
                     </div>
                 </div>
                 {% endfor %}
-            </div>
+            </div> {% endcomment %}
         </div>
     </div>
 </div>
