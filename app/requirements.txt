@@ -27,7 +27,7 @@ stripe
 qrcode
 cryptography
 weasyprint==52.2
-xhtml2pdf
+# xhtml2pdf
 
 ## for celery and celery-beat for schedule tasks 
 redis
