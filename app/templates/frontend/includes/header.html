@@ -17,15 +17,16 @@
       rel="stylesheet"
       href="{% static 'admin-assets/css/swiper-bundle.css' %}"
     />
+      <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
     <link
       rel="stylesheet"
       href="{% static 'admin-assets/css/bootstrap.min.css' %}"
     />
     <link rel="stylesheet" href="{% static 'admin-assets/css/landing.css' %}" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+   <link rel="stylesheet" href="{% static 'admin-assets/css/landing-responsive.css' %}" />
   </head>
   <body>
    <div class="cursor"></div>
@@ -62,21 +63,21 @@
                           <a
                             class="nav-link active"
                             aria-current="page"
-                            href="{% url 'frontend:breweries_list' %}"
+                            href="{% url 'frontend:index' %}"
                             >Home</a
                           >
                         </li>
                         <li class="nav-item">
-                          <a href="{% url 'frontend:breweries_list' %}" class="nav-link">About Us</a>
+                          <a href="{% url 'frontend:about_us' %}" class="nav-link">About Us</a>
                         </li>
                           <li class="nav-item">
-                          <a href="{% url 'frontend:breweries_list' %}" class="nav-link">How It Works</a>
+                          <a href="{% url 'frontend:How_it_works' %}" class="nav-link">How It Works</a>
                         </li>
                         <li class="nav-item">
-                          <a href="{% url 'frontend:breweries_list' %}" class="nav-link">Pricing</a>
+                          <a href="{% url 'frontend:Pricing' %}" class="nav-link">Pricing</a>
                         </li>
                         <li class="nav-item">
-                          <a href="{% url 'frontend:breweries_list' %}" class="nav-link">Contact Us</a>
+                          <a href="{% url 'frontend:contact_us' %}" class="nav-link">Contact Us</a>
                         </li>
                       </ul>
                     </div>
@@ -125,7 +126,7 @@
     >
       <div class="offcanvas-header">
         <h5 class="offcanvas-title text-dark" id="MenuoffcanvasLabel">
-          <img src="{% static 'admin-assets/images/logo.svg' %}" />
+          <img src="{% static 'admin-assets/images/logo-black.svg' %}" />
         </h5>
         <button
           type="button"
@@ -138,24 +139,32 @@
         <div class="side-bar-links">
           <ul class="side-link-list">
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="{% url 'frontend:breweries_list' %}"
+              <a class="nav-link active" aria-current="page" href="{% url 'frontend:index' %}"
                 >Home</a
               >
             </li>
+           <li class="nav-item">
+            <a href="{% url 'frontend:about_us' %}" class="nav-link">About Us</a>
+          </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'frontend:breweries_list' %}">About Us</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'frontend:breweries_list' %}">How It Works</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'frontend:breweries_list' %}">Pricing</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'frontend:breweries_list' %}">Contact Us</a>
-            </li>
+            <a href="{% url 'frontend:How_it_works' %}" class="nav-link">How It Works</a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'frontend:Pricing' %}" class="nav-link">Pricing</a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'frontend:contact_us' %}" class="nav-link">Contact Us</a>
+          </li>
           </ul>
         </div>
+        <div class="app-download p-2">
+        <a class="common-black-btn w-100 text-center mb-0" title="Download App" href="#">
+            Download App
+            <span class="btn-arrow">
+              <img src="{% static 'admin-assets/images/wht-arrow.svg' %}" />
+            </span>
+          </a>
+          </div>
       </div>
     </div>
-    <!-- Mobile Sidebar Menu End -->
+  <!-- Mobile Sidebar Menu End -->

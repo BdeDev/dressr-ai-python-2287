@@ -1,0 +1,160 @@
+@media (min-width:992px) and (max-width:1199px) {
+    .header-navbar .nav-item {
+        margin-right: 25px;
+    }
+
+
+}
+
+@media (min-width:768px) and (max-width:991px) {
+    .contact-img {
+	height: auto;
+}
+   .banner-caption h1 {
+        font-size: 60px;
+    }
+
+    .banner-card {
+
+        min-height: auto;
+        padding: 120px 0;
+    }
+
+    .join-card-top h4 {
+        font-size: 30px;
+        color: #fff;
+    }
+
+    .section-hd-card .section-hd {
+        font-size: 40px;
+    }
+
+    .section-hd-card .section-subhd {
+        font-size: 40px;
+    }
+
+    .upload-card {
+        margin-bottom: 25px;
+    }
+
+    .plan-card {
+        margin-bottom: 25px;
+    }
+
+    .faq-img {
+        margin-bottom: 25px;
+    }
+
+    .ftr-social {
+        margin-bottom: 25px;
+    }
+
+    .imagine-card {
+        margin-bottom: 25px;
+        min-height: auto !important;
+    }
+
+    .imagine-card h4 {
+        font-size: 40px;
+    }
+
+    .join-plan h4 {
+        margin-bottom: 20px;
+        line-height: 30px;
+        font-size: 18px;
+    }
+
+    .join-inr {
+        padding: 35px 35px;
+    }
+
+    .copy-right {
+        text-align: center;
+    }
+
+    .ftr-addrs {
+        justify-content: center !important;
+    }
+
+    .about-main .about-img {
+        height: auto;
+        margin-bottom: 25px;
+    }
+
+
+}
+
+@media (max-width:767px) {
+    .banner-caption h1 {
+        font-size: 60px;
+    }
+
+    .banner-card {
+
+        min-height: auto;
+        padding: 120px 0;
+    }
+
+    .join-card-top h4 {
+        font-size: 30px;
+        color: #fff;
+    }
+
+    .section-hd-card .section-hd {
+        font-size: 40px;
+    }
+
+    .section-hd-card .section-subhd {
+        font-size: 40px;
+    }
+
+    .upload-card {
+        margin-bottom: 25px;
+    }
+
+    .plan-card {
+        margin-bottom: 25px;
+    }
+
+    .faq-img {
+        margin-bottom: 25px;
+    }
+
+    .ftr-social {
+        margin-bottom: 25px;
+    }
+
+    .imagine-card {
+        margin-bottom: 25px;
+        min-height: auto !important;
+    }
+
+    .imagine-card h4 {
+        font-size: 40px;
+    }
+
+    .join-plan h4 {
+        margin-bottom: 20px;
+        line-height: 30px;
+        font-size: 18px;
+    }
+
+    .join-inr {
+        padding: 35px 35px;
+    }
+
+    .copy-right {
+        text-align: center;
+    }
+
+    .ftr-addrs {
+        justify-content: center !important;
+    }
+
+    .about-main .about-img {
+        height: auto;
+        margin-bottom: 25px;
+    }
+
+
+}
