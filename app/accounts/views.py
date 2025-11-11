@@ -3,7 +3,6 @@ import subprocess
 from django.contrib.auth import authenticate, login,logout
 from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.sites.models import Site
-from django.utils.decorators import method_decorator
 from cron_descriptor import get_description
 from .decorators import *
 from django.views.generic import TemplateView,View
@@ -13,8 +12,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
 from accounts.common_imports import *
-from rest_framework.authtoken.models import Token
 from accounts.utils import *
+from rest_framework.authtoken.models import Token
 
 
 
@@ -181,6 +180,7 @@ class ForgotPasswordEmail(View):
             token, _ = Token.objects.get_or_create(user=user)
             reset_path = reverse("accounts:reset_password_user", kwargs={"uid": user.id, "token": token})
             reset_link = request.build_absolute_uri(reset_path)
+            print(">>>>>>>>>>>>",reset_link)
             # Send reset link via email
             bulk_send_user_email(request,user,'EmailTemplates/reset_password_admin.html','Reset Password',request.POST.get("email"),reset_link,"","","",assign_to_celery=False)
             messages.success(request,'A link has been sent on your email to reset your password.')
