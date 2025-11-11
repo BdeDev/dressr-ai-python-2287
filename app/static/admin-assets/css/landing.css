@@ -480,13 +480,12 @@ p{
 	padding-top: 50px;
 	padding-bottom: 10px;
 }
-
-
 .ftr-logo {
 	display: inline-block;
 	margin-bottom: 20px;
+	animation-duration: 4s;
+	animation-iteration-count: infinite;
 }
-
 .ftr-hd {
 	font-size: 22px;
 	margin-bottom: 18px;
@@ -883,3 +882,64 @@ p{
 	margin-bottom: 16px;
 }
 /***Terms & Conditions End***/
+
+.menu-btn {
+	color: #fff;
+	padding: 6px 10px;
+	border: 1px solid #fff;
+	border-radius: 4px;
+	transition: all .5s ease-in-out;
+	display: inline-block;
+}
+.menu-btn:hover {
+	background: #fff;
+	color: #000;
+}
+
+
+.nav-mobile .offcanvas-header {
+	border-bottom: 1px solid #ccc;
+	background: #f4f4f4;
+}
+.side-link-list {
+	padding: 0;
+}
+.side-link-list li {
+	border-bottom: 1px solid #ececec;
+}
+.side-link-list li a::after {
+	content: "\f105";
+	font-family: 'Font Awesome 5 Pro';
+	font-style: normal;
+	font-size: 24px;
+	color:#000;
+	position: absolute;
+	right: 19px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.side-link-list li a {
+	padding: 12px 14px;
+	display: flex;
+	font-size: 18px;
+	color: #222;
+	align-items: center;
+	width: 100%;
+	position: relative;
+	transition: all .5s ease-in-out;
+}
+.side-link-list li a:hover {
+	background: #000;
+	color: #fff;
+}
+
+
+.bounce-1 {
+	animation-name: bounce-1;
+	animation-timing-function: linear;
+}
+@keyframes bounce-1 {
+	0%   { transform: translateY(0); }
+	50%  { transform: translateY(-30px); }
+	100% { transform: translateY(0); }
+}

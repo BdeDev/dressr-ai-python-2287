@@ -42,41 +42,9 @@
     </div>
   </div>
 </section>
-<div class="auth-ftr">
-    <div class="container">
-  <p class="mb-0 copy-right text-center text-black">
-                © 2025 My Dresser. All rights reserved. Developed By
-                <a href="https://toxsl.com/" target="_blank">
-                  ToXSL Technologies.</a
-                >
-              </p>
-    </div>
-</div>
 
-</body>
-</html>
 
-<script>
-    AOS.init({
-        duration: 800,
-        easing: 'ease-in-out'
-    });
-    feather.replace();
-
-    // Toggle password visibility
-    const passwordInput = document.getElementById('password');
-    const toggleBtn = document.getElementById('togglePassword');
-    const eyeIcon = document.getElementById('eyeIcon');
-
-    toggleBtn.addEventListener('click', () => {
-        const type = passwordInput.type === 'password' ? 'text' : 'password';
-        passwordInput.type = type;
-
-        // Toggle icon
-        eyeIcon.setAttribute('data-feather', type === 'password' ? 'eye' : 'eye-off');
-        feather.replace(); // re-render icons
-    });
-</script>
+{% include 'registration/includes/footer.html' %}
 <script>
     $("#forget_password").validate({
     rules: {

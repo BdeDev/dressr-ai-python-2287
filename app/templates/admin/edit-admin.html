@@ -23,26 +23,33 @@
                 <form id="edit-profile" onsubmit="Loader(this.id)" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row">
-                        <div class="col-lg-4 col-md-6 col-12">
+                        <div class="col-lg-6 col-md-6 col-12 mx-auto">
                             <div class="form-group required-field">
                                 <label class="form-label">Username</label>
                                 <input type="text" value="{{ user.username }}" maxlength="50" name="username" id="username" class="form-control">
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-6 col-12">
-                            <div class="form-group required-field">
-                                <label class="form-label">Email</label>
-                                <input type="text" value="{{ user.email }}" disabled maxlength="50" name="email" class="form-control">
+                    </div>
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-12 mx-auto">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Email</label>
+                                    <input type="text" value="{{ user.email }}" disabled maxlength="50" name="email" class="form-control">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-6 col-12">
-                            <div class="form-group">
-                                <label class="form-label">Profile Picture</label>
-                                <input type="file" placeholder="Upload Profile Pic" accept="image/*" name="profile_pic" id="profile_pic" class="form-control">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-12 mx-auto">
+                                <div class="form-group">
+                                    <label class="form-label">Profile Picture</label>
+                                    <input type="file" placeholder="Upload Profile Pic" accept="image/*" name="profile_pic" id="profile_pic" class="form-control">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-lg-12 text-end">
-                            <button type="submit" class="btn btn-primary me-2">Save</a>
+                        <div class="row">
+                            <div class="col-lg-6 text-center mx-auto">
+                                <button type="submit" class="btn btn-primary pe-4 ps-4 me-2">Save</a>
+                            </div>
                         </div>
                     </div>
                 </form>
