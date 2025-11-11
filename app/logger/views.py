@@ -484,7 +484,7 @@ class SendCampaignSMS(View):
             users_mobile_numbers = User.objects.filter(status__in = user_status).annotate(full_mobile=Concat('country_code', 'mobile_no')).values_list('full_mobile',flat=True)
             all_mobile_numbers.extend(users_mobile_numbers)
 
-        Thread(target=send_campaign_sms,args=(campaign_template,all_mobile_numbers)).start()
+        # Thread(target=send_campaign_sms,args=(campaign_template,all_mobile_numbers)).start()
         messages.success(request,'SMS sending process initiated successfully')
         return redirect('logger:send_campaign_sms',id=campaign_template.id)
     
