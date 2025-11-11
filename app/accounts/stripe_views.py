@@ -197,7 +197,7 @@ def create_connected_account(user):
                     "political_exposure": "none"
                 },
                 business_profile={
-                    "url": "https://barobarato.com",
+                    "url": "https://mydressr.com",
                     "mcc": "6012"
                 },
                 tos_acceptance={

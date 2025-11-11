@@ -88,6 +88,20 @@
                                     </h6>
                                 </li>
                                 <li>
+                                    <h4>Gender </h4>
+                                    <h6>
+                                        {% if fashion_tip.gender == 1 %}
+                                        <span class="badge bg-success">MALE</span>
+                                        {% elif fashion_tip.gender == 2 %}
+                                        <span class="badge bg-primary">FEMALE</span>
+                                        {% elif fashion_tip.gender == 3 %}
+                                        <span class="badge bg-secondary">OTHER</span>
+                                        {% elif fashion_tip.gender == 4 %}
+                                        <span class="badge bg-warning">UNISEX</span>
+                                        {% endif %}
+                                    </h6>
+                                </li>
+                                <li>
                                     <h4>Image </h4>
                                     <h6>
                                         <div class="d-flex align-items-center display-images">

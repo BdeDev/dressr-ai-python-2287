@@ -1,81 +1,6 @@
 {% include 'registration/includes/new-header.html' %}
 {% load static %}
 {% load extras %}
-<!-- 
-    <div class="w-full max-w-md" >
-        <div class="bg-white rounded-xl shadow-2xl overflow-hidden" data-aos="zoom-in">
-            <div class="gradient-bg py-6 px-8 text-center">
-                <div class="flex justify-center mb-4">
-                    <div class="bg-white p-3 rounded-full shadow-lg">
-                        <a href="/"><i data-feather="lock" class="text-indigo-600 w-8 h-8"></i></a>
-                    </div>
-                </div>
-                <h1 class="text-2xl font-bold text-white">Dresser AI</h1>
-                <p class="text-indigo-100 mt-1">Admin Portal</p>
-            </div>
-            
-            <div class="px-8 py-6">
-                <form id="login" onsubmit="Loader(this.id)" action="{% url 'accounts:login' %}{% if next %}?next={{next}}{% endif %}" method="POST" class="mt-30">
-                        {% csrf_token %}
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-medium mb-2" for="email">
-                            Email Address
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i data-feather="mail" class="text-gray-400"></i>
-                            </div>
-                            <input id="email" type="email" name="email"
-                                class="input-field w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none"
-                                placeholder="Enter your email"
-                                {% if username %}value="{{ username }}"{% endif %}>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-gray-700 text-sm font-medium mb-2" for="password">Password</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i data-feather="key" class="text-gray-400"></i>
-                            </div>
-                            <input id="password" type="password" name="password" class="input-field w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none" placeholder="Enter your password">
-                            <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none" aria-label="Toggle password visibility">
-                                <i data-feather="eye-off" id="eyeIcon"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center">
-                            <input id="remember-me" type="checkbox" name="remember_me"
-                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                            <label for="remember-me" class="ml-2 block text-sm text-gray-700">
-                                Remember me
-                            </label>
-                        </div>
-                        <div>
-                            <a href="{% url 'accounts:forgot_password_email' %}" class="text-sm text-indigo-600 hover:text-indigo-500">
-                                Forgot password?
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <button type="submit"
-                                class="w-full gradient-bg text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition duration-300 flex items-center justify-center">
-                            Sign In
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-screen bg-white shadow-sm py-4">
-            {% include "admin-includes/footer.html" %}
-        </div>
-    </div> -->
-
-
-
-
 <section class="login-outr d-flex align-items-center">
   <div class="container">
     <div class="login-box row align-items-center">
@@ -87,13 +12,13 @@
             </a>
             <h4 class="mt-2 text-white mb-4">Login In to Your Account</h4>
           </div>
-          <form class="common-form" id="login" onsubmit="Loader(this.id)" action="/accounts/user-login/" method="POST" novalidate="novalidate">
-            <input type="hidden" name="csrfmiddlewaretoken" value="4MzRSkefI8X2l3H14HbYLbr2d7hzJ237yHgyflaWAAsxATlcbGp0llry1VwrkRBi">
+          <form class="common-form" id="login" onsubmit="Loader(this.id)" action="{% url 'accounts:login' %}{% if next %}?next={{next}}{% endif %}" method="POST" novalidate="novalidate">
+            {% csrf_token %}
+            {% comment %} <input type="hidden" name="csrfmiddlewaretoken" value="4MzRSkefI8X2l3H14HbYLbr2d7hzJ237yHgyflaWAAsxATlcbGp0llry1VwrkRBi"> {% endcomment %}
             
-          
             <div class="mb-3">
               <label for="name" class="form-label text-white">Email <span class="text-danger">*</span></label>
-              <input type="email" name="username" placeholder="Enter your email" class="form-control" aria-describedby="emailHelp">
+              <input type="email" name="email" placeholder="Enter your email" {% if username %}value="{{ username }}"{% endif %} class="form-control" aria-describedby="emailHelp">
             </div>
             <div class="mb-4">
                 <label for="password" class="form-label text-white">Password <span class="text-danger">*</span></label>
@@ -107,7 +32,7 @@
                 <input type="checkbox" class="form-check-input" id="exampleCheck1">
                 <label class="form-check-label text-white" for="exampleCheck1">Remember me</label>
               </div>
-              <a href="/accounts/forgot-password-email/" class="forgot-password">Forgot password?</a>
+              <a href="{% url 'accounts:forgot_password_email' %}" class="forgot-password">Forgot password?</a>
             </div>
             <button type="submit" class="w-100 common-black-btn">Login</button>
           </form>

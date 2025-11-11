@@ -26,9 +26,20 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
+    <link rel="stylesheet" href="{% static 'admin-assets/css/flash.css' %}">
   </head>
   <body>
-
+     <!-- Mobile Sidebar Menu End -->
+     {% if messages %}
+    <div class="flash animate--drop-in-fade-out">
+        {% for message in messages %}
+        <div class="flash__icon">
+            <i class="icon far fa-check-circle"></i>
+        </div>
+        <span class="flash__body">{{ message }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
     <!-- Header section start  -->
     <header>
       <div class="header-card bg-dark">
@@ -158,4 +169,4 @@
         </div>
       </div>
     </div>
-    <!-- Mobile Sidebar Menu End -->
+   

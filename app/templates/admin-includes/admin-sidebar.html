@@ -2,15 +2,9 @@
 <div class="admin-header">
     <div>
         <div class="header-left active d-flex align-items-center">
-            <a href="{% url 'frontend:index' %}" class="logo logo-normal w-100">
-                <img src="{% static 'admin-assets/images/230x0w.webp' %}" class="d-none">
-                <img src="{% static 'admin-assets/images/230x0w.webp' %}">
+            <a class="header-logo" href="{% url 'frontend:index' %}">
+                <img src="{% static 'admin-assets/images/logo-wht.svg' %}" />
             </a>
-            <a href="{% url 'frontend:index' %}" class="logo-collapse">
-                <img src="{% static 'admin-assets/images/230x0w.webp' %}" class="dl-none">
-                <img src="{% static 'admin-assets/images/230x0w.webp' %}" class="ml-none">
-            </a>
-            
         </div>
         <a id="mobile_btn" class="mobile_btn" href="#sidebar">
             <span class="bar-icon">
@@ -162,7 +156,7 @@
                             <i class="fas fa-bars"></i><span> Dashboard</span>
                         </a>
                     </li>
-                    <li class="submenu {% if head_title == "User Management" or head_title == "Affiliate Management"  %} class="active" {% endif %}">
+                    <li class="submenu {% if head_title == "User Management" or head_title == "Affiliate Management"  %} active {% endif %}">
                         <a href="javascript:void(0);"><i class="fad fa-users"></i><span> Users</span>
                             <span class="menu-arrow"></span></a>
                         <ul>
@@ -178,9 +172,9 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="submenu {% if head_title == 'Wardrobe Management' or head_title == 'Activity Flags Management' %}active{% endif %}">
-                        <a href="javascript:void(0);"><i class="fad fa-user-tie"></i><span>User Wardrobe</span>
-                        <span class="menu-arrow"></span></a>
+                    <li class="submenu {% if head_title == 'Wardrobe Management' or head_title == 'Activity Flags Management' %}active {% endif %}">
+                        <a href="javascript:void(0);"><i class="fad fa-user-tie"></i><span> Wardrobe</span>
+                            <span class="menu-arrow"></span></a>
                         <ul>
                             <li>
                                 <a {% if head_title == 'Wardrobe Management' %} class="active" {% endif %} href="{% url 'wardrobe:wardrobe_list' %}" ><span>User Wardrobe</span></a>
@@ -244,10 +238,9 @@
                                     Discount Offers
                                 </a>
                             </li>
-
                         </ul>
                     </li>
-                    <li class="submenu {% if head_title == 'Cloth Category Management' or head_title == 'Skin Tone Management' or head_title == 'Hair Color Management' or head_title == 'Occasion Management' or head_title == 'Accessory Management' %}active{% endif %}">
+                    <li class="submenu {% if head_title == 'Cloth Category Management' or head_title == 'Body Type Management' or head_title == 'Skin Tone Management' or head_title == 'Hair Color Management' or head_title == 'Occasion Management' or head_title == 'Accessory Management' %}active{% endif %}">
                         <a href="javascript:void(0);"><i class="fad fa-tshirt"></i><span>Wardrobe Essentials</span>
                         <span class="menu-arrow"></span></a>
                         <ul>
@@ -325,7 +318,6 @@
                             </li>
                         </ul>
                     </li>
-
                     <li class="submenu {% if   head_title == 'Help & Support Management' or head_title == 'Social Links Management' or head_title == 'Domain Management' %}active{% endif %}">
                         <a href="javascript:void(0);"><i class="fad fa-globe"></i><span> Website</span>
                         <span class="menu-arrow"></span></a>
@@ -342,7 +334,6 @@
                             </li>
                         </ul>
                     </li>
-
                     <li class="submenu {% if head_title == 'Login History' or head_title == 'Notifications Management' or head_title == 'Pages Management' or head_title == 'Backup Management' %}active {% endif %}">
                         <a href="javascript:void(0);"><i class="fad fa-users-cog"></i><span> Settings</span>
                             <span class="menu-arrow"></span></a>

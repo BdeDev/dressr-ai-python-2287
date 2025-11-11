@@ -2,7 +2,7 @@ from accounts.common_imports import *
 from django_db_logger .models import StatusLog
 from .serializer import *
 from .models import *
-from accounts.utils import get_pagination
+from accounts.utils import *
 from accounts.tasks import *
 
 
