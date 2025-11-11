@@ -1,21 +1,212 @@
 {% load static %}
-<footer>
-    <div class="copyright-footer">
-        <p class="mb-0 text-center">Copyright  © <span id="full_year">{% now "Y" as current_year %}{{current_year}}</span><a href="{% url 'frontend:index' %}"> Dressr AI </a> | All Rights Reserved. Developed by <a href="https://toxsl.com/" target="_blank">ToXSL Technologies</a>
-        </p>
-    </div>
-</footer>
+{% load extras %}
+
+ <!-- Footer -->
+    <footer class="ftr-card">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-3">
+            <a class="ftr-logo" href="#">
+              <img src="{% static 'admin-assets/images/logo-black.svg' %}" />
+            </a>
+            <p>The future of fashion, powered by AI.</p>
+
+            <div class="ftr-social d-flex align-items-center gap-3 mt-5">
+              <a class="social-link" href="#">
+                <i class="fa-brands fa-twitter"></i>
+              </a>
+              <a class="social-link" href="#">
+                <i class="fa-brands fa-facebook-f"></i>
+              </a>
+              <a class="social-link" href="#">
+                <i class="fa-brands fa-instagram"></i>
+              </a>
+              <a class="social-link" href="#">
+                <i class="fa-brands fa-github"></i>
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-3">
+            <h4 class="ftr-hd">Product</h4>
+            <ul class="ftr-links">
+              <li>
+                <a href="#">Features</a>
+              </li>
+              <li>
+                <a href="#">FAQ's</a>
+              </li>
+              <li>
+                <a href="#">Blog</a>
+              </li>
+            </ul>
+          </div>
+          <div class="col-lg-3">
+            <h4 class="ftr-hd">Company</h4>
+            <ul class="ftr-links">
+              <li>
+                <a href="#">About Us</a>
+              </li>
+              <li>
+                <a href="#">Careers</a>
+              </li>
+              <li>
+                <a href="#">Contact Us</a>
+              </li>
+              
+            </ul>
+          </div>
+          <div class="col-lg-3">
+            <h4 class="ftr-hd">Legal</h4>
+            <ul class="ftr-links">
+              <li>
+                <a href="#">Privacy Policy</a>
+              </li>
+              <li>
+                <a href="#">Terms of Service</a>
+              </li>
+              <li>
+                <a href="#">Security</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="copy-right-card mt-5 pt-3">
+          <div class="row">
+            <div class="col-lg-6">
+              <p class="mb-3 copy-right text-left">
+                © 2025 My Dresser. All rights reserved. Developed By
+                <a href="https://toxsl.com/" target="_blank">
+                  ToXSL Technologies.</a
+                >
+              </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="ftr-addrs d-flex align-items-center justify-content-end gap-2">
+                    <p class="mb-0"> <img class="me-1" src="{% static 'admin-assets/images/envelope.svg' %}" /> hello@dressr.com</p>
+                    <p class="mb-0"><img class="me-1" src="{% static 'admin-assets/images/phone.svg' %}" /> +1 (5555) 123-4567</p>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
 </div>
 
-<script src="{% static 'admin-assets/js/jquery-3.6.0.min.js' %}"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.6/dist/jquery.fancybox.min.js"></script>
-<script src="{% static 'admin-assets/js/jquery.slimscroll.min.js' %}"></script>
-<script src="{% static 'admin-assets/js/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'admin-assets/js/dataTables.bootstrap4.min.js' %}"></script>
-<script src="{% static 'admin-assets/js/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'admin-assets/js/script.js' %}"></script>
-<script src="{% static 'admin-assets/js/validate.js' %}"></script>
-<script src="{% static 'admin-assets/js/additional-methods.min.js' %}"></script>
-<script src="{% static 'admin-assets/js/customized-js/loader.js' %}"></script>
+
+
+    <!-- Jquery JS -->
+    <script src="{% static 'admin-assets/js/jquery.min.js' %}"></script>
+    <!-- Bootstrap JS -->
+    <script src="{% static 'admin-assets/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- Swiper JS -->
+    <script src="{% static 'admin-assets/js/swiper-bundle.js' %}"></script>
+
+    <script src="https://unpkg.com/lenis@1.3.11/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const lenis = new Lenis({
+          lerp: 0.1,
+          smooth: true,
+        });
+
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const cursor = document.querySelector(".cursor");
+        if (!cursor) return;
+
+        document.addEventListener("mousemove", (e) => {
+          const { clientX: x, clientY: y } = e;
+          cursor.style.transform = `translate(${x}px, ${y}px)`;
+        });
+      });
+
+      // ...existing code...
+      document.addEventListener("DOMContentLoaded", () => {
+        const els = document.querySelectorAll(".animate-on-scroll");
+        if (!els.length) return;
+
+        // Set all elements initially invisible
+        els.forEach((el) => {
+          el.style.opacity = 0;
+        });
+
+        const addAnimation = (el) => {
+          const anim = el.dataset.animate || "animate__fadeInUp";
+          el.classList.add("animate__animated", anim);
+          el.style.opacity = 1; // make visible when animation starts
+        };
+
+        if ("IntersectionObserver" in window) {
+          const io = new IntersectionObserver(
+            (entries, obs) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  addAnimation(entry.target);
+                  obs.unobserve(entry.target);
+                }
+              });
+            },
+            { threshold: 0.15 }
+          );
+
+          els.forEach((el) => io.observe(el));
+        } else {
+          els.forEach(addAnimation);
+        }
+      });
+      // ...existing code...
+    </script>
+
+    <script>
+      var swiperClient = new Swiper(".ClientSwiper", {
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+        slidesPerView: 2,
+        spaceBetween: 15,
+        autoplay: {
+          delay: 2500,
+          disableOnInteraction: false,
+        },
+        breakpoints: {
+          320: {
+            slidesPerView: 1,
+            spaceBetween: 10,
+          },
+          576: {
+            slidesPerView: 1,
+            spaceBetween: 20,
+          },
+          768: {
+            slidesPerView: 2,
+            spaceBetween: 20,
+          },
+          992: {
+            slidesPerView: 2,
+            spaceBetween: 20,
+          },
+          1200: {
+            slidesPerView: 3,
+            spaceBetween: 15,
+          },
+        },
+      });
+    </script>
+
+
+
 </body>
 </html>
