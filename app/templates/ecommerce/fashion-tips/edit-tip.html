@@ -64,18 +64,21 @@
                                 </select>
                             </div>
                         </div>
-                        
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Gender</label>
+                                <select name="gender" id="gender" required class="form-control">
+                                    <option value="">Select</option>
+                                    <option {% if fashion_tip.gender == 1 %} selected {% endif %} value="1">Male</option>
+                                    <option {% if fashion_tip.gender == 2 %} selected {% endif %} value="2">Female</option>
+                                    <option {% if fashion_tip.gender == 3 %} selected {% endif %} value="3">Other</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="col-lg-6 col-md-6 col-12">
                         <div class="form-group">
                             <label for="cover_image" class="form-label">Upload Image <span class="text-danger">*</span></label>
-                            <input 
-                            type="file" 
-                            name="cover_image" 
-                            id="cover_image" 
-                            class="form-control" 
-                            accept="image/*" 
-                            required
-                            >
+                            <input type="file" name="cover_image" id="cover_image" class="form-control" accept="image/*" required>
                         </div>
                         </div>
                         <div class="col-lg-6 col-md-6 col-12">

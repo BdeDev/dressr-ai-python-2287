@@ -10,7 +10,7 @@ until [ "`docker inspect -f {{.State.Health.Status}} mysql-django-1`"=="healthy"
 done;
 
 # Run MySQL command inside the container
-docker exec mysql-django-1 mysql -uroot -p"$MYSQL_ROOT_PASSWORD" mysql -e "ALTER USER '$MYSQL_USER'@'%' IDENTIFIED WITH caching_sha2_password BY '$MYSQL_PASSWORD';"
+docker exec mysql-django-1 mysql -u root -p "$MYSQL_ROOT_PASSWORD" mysql -e "ALTER USER '$MYSQL_USER'@'%' IDENTIFIED WITH caching_sha2_password BY '$MYSQL_PASSWORD';"
 
 echo "MySQL is up - running migrations..."
 python3 ./app/manage.py makemigrations

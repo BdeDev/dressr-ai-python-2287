@@ -45,6 +45,7 @@ class ViewUser(View):
             return render(request, 'admin/admin-profile.html', {"user":user,"site":site,"head_title":"Admin Profile"})
         elif user.role_id == CUSTOMER:
             device = Device.objects.filter(user=user).last()
+            outfits = Outfit.objects.filter(created_by = user).order_by('-created_on')
             return render(request, 'users/users/user-profile.html', {
                 "head_title":"User Management",
                 "isCustomer":True,
@@ -53,6 +54,7 @@ class ViewUser(View):
                 "token":Token.objects.filter(user=user).last(),
                 'loginhistory':get_pagination1(request,login_history,1),
                 'wardrobe':Wardrobe.objects.filter(user=user).last(),
+                "outfits":get_pagination(request,outfits)
             })
         else:
             logout(request)

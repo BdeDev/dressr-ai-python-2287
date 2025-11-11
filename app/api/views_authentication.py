@@ -888,7 +888,7 @@ class UpdateProfileDetails(APIView):
         manual_parameters=[
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='first name'),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='last name'),
-            openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='1:Slim 2:Athletic 3:Curvy'),
+            openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='body type id'),
             openapi.Parameter('height', openapi.IN_FORM, type=openapi.TYPE_STRING,description='height in cm'),
             openapi.Parameter('gender', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Male:1 Female:2, Other:3 '),
             openapi.Parameter('skin_tone_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='skin tone id'),
@@ -904,7 +904,6 @@ class UpdateProfileDetails(APIView):
         last_name = data.get('last_name')
         gender = data.get('gender')
         user_image = request.FILES.get('image')
-        body_type = data.get('body_type')
         others = data.get('others')
         hieght_cm = data.get('hieght_cm')
         
@@ -915,8 +914,14 @@ class UpdateProfileDetails(APIView):
         user.full_name = user.first_name + ' ' + user.last_name
 
         if gender is not None: user.gender = int(gender)
-        if body_type is not None: user.body_type = int(body_type)
 
+        if data.get('body_type'):
+            body_type = BodyType.objects.filter(id = data.get('body_type')).first()
+            if body_type:
+                user.body_type = body_type
+            else:
+                return Response({"message":"Body type not found !","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
         if data.get('skin_tone_id'):
             skin_tone = SkinTone.objects.filter(id=data.get('skin_tone_id')).first()
             if skin_tone:

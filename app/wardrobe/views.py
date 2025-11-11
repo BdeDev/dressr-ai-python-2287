@@ -366,7 +366,6 @@ class SyncDefaultSkinTone(View):
             )
         messages.success(request, "Skin Tone Sync successfully !")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-    
 
 class BodyTypeList(View):
     @method_decorator(admin_only)
@@ -386,6 +385,31 @@ class BodyTypeList(View):
             "scroll_required":True if request.GET else False,
             "total_objects":body_types.count()
         })
+    
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        body_type_id = request.POST.get('body_type_id')
+        if body_type_id:
+            body_type = get_or_none(BodyType,'Body type does not exist !',id=body_type_id)
+            if BodyType.objects.filter(title=request.POST.get('title')).exclude(id=body_type_id).exists():
+                messages.error(request, "Body Type already exists!")
+                return redirect('wardrobe:body_type_list')
+            if request.POST.get('title'):
+                body_type.title = request.POST.get('title').strip()
+            if request.POST.get('description'):
+                body_type.description = request.POST.get('description').strip()
+            body_type.save()
+            messages.success(request, "Body Type updated successfully!")
+        else:
+            if BodyType.objects.filter(title=request.POST.get('title')).exists():
+                messages.error(request, "Body Type already exists!")
+                return redirect('wardrobe:body_type_list')
+            BodyType.objects.create(
+                title=request.POST.get('title').strip(),
+                description=request.POST.get('description').strip()
+            )
+            messages.success(request, "Body Type added successfully!")
+        return redirect('wardrobe:body_type_list')
 
 class SyncDefaultBodyType(View):
     @method_decorator(admin_only)
@@ -398,4 +422,12 @@ class SyncDefaultBodyType(View):
                 }
             )
         messages.success(request, "Body Type Sync successfully !")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+class DeleteBodyType(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        body_type = BodyType.objects.get(id=self.kwargs.get('id'))
+        body_type.delete()
+        messages.success(request, "Body type deleted successfully !")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
