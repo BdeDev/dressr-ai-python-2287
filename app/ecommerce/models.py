@@ -60,6 +60,7 @@ class FashionTip(CommonInfo):
     category = models.ForeignKey(FashionTipCategory, on_delete=models.SET_NULL, null=True,blank=True, related_name="tips")
     season = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True,default=ALL_SEASONS)
     style = models.PositiveIntegerField(choices=STYLE,default=CASUAL,blank=True, null=True)
+    gender = models.PositiveIntegerField(choices=GENDER,default=OTHER,blank=True, null=True)
     is_published = models.BooleanField(default=False)
     published_at = models.DateTimeField(blank=True, null=True)
     cover_image = models.FileField(upload_to="fashion_tips/images/", blank=True, null=True)

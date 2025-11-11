@@ -15,7 +15,6 @@
             </div>
             <div class="page-btn d-flex flex-wrap">
                 <a title="Sync" href="{% url 'wardrobe:sync_default_skin_tone' %}" id="sync-btn" class="btn btn-theme"><i class="fa fa-sync"></i>Sync Default</a>
-                {% comment %} <a title="Add" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#add-occasion"><i class="fas fa-plus ms-1"></i> Add</a> {% endcomment %}
             </div>
         </div>
         <div class="card">
@@ -35,7 +34,6 @@
                                         <th><strong>Title</strong></th>
                                         <th><strong>Color Code</strong></th>
 										<th><strong>Created On</strong></th>
-										{% comment %} <th><strong>Actions </strong></th> {% endcomment %}
 									</tr>
 								</thead>
 								<thead>
@@ -60,17 +58,6 @@
 													document.write(date);
 												</script>
 											</td>
-											{% comment %} <td>
-												<div class="d-flex">
-													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{cloth.id}}','{{cloth.title}}')"  data-bs-target="#edit-cloth" class="btn btn-info shadow btn-xs sharp me-1">
-														<i class="fa fa-edit"></i>
-													</a>
-                                                    <a title="Delete" href="{% url 'wardrobe:delete_occasion' cloth.id %}"
-														id="delete-btn" class="btn btn-danger shadow btn-xs sharp">
-														<i class="fa fa-trash"></i>
-													</a>
-												</div>
-											</td> {% endcomment %}
 										</tr>
 										{% endfor %}
 									{% endif %}

@@ -69,44 +69,23 @@
                                         </div>
                                     </h6>
                                 </li>
+                                <li>
+                                    <h4> Items in Outfit ({{outfit.items.count}})</h4>
+                                    <h6>
+                                        <div class="d-flex align-items-center display-images" style="overflow-x:scroll;">
+                                            {% for img in outfit.items.all %}
+                                                <a href="{{img.image.url}}" data-fancybox>
+                                                    <img src="{{img.image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    </h6>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-            {% comment %} <div class="row">
-                {% for item in outfit.items.all %}
-                <div class="card" style="width: 18rem;">
-                    {% if item.image %}
-                    <a href="{{ item.image.url }}" data-fancybox>
-                        <img src="{{ item.image.url }}" class="card-img-top" alt="">
-                    </a>
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{item.title|default:"-"}}</h5>
-                        <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div> {% endcomment %}
-            {% comment %} <div class="row">
-                {% for item in cloth_items %}
-                <div class="col-md-2 col-lg-2 col-sm-12 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            {% if item.image %}
-                                <a href="{{ item.image.url }}" data-fancybox>
-                                    <img src="{{ item.image.url }}" class="card-img-top" width="100" alt="">
-                                </a>
-                            {% endif %}
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">{{item.occasion.title|default:'-'}}</h5>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div> {% endcomment %}
         </div>
     </div>
 </div>

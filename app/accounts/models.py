@@ -40,7 +40,7 @@ class User(AbstractUser,CommonInfo):
     notification_enable = models.BooleanField(default=True)
     email_notification = models.BooleanField(default=False)
     sms_notification = models.BooleanField(default=False)
-    body_type = models.PositiveIntegerField(default=SLIM,choices=BODY_TYPE,null=True, blank=True)
+    body_type = models.ForeignKey('BodyType',on_delete=models.SET_NULL,null=True,blank=True)
     hieght_cm = models.FloatField(default=0.0, null=True, blank=True)
     skin_tone = models.ForeignKey('SkinTone', on_delete=models.SET_NULL,null=True,blank=True)
     hair_color = models.ForeignKey('HairColor', on_delete=models.SET_NULL,null=True,blank=True)

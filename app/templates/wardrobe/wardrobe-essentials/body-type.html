@@ -15,7 +15,7 @@
             </div>
             <div class="page-btn d-flex flex-wrap">
                 <a title="Sync" href="{% url 'wardrobe:sync_default_body_type' %}" id="sync-btn" class="btn btn-theme"><i class="fa fa-sync"></i>Sync Default</a>
-                {% comment %} <a title="Add" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#add-occasion"><i class="fas fa-plus ms-1"></i> Add</a> {% endcomment %}
+                <a title="Add" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#add-body-type"><i class="fas fa-plus ms-1"></i> Add</a>
             </div>
         </div>
         <div class="card">
@@ -35,7 +35,7 @@
                                         <th><strong>Title</strong></th>
                                         <th><strong>Description</strong></th>
 										<th><strong>Created On</strong></th>
-										{% comment %} <th><strong>Actions </strong></th> {% endcomment %}
+                                        <th><strong>Actions</strong></th>
 									</tr>
 								</thead>
 								<thead>
@@ -60,17 +60,17 @@
 													document.write(date);
 												</script>
 											</td>
-											{% comment %} <td>
+											<td>
 												<div class="d-flex">
-													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{cloth.id}}','{{cloth.title}}')"  data-bs-target="#edit-cloth" class="btn btn-info shadow btn-xs sharp me-1">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{type.id}}','{{type.title}}','{{type.title}}')"  data-bs-target="#edit-body-type" class="btn btn-info shadow btn-xs sharp me-1">
 														<i class="fa fa-edit"></i>
 													</a>
-                                                    <a title="Delete" href="{% url 'wardrobe:delete_occasion' cloth.id %}"
+                                                    <a title="Delete" href="{% url 'wardrobe:delete_body_type' type.id %}"
 														id="delete-btn" class="btn btn-danger shadow btn-xs sharp">
 														<i class="fa fa-trash"></i>
 													</a>
 												</div>
-											</td> {% endcomment %}
+											</td>
 										</tr>
 										{% endfor %}
 									{% endif %}
@@ -86,4 +86,123 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="add-body-type" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Cloth Category</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="add-body-types" action="{% url 'wardrobe:body_type_list' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" placeholder="Title" name="title" id="title" class="form-control" maxlength="100" required>
+                                </div>
+                            </div>
+							<div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Description</label>
+                                    <textarea type="text" placeholder="Description" name="description" id="description" class="form-control" maxlength="100" required></textarea>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="edit-body-type" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Body Type</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="edit-body-types" action="{% url 'wardrobe:body_type_list' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="id" id="id" value="">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" name="title" id="title" class="form-control" maxlength="100" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Description</label>
+                                    <textarea type="text" placeholder="Description" name="description" id="description" class="form-control" maxlength="100" required></textarea>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Update</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% include "admin-includes/footer.html" %}
+<script>
+    function GetValue(id, title,description){
+        $('#id').val(id);
+        $('#title').val(title);
+        $('#description').val(description);
+    }
+</script>
+<script type="text/javascript">
+$("#add-body-types").validate({
+	ignore: [],
+	rules: {
+		title: {
+			required: true,
+			},
+        description: {
+			required: true,
+			},
+		},
+	messages: {
+		title: {
+			required: "Please Enter Title",
+			},
+        description: {
+			required: "Please Enter description",
+			},
+        }
+	});  
+
+
+$("#edit-body-types").validate({
+	ignore: []
+	rules: {
+		title: {
+			required: true,
+			},
+        description: {
+			required: true,
+			},
+		},
+	messages: {
+		title: {
+			required: "Please Enter Title",
+			},
+        description: {
+			required: "Please Enter description",
+			},
+        }
+})
+</script>

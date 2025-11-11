@@ -144,7 +144,8 @@ class AddFashionTip(View):
             category = category,
             season = request.POST.get('season'),
             style = request.POST.get('style'),
-            cover_image = request.FILES.get('cover_image')
+            cover_image = request.FILES.get('cover_image'),
+            gender = request.POST.get('gender')
         )
         messages.success(request, "Fashion tip added successfully!")
         return redirect('ecommerce:view_fashion_tip',fashion_tip.id)
@@ -170,11 +171,18 @@ class EditFashionTip(View):
         
         if request.FILES.get('cover_image'):
             fashion_tip.cover_image = request.FILES.get('cover_image')
-        fashion_tip.title = request.POST.get('title').strip()
-        fashion_tip.content = request.POST.get('content')
-        fashion_tip.category = category
-        fashion_tip.season = request.POST.get('season')
-        fashion_tip.style = request.POST.get('style')
+        if request.POST.get('title'):
+            fashion_tip.title = request.POST.get('title').strip()
+        if request.POST.get('content'):
+            fashion_tip.content = request.POST.get('content')
+        if request.POST.get('category'):
+            fashion_tip.category = category
+        if request.POST.get('season'):
+            fashion_tip.season = request.POST.get('season')
+        if request.POST.get('style'):
+            fashion_tip.style = request.POST.get('style')
+        if request.POST.get('gender'):
+            fashion_tip.gender = request.POST.get('gender')
         fashion_tip.save()
         messages.success(request, "Fashion tip updated successfully!")
         return redirect('ecommerce:view_fashion_tip',fashion_tip.id)
