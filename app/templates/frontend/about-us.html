@@ -1,0 +1,322 @@
+{% load static %} {% load extras %} {% include 'frontend/includes/header.html'%}
+<div id="main-wrapper">
+  <section class="page-title-area rest-title-area">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="page-title-wrapper text-center">
+            <h1 class="page-title mb-10">About Us</h1>
+            <div class="breadcrumb-menu">
+              <nav
+                aria-label="Breadcrumbs"
+                class="breadcrumb-trail breadcrumbs"
+              >
+                <ul class="trail-items mb-0">
+                  <li class="trail-item trail-begin">
+                    <a href="#"><span>Home</span></a>
+                  </li>
+                  <li class="trail-item trail-end"><span>About Us</span></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- <section id="about-us" class="about-us-wrapper">
+        <div class="download-app-wrapper section-ptb">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="about-wrapper">
+                            {% if data %}
+                            <p class="paragraph-text mt-35">{{data.content|safe}}</p>
+                            {% else %}
+                            <p class="paragraph-text mt-2">No Data Found</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+  <section class="about-main bg-grey pd-100">
+    <div class="container">
+      <div class="row align-items-center justify-content-between">
+        <div class="col-lg-5 about-left">
+          <div class="about-img">
+            <img src="{% static 'admin-assets/images/faq-img.png' %}" />
+          </div>
+        </div>
+        <div class="col-lg-6 about-left">
+          <div class="section-content">
+            <div class="section-hd-card text-start mb-5">
+              <h4 class="section-subhd">Re-imagine the Way</h4>
+              <h2 class="section-hd">You Dress</h2>
+              <p>
+                Your wardrobe, smarter than ever. From digitizing your closet to
+                AI-powered styling,<br />
+                Dressr transforms how you choose what to wear.
+              </p>
+            </div>
+            <div class="row mt-4">
+              <div class="col-lg-6">
+                <div class="service-wrap d-flex align-items-center">
+                  <div class="service-img">
+                    <i class="fas fa-camera"></i>
+                  </div>
+                  <div class="service-content">
+                    <h6>Digital Closet</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="service-wrap d-flex align-items-center">
+                  <div class="service-img">
+                    <i class="fas fa-magic"></i>
+                  </div>
+                  <div class="service-content">
+                    <h6>AI-Powered Styling</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="service-wrap d-flex align-items-center">
+                  <div class="service-img">
+                    <i class="fas fa-shirt"></i>
+                  </div>
+                  <div class="service-content">
+                    <h6>Virtual Try-On</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="service-wrap d-flex align-items-center">
+                  <div class="service-img">
+                    <i class="fas fa-palette"></i>
+                  </div>
+                  <div class="service-content">
+                    <h6>Style Recommendations</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="service-wrap d-flex align-items-center">
+                  <div class="service-img">
+                    <i class="fas fa-calendar"></i>
+                  </div>
+                  <div class="service-content">
+                    <h6>Outfit Planning</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="service-wrap d-flex align-items-center">
+                  <div class="service-img">
+                    <i class="fas fa-mobile-alt"></i>
+                  </div>
+                  <div class="service-content">
+                    <h6>Cross-Device Sync</h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3">
+              <a class="common-black-btn" href="#"
+                >Contact us
+                <span class="btn-arrow">
+                  <img src="{% static 'admin-assets/images/wht-arrow.svg' %}" />
+                </span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Your Style Section Start -->
+  <section class="your-style-section pd-100">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <div class="section-hd-card mb-5">
+            <h4 class="section-subhd">Your Style,</h4>
+            <h2 class="section-hd">Simplified in 3 Steps</h2>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="upload-card text-center p-4">
+            <div class="upload-icon mb-4">
+              <img src="{% static 'admin-assets/images/upload-dress.svg' %}" />
+            </div>
+            <h4 class="upload-hd mb-3">Upload Your Wardrobe</h4>
+            <p class="upload-para mb-0">Take photos or upload items</p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="upload-card text-center p-4">
+            <div class="upload-icon mb-4">
+              <img src="{% static 'admin-assets/images/create.svg' %}" />
+            </div>
+            <h4 class="upload-hd mb-3">Create Your Avatar</h4>
+            <p class="upload-para mb-0">AI builds your personal digital twin</p>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="upload-card text-center p-4">
+            <div class="upload-icon mb-4">
+              <img src="{% static 'admin-assets/images/dressed.svg' %}" />
+            </div>
+            <h4 class="upload-hd mb-3">Get Dressed by AI</h4>
+            <p class="upload-para mb-0">
+              Receive outfit ideas every day, for any occasion.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center mt-5">
+        <a class="common-black-btn" title="Download App" href="#">
+          Create My Free Account
+          <span class="btn-arrow">
+            <img src="{% static 'admin-assets/images/wht-arrow.svg' %}" />
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+  <!-- Your Style Section End -->
+
+  <!-- Client Section Start -->
+  <section class="Client-sec pd-100">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12 text-center">
+          <div class="section-hd-card mb-5">
+            <h4 class="section-subhd">Loved by Modern Stylists</h4>
+            <h2 class="section-hd">and Everyday Users</h2>
+          </div>
+        </div>
+      </div>
+
+      <div class="client-main">
+        <div class="swiper ClientSwiper">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide">
+              <div class="client-card">
+                <span class="cleint-img">
+                  <img src="{% static 'admin-assets/images/client-1.png' %}" />
+                </span>
+                <div class="client-name-card">
+                  <h4 class="client-name">Emily R.</h4>
+                  <p class="client-designation">Marketing Manager</p>
+                </div>
+                <div class="client-dis">
+                  <p class="client-para">
+                    "I finally stopped saying 'I have nothing to wear!' Thanks,
+                    Dressr!"
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="client-card">
+                <span class="cleint-img">
+                  <img src="{% static 'admin-assets/images/client-2.png' %}" />
+                </span>
+                <div class="client-name-card">
+                  <h4 class="client-name">David K.</h4>
+                  <p class="client-designation">Marketing Manager</p>
+                </div>
+                <div class="client-dis">
+                  <p class="client-para">
+                    "The virtual try-on actually works. I can test looks before
+                    buying."
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="swiper-slide">
+              <div class="client-card">
+                <span class="cleint-img">
+                  <img src="{% static 'admin-assets/images/client-3.png' %}" />
+                </span>
+                <div class="client-name-card">
+                  <h4 class="client-name">Emily R.</h4>
+                  <p class="client-designation">Marketing Manager</p>
+                </div>
+                <div class="client-dis">
+                  <p class="client-para">
+                    "AI picks my outfits based on weather — it's scary good."
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="swiper-slide">
+              <div class="client-card">
+                <span class="cleint-img">
+                  <img src="{% static 'admin-assets/images/client-1.png' %}" />
+                </span>
+                <div class="client-name-card">
+                  <h4 class="client-name">Emily R.</h4>
+                  <p class="client-designation">Marketing Manager</p>
+                </div>
+                <div class="client-dis">
+                  <p class="client-para">
+                    "I finally stopped saying 'I have nothing to wear!' Thanks,
+                    Dressr!"
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="client-card">
+                <span class="cleint-img">
+                  <img src="{% static 'admin-assets/images/client-2.png' %}" />
+                </span>
+                <div class="client-name-card">
+                  <h4 class="client-name">David K.</h4>
+                  <p class="client-designation">Marketing Manager</p>
+                </div>
+                <div class="client-dis">
+                  <p class="client-para">
+                    "The virtual try-on actually works. I can test looks before
+                    buying."
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="swiper-slide">
+              <div class="client-card">
+                <span class="cleint-img">
+                  <img src="{% static 'admin-assets/images/client-3.png' %}" />
+                </span>
+                <div class="client-name-card">
+                  <h4 class="client-name">Emily R.</h4>
+                  <p class="client-designation">Marketing Manager</p>
+                </div>
+                <div class="client-dis">
+                  <p class="client-para">
+                    "AI picks my outfits based on weather — it's scary good."
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Client Section End -->
+</div>
+{% include 'frontend/includes/footer.html' %}
