@@ -39,6 +39,11 @@ urlpatterns = [
     #Django Site Settings
     re_path(r'^update-django-site/$', UpdateDjangoSite.as_view(), name='update_django_site'),
 
+     ## Banners
+    re_path(r'^banners-list/$',BannersList.as_view(), name='banners_list'),
+    re_path(r'^change-banner-status/(?P<id>[-\w]+)/$',ChangeBannerStatus.as_view(), name='change_banner_status'),
+    re_path(r'^delete-banner/(?P<id>[-\w]+)/$',DeleteBanner.as_view(), name='delete_banner'),
+
 ]
 
 

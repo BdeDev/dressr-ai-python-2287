@@ -44,6 +44,7 @@ urlpatterns = [
     re_path(r'^get-item-api/$', GetItemAPI.as_view(), name='get_item_api'),
     re_path(r'^get-items-api/$', GetItemsAPI.as_view(), name='get_items_api'),
     re_path(r'^marked-favourite-item-api/$', MarkItemFavouriteAPI.as_view(), name='mark_favourite_item_api'),
+    re_path(r'^get-cloth-item-by-category-api/$', GetItemByCategoryAPI.as_view(), name='get_cloth_item_by_category_api'),
 
     ###--------------------------------Wardrobe essentials--------------------------####
     re_path(r'^accessories-api/$', GetAccessoriesAPI.as_view(), name='accessories_api'),

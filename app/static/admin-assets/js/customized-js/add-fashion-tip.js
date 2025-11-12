@@ -1,5 +1,3 @@
-
-
 $("#add-fashion-tip").validate({
     ignore: [],
     rules: {
@@ -10,6 +8,9 @@ $("#add-fashion-tip").validate({
             }
         },
         category: {
+            required: true,
+        },
+        season: {
             required: true,
         },
         content: {
@@ -25,6 +26,9 @@ $("#add-fashion-tip").validate({
             },
             category: {
                 required: "Please select category",
+            },
+            season: {
+            required: "Please select season",
             },
             content: {
                 ckrequired: "Please enter description",
