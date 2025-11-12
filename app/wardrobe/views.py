@@ -2,7 +2,7 @@ from django.shortcuts import render
 from accounts.common_imports import *
 from .models import *
 from accounts.management.commands.default_data import default_activity_flags,default_hair_colors,default_skin_tones,default_body_types
-
+from accounts.utils import *
 # Create your views here.
 
 """
