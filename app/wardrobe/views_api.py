@@ -1,4 +1,5 @@
 from accounts.common_imports import *
+from accounts.utils import *
 from .serializer import *
 from .healper import *
 
@@ -56,7 +57,7 @@ class AddItemInWardrobeAPI(APIView):
         operation_id="Add Item in Wardrobe",
         operation_description="Add a clothing or accessory item to the user's wardrobe.",
         manual_parameters=[
-            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_FILE, description='title'),
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='title'),
             openapi.Parameter('category_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Cloth category ID (e.g., Shirts, Jeans, Shoes)'),
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
             openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Accessory ID (e.g., Watch, Bag, Earrings)'),
@@ -97,7 +98,7 @@ class AddItemInWardrobeAPI(APIView):
             return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
         cloth_item = ClothingItem.objects.create(
-            title = request.data.get('title').strip(),
+            title = request.data.get('title'),
             wardrobe=wardrobe,
             cloth_category=category,
             occasion=occasion,
@@ -158,15 +159,10 @@ class GetItemsAPI(APIView):
         tags=["WarDrobe management"],
         operation_id="Get All Cloth",
         operation_description="Get All Cloth",
-        manual_parameters=[
-            openapi.Parameter('wardrobe_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)
-        ],
+        manual_parameters=[],
     )
     def get(self, request, *args, **kwargs):
-        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "wardrobe_id", "method": "get", "error_message": "Please enter wardrobe id"},
-        ])
-        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", id=request.query_params.get('wardrobe_id').strip(),user=request.user)
+        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id",user=request.user)
         cloth_item = ClothingItem.objects.filter(wardrobe = wardrobe)
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item)
         data = ClothItemSerializer(cloth_item[start : end],many=True,context = {"request":request}).data

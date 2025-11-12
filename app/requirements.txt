@@ -28,6 +28,7 @@ qrcode
 cryptography
 weasyprint==52.2
 # xhtml2pdf
+django-debug-toolbar
 
 ## for celery and celery-beat for schedule tasks 
 redis
