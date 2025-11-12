@@ -328,6 +328,7 @@ class LoginHistoryView(View):
         return render(request, 'admin/login-history.html', {
             "head_title":"Login History Management",
             "loginhistory": get_pagination(request, loginhistory),
+            "search_filters":request.GET.copy(),
             "total_objects": loginhistory.count(),
         })
 class DeleteHistory(View):
@@ -411,3 +412,79 @@ class ImportSkinToneView(View):
             else:
                 messages.error(request,f"Hair color already exists: {color['name']}")
         return redirect('seatmap:charts_list')
+    
+## Banner Management
+
+class BannersList(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        banners = Banners.objects.all().order_by('-updated_on').only('id')
+        banners  = query_filter_constructer(request,banners,{
+            "title__icontains":"title",
+            "is_active":"state",
+            "created_on__date":"created_on"
+        })
+        if request.GET and not banners:
+            messages.error(request, 'No data found')
+        return render(request, 'ecommerce/banners/banner-list.html',{
+            "banners":get_pagination(request, banners),
+            "search_filters":request.GET.copy(),
+            "head_title":"Banners Management",
+        })
+    
+    @method_decorator(admin_only)
+    def post(self, request,*args,**kwargs):
+        if request.FILES.get('image'):
+            Banners.objects.create(
+                title = request.POST.get('title'),
+                image = request.FILES.get('image',None),
+                is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
+            )
+            messages.success(request, 'Banner Added Successfully!')
+        return redirect('accounts:banners_list')
+
+
+class ChangeBannerStatus(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        banner = Banners.objects.get(id=self.kwargs['id'])
+        if banner.is_active:
+            banner.is_active = False
+            message = "Banner Deactivated Successfully!"
+        else:
+            if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER:
+                messages.success(request,f'Sorry ,Maximum {MAX_ACTIVE_BANNER} banner could be activated at same time!')
+                return redirect('accounts:banners_list')
+            banner.is_active = True
+            message = "Banner Activated Successfully!"
+        banner.save()
+        messages.success(request,message)
+        return redirect('accounts:banners_list')
+    
+
+class DeleteBanner(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        Banners.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Banner Deleted Successfully!')
+        return redirect('accounts:banners_list')
+
+
+
+# class AddBanner(View):
+#     @method_decorator(admin_only)
+#     def get(self, request, *args, **kwargs):
+#         return render(request,'ecommerce/banners/add-banner.html',{
+#             "head_title":"Banners Management",
+            
+#         })
+#     @method_decorator(admin_only)
+#     def post(self, request,*args,**kwargs):
+#         if request.FILES.get('image'):
+#             Banners.objects.create(
+#                 title = request.POST.get('title'),
+#                 image = request.FILES.get('image',None),
+#                 is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
+#             )
+#             messages.success(request, 'Banner Added Successfully!')
+#         return redirect('services:banners_list')

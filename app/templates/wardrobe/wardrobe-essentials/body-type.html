@@ -91,7 +91,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Add Cloth Category</h4>
+                <h4 class="modal-title">Add Body Type</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -102,13 +102,13 @@
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" placeholder="Title" name="title" id="title" class="form-control" maxlength="100" required>
+                                    <input type="text" placeholder="Title" name="title" id="title" class="form-control" maxlength="100">
                                 </div>
                             </div>
 							<div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Description</label>
-                                    <textarea type="text" placeholder="Description" name="description" id="description" class="form-control" maxlength="100" required></textarea>
+                                    <textarea type="text" placeholder="Description" name="description" id="description" class="form-control" maxlength="100" ></textarea>
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -164,45 +164,4 @@
         $('#description').val(description);
     }
 </script>
-<script type="text/javascript">
-$("#add-body-types").validate({
-	ignore: [],
-	rules: {
-		title: {
-			required: true,
-			},
-        description: {
-			required: true,
-			},
-		},
-	messages: {
-		title: {
-			required: "Please Enter Title",
-			},
-        description: {
-			required: "Please Enter description",
-			},
-        }
-	});  
-
-
-$("#edit-body-types").validate({
-	ignore: []
-	rules: {
-		title: {
-			required: true,
-			},
-        description: {
-			required: true,
-			},
-		},
-	messages: {
-		title: {
-			required: "Please Enter Title",
-			},
-        description: {
-			required: "Please Enter description",
-			},
-        }
-})
-</script>
+<script src="{% static 'admin-assets/js/validations/body-type.js' %}"></script>

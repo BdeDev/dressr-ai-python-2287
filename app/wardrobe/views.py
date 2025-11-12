@@ -41,7 +41,8 @@ class ClothCategoryView(View):
             if ClothCategory.objects.filter(title=title).exclude(id=category_id).exists():
                 messages.error(request, "Cloth Category already exists!")
                 return redirect('wardrobe:cloth_category')
-
+            if request.FILES.get('icon'):
+                cloth_category.icon = request.FILES.get('icon')
             cloth_category.title = title
             cloth_category.save()
             messages.success(request, "Cloth Category updated successfully!")
@@ -50,7 +51,8 @@ class ClothCategoryView(View):
                 messages.error(request, "Cloth Category already exists!")
                 return redirect('wardrobe:cloth_category')
             ClothCategory.objects.create(
-                title=title
+                title=title,
+                icon = request.FILES.get('icon')
             )
             messages.success(request, "Cloth Category added successfully!")
         return redirect('wardrobe:cloth_category')

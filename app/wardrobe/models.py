@@ -13,6 +13,7 @@ class Wardrobe(CommonInfo):
 
 class ClothCategory(CommonInfo):
     title = models.CharField(max_length=100, blank=True, null=True)
+    icon = models.FileField(upload_to="wardrobe/icons/",blank=True, null=True)
 
     class Meta:
         db_table = 'cloth_category'

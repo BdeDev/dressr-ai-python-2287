@@ -77,12 +77,12 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row gap-3">
             {% for item in cloth_items %}
             <div class="card" style="width: 18rem;">
                 {% if item.image %}
                 <a href="{{ item.image.url }}" data-fancybox>
-                    <img src="{{ item.image.url }}" class="card-img-top" alt="">
+                    <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
                 </a>
                 {% endif %}
                 <div class="card-body">

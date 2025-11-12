@@ -124,4 +124,10 @@ class Notifications(CommonInfo):
     class Meta:
         db_table = 'notifications'
 
-
+class Banners(CommonInfo):
+    title = models.CharField(max_length=255,blank=True,null=True)
+    image = models.ImageField(upload_to='banner',blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'banners'

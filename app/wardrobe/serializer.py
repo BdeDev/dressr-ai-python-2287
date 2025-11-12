@@ -1,13 +1,17 @@
 from rest_framework.serializers import ModelSerializer
 from .models import *
+from accounts.utils import *
 from api.serializer import *
 
-
-
 class ClothItemSerializer(ModelSerializer):
+    cloth_category = SerializerMethodField()
+    
     class Meta:
         model = ClothingItem
         fields = ('__all__')
+
+    def get_cloth_category(self,obj):
+        return obj.cloth_category.id,obj.cloth_category.title
 
 
 class WardrobeSerializer(ModelSerializer):

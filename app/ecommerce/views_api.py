@@ -1,4 +1,5 @@
 from accounts.common_imports import *
+from accounts.utils import *
 from .serializer import *
 
 class FashionTipsAPI(APIView):
@@ -21,10 +22,44 @@ class FashionTipsAPI(APIView):
         season = request.query_params.get("season")
         gender = request.query_params.get("gender")
         category = FashionTipCategory.objects.filter(id = category).first()
-        if not category:
-            return Response({"message":"Fashion tp category not found ! ","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
        
         fashion_tips = FashionTip.objects.filter(Q(category=category)|Q(season=season)|Q(gender=gender),is_published=True)
+        if not fashion_tips:
+            fashion_tips = FashionTip.objects.filter(is_published=True)
         start, end, meta_data = get_pages_data(request.query_params.get('page'), fashion_tips)
         data = FashionTipSerializer(fashion_tips[start:end],many=True,context={"request": request}).data
+        return Response({"data": data, "meta": meta_data, "status": status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+class BannersListAPI(APIView):
+    permission_classes = (permissions.AllowAny,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Banners Management"],
+        operation_id="Get All Banners",
+        operation_description="Get All Banners",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        banners = Banners.objects.filter(is_active = True)
+        start, end, meta_data = get_pages_data(request.query_params.get('page'), banners)
+        data = BannerSerializer(banners[start:end],many=True,context={"request": request}).data
+        return Response({"data": data, "meta": meta_data, "status": status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+class PartnerStoresAPI(APIView):
+    permission_classes = (permissions.AllowAny,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Partner Stores Management"],
+        operation_id="Get Partner Stores",
+        operation_description="Get Partner Stores",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        stores = PartnerStore.objects.all().order_by('-created_on')
+        start, end, meta_data = get_pages_data(request.query_params.get('page'), stores)
+        data = PartnerStoresSerializer(stores[start:end],many=True,context={"request": request}).data
         return Response({"data": data, "meta": meta_data, "status": status.HTTP_200_OK},status=status.HTTP_200_OK)

@@ -292,7 +292,7 @@ class UserLoginView(APIView):
         elif user.status == ACTIVE:
             if user.role_id == ADMIN:
                 return Response({"message":"Invalid Login Credentials.","status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-            
+            wardrobe,_ = Wardrobe.objects.get_or_create(user=user)
             ## Manage device data
             device, created = Device.objects.get_or_create(user = user)
             device.device_type = request.data.get('device_type')
