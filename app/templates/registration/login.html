@@ -13,9 +13,7 @@
             <h4 class="mt-2 text-white mb-4">Login In to Your Account</h4>
           </div>
           <form class="common-form" id="login" onsubmit="Loader(this.id)" action="{% url 'accounts:login' %}{% if next %}?next={{next}}{% endif %}" method="POST" novalidate="novalidate">
-            {% csrf_token %}
-            {% comment %} <input type="hidden" name="csrfmiddlewaretoken" value="4MzRSkefI8X2l3H14HbYLbr2d7hzJ237yHgyflaWAAsxATlcbGp0llry1VwrkRBi"> {% endcomment %}
-            
+            {% csrf_token %}            
             <div class="mb-3">
               <label for="name" class="form-label text-white">Email <span class="text-danger">*</span></label>
               <input type="email" name="email" placeholder="Enter your email" {% if username %}value="{{ username }}"{% endif %} class="form-control" aria-describedby="emailHelp">
@@ -24,7 +22,7 @@
                 <label for="password" class="form-label text-white">Password <span class="text-danger">*</span></label>
                <div class="position-relative pass-group">                                            
                   <input type="password" class="form-control" id="password" name="password" autocomplete="on" placeholder="Enter your password" maxlength="30">
-                  <span onclick="changetype()" class="fas toggle-password fa-eye-slash"></span>
+                  <span onclick="changetype(this)" class="fas fa-eye-slash toggle-password"></span>
               </div>
             </div>
           
@@ -59,5 +57,19 @@
   </div>
 </section>
 
-
 {% include 'registration/includes/footer.html' %}
+<script> 
+  function changetype(icon) {
+    const passwordInput = document.getElementById("password");
+
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
+    } else {
+      passwordInput.type = "password";
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
+    }
+  }
+</script>

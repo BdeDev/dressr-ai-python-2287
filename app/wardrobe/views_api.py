@@ -162,8 +162,8 @@ class GetItemsAPI(APIView):
         manual_parameters=[],
     )
     def get(self, request, *args, **kwargs):
-        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id",user=request.user)
-        cloth_item = ClothingItem.objects.filter(wardrobe = wardrobe)
+        # wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id",user=request.user)
+        cloth_item = ClothingItem.objects.filter(wardrobe__user = request.user)
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item)
         data = ClothItemSerializer(cloth_item[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -295,7 +295,7 @@ class CreateOutfitAPI(APIView):
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
             openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
-            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Outfit'),
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='title'),
         ],
     )
     def post(self, request):
@@ -856,3 +856,24 @@ class MarkOutfitFavouriteAPI(APIView):
             message = "Item marked as favourite !"
         outfit.save()
         return Response({"message":message,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+
+class GetItemByCategoryAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="Get Item By category",
+        operation_description="Get Item By category",
+        manual_parameters=[
+            openapi.Parameter('category_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Category id"),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        category = get_or_none(ClothCategory,'category does not exist !', id = request.query_params.get('category_id'))
+        items = ClothingItem.objects.filter(cloth_category = category,wardrobe__user  = request.user).order_by('created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), items)
+        data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)

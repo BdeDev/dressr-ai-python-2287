@@ -53,8 +53,9 @@ class ViewUser(View):
                 "device":device,
                 "token":Token.objects.filter(user=user).last(),
                 'loginhistory':get_pagination1(request,login_history,1),
-                'wardrobe':Wardrobe.objects.filter(user=user).last(),
-                "outfits":get_pagination(request,outfits)
+                'wardrobe':Wardrobe.objects.get(user=user),
+                "outfits":get_pagination(request,outfits),
+                "item_count":ClothingItem.objects.filter(wardrobe__user=user).count(),
             })
         else:
             logout(request)

@@ -1,6 +1,6 @@
 from .views import *
 from django.contrib import admin
-from .views import *
+from .views_api import *
 from django.urls import re_path
 
 admin.autodiscover()
@@ -35,4 +35,9 @@ urlpatterns = [
     re_path(r'^edit-discount/(?P<id>[-\w]+)/$',EditDiscountAd.as_view(), name='edit_discount'),
     re_path(r'^delete-discount/(?P<id>[-\w]+)/$',DeleteDiscountAd.as_view(), name='delete_discount'),
     re_path(r'^discount-status/(?P<id>[-\w]+)/$',PublishUnpublishDiscountAd.as_view(), name='publish_unpublish_discount'),
+
+    ###### api management
+    re_path(r'^banners-list-api/$', BannersListAPI.as_view(), name='banner_list_api'),
+    re_path(r'^fashion-tips-list-api/$', FashionTipsAPI.as_view(), name='fashion_tips_list_api'),
+    re_path(r'^partner-store-api/$', PartnerStoresAPI.as_view(), name='partner_store_api'),
 ]
