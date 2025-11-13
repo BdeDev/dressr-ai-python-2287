@@ -78,7 +78,7 @@ class FaqSeializer(ModelSerializer):
 class ContactUsSerializer(ModelSerializer):
     class Meta:
         model = ContactUs
-        fields = ('id','full_name','email','mobile_no','country_code','country_iso_code','location','link','message','created_on')
+        fields = ('__all__')
 
 
 class NotificationSerializer(ModelSerializer):

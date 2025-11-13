@@ -323,6 +323,39 @@ class HairColorList(View):
             "scroll_required":True if request.GET else False,
             "total_objects":hair_colors.count()
         })
+    
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        hair_color_id = request.POST.get('hair_color_id')
+        if hair_color_id:
+            hair_color = get_or_none(HairColor,'Hair colour does not exist !',id=hair_color_id)
+            if HairColor.objects.filter(title=request.POST.get('title')).exclude(id=hair_color_id).exists():
+                messages.error(request, "Hair colour already exists!")
+                return redirect('wardrobe:hair_color_list')
+            if request.POST.get('title'):
+                hair_color.title = request.POST.get('title').strip()
+            if request.POST.get('color_code'):
+                hair_color.color_code = request.POST.get('color_code').strip()
+            hair_color.save()
+            messages.success(request, "Hair colour updated successfully!")
+        else:
+            if HairColor.objects.filter(title=request.POST.get('title')).exists():
+                messages.error(request, "Hair colour already exists!")
+                return redirect('wardrobe:hair_color_list')
+            HairColor.objects.create(
+                title=request.POST.get('title').strip(),
+                color_code=request.POST.get('color_code').strip()
+            )
+            messages.success(request, "Hair colour added successfully!")
+        return redirect('wardrobe:hair_color_list')
+    
+class DeleteHairColor(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        hair_color = HairColor.objects.get(id=self.kwargs.get('id'))
+        hair_color.delete()
+        messages.success(request, "Hair colour deleted successfully !")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 class SkinToneList(View):
     @method_decorator(admin_only)
@@ -342,6 +375,39 @@ class SkinToneList(View):
             "scroll_required":True if request.GET else False,
             "total_objects":skin_tones.count()
         })
+    
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        skin_tone_id = request.POST.get('skin_tone_id')
+        if skin_tone_id:
+            skin_tone = get_or_none(SkinTone,'Skin tone does not exist !',id=skin_tone_id)
+            if SkinTone.objects.filter(title=request.POST.get('title')).exclude(id=skin_tone_id).exists():
+                messages.error(request, "Skin tone already exists!")
+                return redirect('wardrobe:skin_tone_list')
+            if request.POST.get('title'):
+                skin_tone.title = request.POST.get('title').strip()
+            if request.POST.get('color_code'):
+                skin_tone.color_code = request.POST.get('color_code').strip()
+            skin_tone.save()
+            messages.success(request, "Skin tone updated successfully!")
+        else:
+            if SkinTone.objects.filter(title=request.POST.get('title')).exists():
+                messages.error(request, "Skin tone already exists!")
+                return redirect('wardrobe:skin_tone_list')
+            SkinTone.objects.create(
+                title=request.POST.get('title').strip(),
+                color_code=request.POST.get('color_code').strip()
+            )
+            messages.success(request, "Skin tone added successfully!")
+        return redirect('wardrobe:skin_tone_list')
+    
+class DeleteSkinTone(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        skin_tone = SkinTone.objects.get(id=self.kwargs.get('id'))
+        skin_tone.delete()
+        messages.success(request, "Skin tone deleted successfully !")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 class SyncDefaultHairColor(View):
     @method_decorator(admin_only)
@@ -412,6 +478,7 @@ class BodyTypeList(View):
             )
             messages.success(request, "Body Type added successfully!")
         return redirect('wardrobe:body_type_list')
+
 
 class SyncDefaultBodyType(View):
     @method_decorator(admin_only)

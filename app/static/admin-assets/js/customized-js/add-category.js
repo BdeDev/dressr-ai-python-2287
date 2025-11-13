@@ -4,11 +4,6 @@ $("#add-category").validate({
     rules: {
         name: {
             required: true,
-            normalizer: function (value) {
-                return $.trim(value);
-            },
-            minlength:5,
-            maxlength:50
         },
         description: {
             required: true,
@@ -37,11 +32,6 @@ $("#update-category").validate({
     rules: {
         name: {
             required: true,
-            normalizer: function (value) {
-                return $.trim(value);
-            },
-            minlength:5,
-            maxlength:50
         },
         description: {
             required: true,

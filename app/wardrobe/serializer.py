@@ -48,9 +48,23 @@ class ClothCategorySerializer(ModelSerializer):
         fields = ('__all__')
 
 class MyOutFitSerializer(ModelSerializer):
+    items = SerializerMethodField(read_only=True)
+
     class Meta:
         model = Outfit
         fields = ('__all__')
+
+
+    def get_items(self, obj):
+        items = obj.items.all()
+        return [
+            {
+                "id": item.id,
+                "title": item.title,
+                "image": self.context.get('request').build_absolute_uri(item.image.url) if USE_HTTPS else self.context.get('request').build_absolute_uri(item.image.url)
+            }
+            for item in items
+        ]
 
 class TripsSerializer(ModelSerializer):
     class Meta:

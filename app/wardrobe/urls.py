@@ -24,6 +24,10 @@ urlpatterns = [
     re_path(r'^sync-default-body-type/$', SyncDefaultBodyType.as_view(), name='sync_default_body_type'),
     re_path(r'^body-type-list/$', BodyTypeList.as_view(), name='body_type_list'),
     re_path(r'^delete-body-type/(?P<id>[-\w]+)/$', DeleteBodyType.as_view(), name='delete_body_type'),
+    re_path(r'^delete-hair-color/(?P<id>[-\w]+)/$', DeleteHairColor.as_view(), name='delete_hair_color'),
+    re_path(r'^delete-skin-tone/(?P<id>[-\w]+)/$', DeleteSkinTone.as_view(), name='delete_skin_tone'),
+
+
 
 
     re_path(r'^activity-flags/$', ActivityFlags.as_view(), name='activity_flags'),

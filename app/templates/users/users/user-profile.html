@@ -48,15 +48,15 @@
                                     </li>
                                     <li>
                                         <h4>First Name </h4>
-                                        <h6>{% if user.first_name %}{{user.first_name}}{% else %} - {% endif %}</h6>
+                                        <h6>{% if user.first_name %}{{user.first_name|capfirst}}{% else %} - {% endif %}</h6>
                                     </li>
                                     <li>
                                         <h4>Last Name </h4>
-                                        <h6>{% if user.last_name %}{{user.last_name}}{% else %} - {% endif %}</h6>
+                                        <h6>{% if user.last_name %}{{user.last_name|capfirst}}{% else %} - {% endif %}</h6>
                                     </li>
                                     <li>
                                         <h4>Full Name </h4>
-                                        <h6>{% if user.full_name %}{{user.full_name}}{% else %} - {% endif %}</h6>
+                                        <h6>{% if user.full_name %}{{user.full_name|capfirst}}{% else %} - {% endif %}</h6>
                                     </li>
                                     <li>
                                         <h4>Mobile Number </h4>
@@ -115,6 +115,10 @@
                                         <h4>Hair Color </h4>
                                         <h6>{{user.hair_color.title|default:"-"}}</h6>
                                     </li>
+                                    <li>
+                                        <h4>Height </h4>
+                                        <h6>{% if user.hieght_cm %}{{user.hieght_cm}}{% else %} - {% endif %}</h6>
+                                    </li>
                                     {% if user.status == 3 %}
                                     <li>
                                         <h4>Account Delete Reason </h4>
@@ -136,6 +140,7 @@
                                 </ul>
                             </div>
                             <div class="col-md-6 productdetails">
+                                
                                 <h5><b>Login Information</b></h5>
                                 <ul class="product-bar mb-2">
                                     <li>
@@ -152,7 +157,13 @@
                                     <li>
                                         <h4>Wardrobe</h4>
                                         <h6>
-                                            {% if wardrobe %}<a href="{% url 'wardrobe:view_wardrobe'  wardrobe.id %}">{{wardrobe.id}}</a>{% else %}{% endif %}
+                                            {% if wardrobe %}<a href="{% url 'wardrobe:view_wardrobe'  wardrobe.id %}">{{wardrobe.name}}</a>{% else %}{% endif %}
+                                        </h6>
+                                    </li> 
+                                    <li>
+                                        <h4>Wardrobe Item Count</h4>
+                                        <h6>
+                                            {{item_count|default:"0"}}
                                         </h6>
                                     </li> 
                                     <li>
@@ -181,6 +192,7 @@
                                         </h6>
                                     </li>
                                 </ul>
+
                                 {% if device %}
                                 <h5 class=""><b>Device Information</b></h5>
                                 <ul class="product-bar mb-2">
@@ -212,9 +224,27 @@
                                             {% if device.device_token %}{{device.device_token}}{% else %}-{% endif %}                 
                                         </h6>
                                     </li>
+                                    
                                 </ul>
                                 {% endif %}
-                            </div>
+                                {% if user.user_image %}
+                                <ul class="product-bar mb-2">
+                                    <li>
+                                        <h4>Avatar Image</h4>
+                                        <h6>
+                                            {% if user.user_image %}
+                                                <a class="product-img" href="{{ user.user_image.url }}" data-fancybox="gallery">
+                                                    <img style="height: 50px;" src="{{ user.user_image.url }}" alt="image">
+                                                </a>
+                                                {% else %}
+                                                <a class="product-img" href="{% static 'admin-assets/images/dp.png' %}" data-fancybox="gallery">
+                                                    <img style="height: auto;" src="{% static 'admin-assets/images/dp.png' %}" alt="image">
+                                                </a>
+                                            {% endif %}
+                                        </h6>
+                                    </li>
+                                </ul>
+                                {% endif %}
                         </div>
                         <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
                             {% if user.status == 1 %}

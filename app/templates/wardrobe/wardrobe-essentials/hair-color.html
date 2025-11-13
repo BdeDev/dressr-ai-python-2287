@@ -15,7 +15,7 @@
             </div>
             <div class="page-btn d-flex flex-wrap">
                 <a title="Sync" href="{% url 'wardrobe:sync_default_hair_color' %}" id="sync-btn" class="btn btn-theme"><i class="fa fa-sync"></i>Sync Default</a>
-                {% comment %} <a title="Add" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#add-occasion"><i class="fas fa-plus ms-1"></i> Add</a> {% endcomment %}
+                <a title="Add" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#add-hair-color"><i class="fas fa-plus ms-1"></i> Add</a>
             </div>
         </div>
         <div class="card">
@@ -35,6 +35,7 @@
                                         <th><strong>Title</strong></th>
                                         <th><strong>Color Code</strong></th>
 										<th><strong>Created On</strong></th>
+										<th><strong>Actions</strong></th>
 									</tr>
 								</thead>
 								<thead>
@@ -59,6 +60,17 @@
 													document.write(date);
 												</script>
 											</td>
+											<td>
+												<div class="d-flex">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{color.id}}','{{color.title}}','{{color.color_code}}')"  data-bs-target="#edit-hair-color" class="btn btn-info shadow btn-xs sharp me-1">
+														<i class="fa fa-edit"></i>
+													</a>
+                                                    <a title="Delete" href="{% url 'wardrobe:delete_hair_color' color.id %}"
+														id="delete-btn" class="btn btn-danger shadow btn-xs sharp">
+														<i class="fa fa-trash"></i>
+													</a>
+												</div>
+											</td>
 										</tr>
 										{% endfor %}
 									{% endif %}
@@ -74,4 +86,81 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="add-hair-color" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Hair Colour</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="add-hair-colors" action="{% url 'wardrobe:hair_color_list' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" placeholder="Enter Title" name="title" id="title" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+							<div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Colour Code</label>
+                                    <input type="text" placeholder="Enter colour code" name="color_code" id="color_code" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="edit-hair-color" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Body Type</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="edit-hair-colors" action="{% url 'wardrobe:hair_color_list' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="hair_color_id" id="hair_color_id" value="">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" placeholder="Enter Title" name="title" id="hair_title" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Colour Code</label>
+                                    <input type="text" placeholder="Enter Colour" name="color_code" id="hair_color_code" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Update</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/validations/hair-color.js' %}"></script>
+<script>
+	function GetValue(id, title,color_code){
+    $('#hair_color_id').val(id);
+    $('#hair_title').val(title);
+    $('#hair_color_code').val(color_code);
+}
+</script>
