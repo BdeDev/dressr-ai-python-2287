@@ -40,7 +40,7 @@ class User(AbstractUser,CommonInfo):
     notification_enable = models.BooleanField(default=True)
     email_notification = models.BooleanField(default=False)
     sms_notification = models.BooleanField(default=False)
-    body_type = models.PositiveIntegerField(default=SLIM,choices=BODY_TYPE,null=True, blank=True)
+    body_type = models.ForeignKey('BodyType',on_delete=models.SET_NULL,null=True,blank=True)
     hieght_cm = models.FloatField(default=0.0, null=True, blank=True)
     skin_tone = models.ForeignKey('SkinTone', on_delete=models.SET_NULL,null=True,blank=True)
     hair_color = models.ForeignKey('HairColor', on_delete=models.SET_NULL,null=True,blank=True)
@@ -74,6 +74,13 @@ class HairColor(CommonInfo):
     class Meta:
         db_table = 'hair_color'
 
+class BodyType(CommonInfo):
+    title = models.CharField(max_length=50, null=True,blank=True)
+    description = models.TextField(null=True,blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'body_type'
 
 class Profile(CommonInfo):
     user = models.OneToOneField(User, on_delete=models.CASCADE,blank=True, null=True)
@@ -117,4 +124,10 @@ class Notifications(CommonInfo):
     class Meta:
         db_table = 'notifications'
 
-
+class Banners(CommonInfo):
+    title = models.CharField(max_length=255,blank=True,null=True)
+    image = models.ImageField(upload_to='banner',blank=True,null=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'banners'

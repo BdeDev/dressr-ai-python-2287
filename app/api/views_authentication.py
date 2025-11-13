@@ -292,7 +292,7 @@ class UserLoginView(APIView):
         elif user.status == ACTIVE:
             if user.role_id == ADMIN:
                 return Response({"message":"Invalid Login Credentials.","status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-            
+            wardrobe,_ = Wardrobe.objects.get_or_create(user=user)
             ## Manage device data
             device, created = Device.objects.get_or_create(user = user)
             device.device_type = request.data.get('device_type')
@@ -888,7 +888,8 @@ class UpdateProfileDetails(APIView):
         manual_parameters=[
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='first name'),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='last name'),
-            openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='1:Slim 2:Athletic 3:Curvy'),
+            openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='body type id'),
+            openapi.Parameter('profile_pic', openapi.IN_FORM, type=openapi.TYPE_FILE, description="Add profile pic image"),
             openapi.Parameter('height', openapi.IN_FORM, type=openapi.TYPE_STRING,description='height in cm'),
             openapi.Parameter('gender', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Male:1 Female:2, Other:3 '),
             openapi.Parameter('skin_tone_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='skin tone id'),
@@ -903,8 +904,8 @@ class UpdateProfileDetails(APIView):
         first_name = data.get('first_name')
         last_name = data.get('last_name')
         gender = data.get('gender')
+        profile_pic = request.FILES.get('profile_pic')
         user_image = request.FILES.get('image')
-        body_type = data.get('body_type')
         others = data.get('others')
         hieght_cm = data.get('hieght_cm')
         
@@ -915,8 +916,14 @@ class UpdateProfileDetails(APIView):
         user.full_name = user.first_name + ' ' + user.last_name
 
         if gender is not None: user.gender = int(gender)
-        if body_type is not None: user.body_type = int(body_type)
 
+        if data.get('body_type'):
+            body_type = BodyType.objects.filter(id = data.get('body_type')).first()
+            if body_type:
+                user.body_type = body_type
+            else:
+                return Response({"message":"Body type not found !","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
         if data.get('skin_tone_id'):
             skin_tone = SkinTone.objects.filter(id=data.get('skin_tone_id')).first()
             if skin_tone:
@@ -935,6 +942,9 @@ class UpdateProfileDetails(APIView):
         user.hieght_cm = hieght_cm
         if request.FILES.get('image'):
             user.user_image = user_image
+
+        if request.FILES.get('profile_pic'):
+            user.profile_pic = profile_pic
         # Profile setup status
         message = "Profile updated successfully!"
         if not user.is_profile_setup:
@@ -1000,4 +1010,23 @@ class HairColorListView(APIView):
         hair_color = HairColor.objects.filter(is_active=True).order_by("-created_on")
         start,end,meta_data = get_pages_data(request.query_params.get('page', None),hair_color)
         data = SkinToneSerializer(hair_color[start : end],many=True,context={"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+    
+
+class BodyTypeListView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=["Profile Management"],
+        operation_id="Body Type List",
+        operation_description="Body Type List",
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        body_type = BodyType.objects.filter(is_active=True).order_by("-created_on")
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None),body_type)
+        data = BodyTypeSerializer(body_type[start : end],many=True,context={"request":request}).data
         return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)

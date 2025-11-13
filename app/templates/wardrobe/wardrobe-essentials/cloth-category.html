@@ -32,15 +32,17 @@
 									<tr>
                                         <th><strong>ID</strong></th>
                                         <th><strong>Title</strong></th>
+                                        <th><strong>Icon</strong></th>
 										<th><strong>Created On</strong></th>
 										<th><strong>Actions </strong></th>
 									</tr>
 								</thead>
 								<thead>
 									<tr class="search-row">
-                                        <td><input disabled type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
-                                        <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
-										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+                                        <td><input disabled type="text" value="{{request.GET.id}}" class="form-control" name="id" maxlength="20"></td>
+                                        <td><input type="text" value="{{request.GET.title}}" class="form-control" name="title" maxlength="20"></td>
+                                        <td><input disabled type="text" value="{{request.GET.title}}" class="form-control" name="title" maxlength="20"></td>
+										<td><input type="date" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
 									</tr>
 								</thead>
@@ -50,6 +52,20 @@
 										<tr>
                                             <td> {{cloth.id|default:"-"}}</td>
                                             <td> {{cloth.title|default:"-"}}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center display-images">
+                                                    {% if cloth.icon %}
+                                                        <a href="{{cloth.icon.url}}" data-fancybox>
+                                                            <img src="{{cloth.icon.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                            <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                            class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
 											<td>
 												<script>
 													var date = ConvertDateTime("{{ cloth.created_on|date:'Y-m-d' }}", "{{ cloth.created_on|time:'H:i' }}");
@@ -98,7 +114,13 @@
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" placeholder="Publish Title" name="title" id="title" class="form-control" maxlength="100" required>
+                                    <input type="text" placeholder="Publish Title" name="title" id="title" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label class="form-label">Icon</label>
+                                    <input type="file" name="icon" id="icon" accept="image/*" class="form-control">
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -127,7 +149,13 @@
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" name="title" id="edit_category_title" class="form-control" maxlength="100" required>
+                                    <input type="text" name="title" id="edit_category_title" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                             <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label class="form-label">Icon</label>
+                                    <input type="file" name="icon" id="category_icon" accept="image/*" class="form-control">
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -142,39 +170,11 @@
 </div>
 
 {% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/validations/category.js' %}"></script>
 <script>
-function GetValue(id, title){
+function GetValue(id, title,icon){
     $('#edit_category_id').val(id);
     $('#edit_category_title').val(title);
+    $('#category_icon').val(icon);
 }
-</script>
-<script type="text/javascript">
-$("#add-cloth-category").validate({
-	ignore: [],
-	rules: {
-		title: {
-			required: true,
-			},
-		},
-	messages: {
-		title: {
-			required: "Please Enter Title",
-			},
-        }
-	});  
-
-
-$("#edit-cloth-category").validate({
-	ignore: []
-	rules: {
-		title: {
-			required: true,
-			},
-		},
-	messages: {
-		title: {
-			required: "Please Enter Title",
-			},
-		},
-})
 </script>

@@ -4,7 +4,7 @@ pymysql
 django-environ
 django-rest-framework
 django-ckeditor
-#django-crontab
+django-crontab
 psycopg2-binary
 pyyaml
 jsonfield
@@ -27,7 +27,8 @@ stripe
 qrcode
 cryptography
 weasyprint==52.2
-xhtml2pdf
+# xhtml2pdf
+django-debug-toolbar
 
 ## for celery and celery-beat for schedule tasks 
 redis

@@ -38,9 +38,9 @@
 								</thead>
 								<thead>
 									<tr class="search-row">
-                                        <td><input disabled type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
-                                        <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
-										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+                                        <td><input disabled type="text" value="{{request.GET.id}}" class="form-control" name="id" maxlength="20"></td>
+                                        <td><input type="text" value="{{request.GET.title}}" class="form-control" name="title" maxlength="20"></td>
+										<td><input type="date" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
 									</tr>
 								</thead>
@@ -58,7 +58,7 @@
 											</td>
 											<td>
 												<div class="d-flex">
-													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{cloth.id}}','{{cloth.title}}')"  data-bs-target="#edit-cloth" class="btn btn-info shadow btn-xs sharp me-1">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{cloth.id}}','{{cloth.title}}')"  data-bs-target="#edit-occasion" class="btn btn-info shadow btn-xs sharp me-1">
 														<i class="fa fa-edit"></i>
 													</a>
                                                     <a title="Delete" href="{% url 'wardrobe:delete_occasion' cloth.id %}"
@@ -92,13 +92,13 @@
             </div>
             <div class="modal-body">
                 <div class="basic-form">
-                    <form onsubmit="Loader(this.id)" id="add-cloth-category" action="{% url 'wardrobe:occasion' %}" method="POST" enctype="multipart/form-data">
+                    <form onsubmit="Loader(this.id)" id="add-occasions" action="{% url 'wardrobe:occasion' %}" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" placeholder="Title" name="title" id="title" class="form-control" maxlength="100" required>
+                                    <input type="text" placeholder="Enter Title" name="title" id="title" class="form-control" maxlength="100">
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -111,7 +111,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="edit-cloth" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+<div class="modal fade" id="edit-occasion" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -120,14 +120,14 @@
             </div>
             <div class="modal-body">
                 <div class="basic-form">
-                    <form onsubmit="Loader(this.id)" id="edit-cloth-category" action="{% url 'wardrobe:occasion' %}" method="POST" enctype="multipart/form-data">
+                    <form onsubmit="Loader(this.id)" id="edit-occasions" action="{% url 'wardrobe:occasion' %}" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <input type="hidden" name="occasion_id" id="edit_occasion_id" value="">
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" name="title" id="edit_title" class="form-control" maxlength="100" required>
+                                    <input type="text" name="title" id="edit_title" class="form-control" maxlength="100">
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -140,41 +140,11 @@
         </div>
     </div>
 </div>
-
 {% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/validations/occasion.js' %}"></script>
 <script>
-function GetValue(id, title){
-    $('#edit_occasion_id').val(id);
-    $('#edit_title').val(title);
-}
-</script>
-<script type="text/javascript">
-$("#add-cloth-category").validate({
-	ignore: [],
-	rules: {
-		title: {
-			required: true,
-			},
-		},
-	messages: {
-		title: {
-			required: "Please Enter Title",
-			},
-        }
-	});  
-
-
-$("#edit-cloth-category").validate({
-	ignore: []
-	rules: {
-		title: {
-			required: true,
-			},
-		},
-	messages: {
-		title: {
-			required: "Please Enter Title",
-			},
-		},
-})
+    function GetValue(id, title){
+        $('#edit_occasion_id').val(id);
+        $('#edit_title').val(title);
+    }
 </script>

@@ -1,4 +1,4 @@
-from accounts.utils import get_pagination
+from accounts.utils import *
 from .models import *
 from accounts.common_imports import *
 from django.http import HttpResponseRedirect
@@ -26,6 +26,7 @@ class PagesListView(View):
         return render(request, 'StaticPages/pages-list.html',{
             "head_title":"Pages Management",
             "pages":get_pagination(request, pages),
+            "search_filters":request.GET.copy(),
             "total_objects": pages.count(),
         })
 
@@ -132,6 +133,7 @@ class FaqsList(View):
         return render(request,'faq/faq-list.html',{
             'head_title':'FAQs Management',
             "faqs":get_pagination(request, faqs),
+            "search_filters":request.GET.copy(),
             "total_objects": faqs.count(),
         })
 

@@ -17,9 +17,10 @@ RELEASE_DATE = "2026-04-20"
 """
 User role type name
 """
-USER_ROLE = ((1, "Admin"),(2, "Customer"))
+USER_ROLE = ((1, "Admin"),(2, "Customer"),(3, "Affiliate"))
 ADMIN = 1
 CUSTOMER = 2
+AFFILIATE = 3
 
 """
 User Status 
@@ -79,12 +80,14 @@ LOGIN_FAILURE = 2
 """
 Page Type
 """
-PAGE_TYPE =  ((1,"Terms_And_Condition"),(2,"Privacy_Policy"),(3, "About_Us"),(4, "How_it_works"),(5, "Cookie_Policy"))
+PAGE_TYPE =  ((1,"Terms_And_Condition"),(2,"Privacy_Policy"),(3, "About_Us"),(4, "How_it_works"),(5, "Cookie_Policy"), (6, "contact_us"), (7, "Pricing"))
 TERMS_AND_CONDITION = 1
 PRIVACY_POLICY = 2
 ABOUT_US = 3
 HOW_IT_WORKS = 4
 COOKIE_POLICY = 5
+CONTACT_US = 6
+PRICING = 7
 
 """
 SOCIAL TYPE

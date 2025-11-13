@@ -77,26 +77,20 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
-                {% for item in cloth_items %}
-                <div class="col-md-2 col-lg-2 col-sm-12 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            {% if item.image %}
-                                <a href="{{ item.image.url }}" data-fancybox>
-                                    <img src="{{ item.image.url }}" class="card-img-top" width="100" alt="">
-                                </a>
-                            {% endif %}
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">{{item.occasion.title}}</h5>
-                            <p class="card-text" >{{ item.brand }}</p>
-                            <p class="card-text" >{{ item.price }}</p>
-                        </div>
-                        
-                    </div>
+            <div class="row gap-3">
+            {% for item in cloth_items %}
+            <div class="card" style="width: 18rem;">
+                {% if item.image %}
+                <a href="{{ item.image.url }}" data-fancybox>
+                    <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
+                </a>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{item.title|default:"-"}}</h5>
+                    <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
                 </div>
-                {% endfor %}
+            </div>
+            {% endfor %}
             </div>
         </div>
     </div>

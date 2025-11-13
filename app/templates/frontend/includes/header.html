@@ -1,94 +1,170 @@
-<!DOCTYPE html>{% load static %}
+{% load static %}
+{% load extras %}
+
+<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=0">
-    <meta name="description" content="POS - Bootstrap Admin Template">
-    <meta name="keywords"
-      content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern,  html5, responsive">
-    <meta name="author" content="toxsltech">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Dressr AI </title>
-    <link rel="shortcut icon" href="{% static 'admin-assets/images/favicon.ico' %}" />
-    <link rel="stylesheet" href="{% static 'admin-assets/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'admin-assets/css/dataTables.bootstrap4.min.css' %}">
-    <link rel="stylesheet" href="{% static 'admin-assets/css/all.min.css' %}">
-    <link rel="stylesheet" href="{% static 'admin-assets/css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'admin-assets/css/responsive.css' %}">
-    <link rel="stylesheet" href="{% static 'admin-assets/css/flash.css' %}">
-    <link rel="stylesheet" href="{% static 'admin-assets/css/loader.css' %}">
-    <link rel="stylesheet" href="{% static 'admin-assets/css/jquery.fancybox.min.css' %}">
-</head>
-<body>
-    {% if messages %}
-    <div class="flash animate--drop-in-fade-out">
-      {% for message in messages %}
-      <div class="flash__icon">
-        <i class="icon far fa-check-circle"></i>
-      </div>
-      <span class="flash__body">{{ message }}</span>
-      {% endfor %}
-    </div>
-    {% endif %}
-    <div class="main-wrapper main-page-header">
-      <div class="header main-head">
-        <nav class="navbar navbar-expand-lg  bg-transparent h-100">
-          <div class="container">
-            <div class="header-left active outer-header">
-              <a href="{% url 'frontend:index' %}" class="navbar-brand logo logo-normal d-flex align-items-center">
-                <img src="{% static 'admin-assets/images/230x0w.webp' %}">
-                {% comment %} <h4 style='font-size: 30px;font-weight: 700;color: #fff;margin-bottom: 10px;'>Dressr AI</h4> {% endcomment %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dresser AI - Your Personal Fashion Assistant</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+
+    <link
+      rel="stylesheet"
+      href="{% static 'admin-assets/css/font-awesome.min.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'admin-assets/css/swiper-bundle.css' %}"
+    />
+      <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'admin-assets/css/bootstrap.min.css' %}"
+    />
+    <link rel="stylesheet" href="{% static 'admin-assets/css/landing.css' %}" />
+   <link rel="stylesheet" href="{% static 'admin-assets/css/landing-responsive.css' %}" />
+  </head>
+  <body>
+   <div class="cursor"></div>
+    <!-- Header section start  -->
+    <header>
+      <div class="header-card">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-xl-2 col-lg-2 col-md-3 col-4">
+              <a class="header-logo" href="{% url 'frontend:index' %}">
+                <img src="{% static 'admin-assets/images/logo-wht.svg' %}" />
               </a>
             </div>
-
-            <button class="navbar-toggler" type="button"
-              data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent" aria-expanded="false"
-              aria-label="Toggle navigation">
-              <svg class="hb" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 10 10" stroke="#eee" stroke-width=".6"
-                fill="rgba(0,0,0,0)" stroke-linecap="round"
-                style="cursor: pointer">
-                <path d="M2,3L5,3L8,3M2,5L8,5M2,7L5,7L8,7">
-                  <animate dur="0.2s" attributeName="d"
-                    values="M2,3L5,3L8,3M2,5L8,5M2,7L5,7L8,7;M3,3L5,5L7,3M5,5L5,5M3,7L5,5L7,7"
-                    fill="freeze" begin="start.begin" />
-                  <animate dur="0.2s" attributeName="d"
-                    values="M3,3L5,5L7,3M5,5L5,5M3,7L5,5L7,7;M2,3L5,3L8,3M2,5L8,5M2,7L5,7L8,7"
-                    fill="freeze" begin="reverse.begin" />
-                </path>
-                <rect width="10" height="10" stroke="none">
-                  <animate dur="2s" id="reverse" attributeName="width"
-                    begin="click" />
-                </rect>
-                <rect width="10" height="10" stroke="none">
-                  <animate dur="0.001s" id="start" attributeName="width"
-                    values="10;0" fill="freeze" begin="click" />
-                  <animate dur="0.001s" attributeName="width" values="0;10"
-                    fill="freeze" begin="reverse.begin" />
-                </rect>
-              </svg>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul class="navbar-nav ms-auto  align-items-center">
-                <li class="nav-item">
-                  <a href="{% url 'accounts:login' %}"
-                    class="login-btn">
-                    <span class="me-0">
-                      <svg class="icon" width="15" height="18"
-                        viewBox="0 0 19 20"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                          d="M6.70645 1.09505C7.53328 0.544106 8.50545 0.25 9.5 0.25C10.8337 0.25 12.1126 0.778338 13.0554 1.71857C13.9982 2.65877 14.5278 3.93381 14.5278 5.26316C14.5278 6.25451 14.233 7.22366 13.6806 8.04805C13.1282 8.87245 12.3431 9.5151 11.4243 9.89462C10.5055 10.2741 9.49443 10.3735 8.519 10.18C7.54357 9.98648 6.64768 9.50891 5.94458 8.80775C5.24148 8.1066 4.76275 7.21337 4.5688 6.24105C4.37486 5.26873 4.47439 4.26088 4.85485 3.34493C5.2353 2.42898 5.87963 1.64598 6.70645 1.09505ZM7.60207 8.0969C8.16392 8.47127 8.8244 8.67105 9.5 8.67105C10.4059 8.67105 11.2749 8.31218 11.9157 7.67315C12.5565 7.0341 12.9167 6.16721 12.9167 5.26316C12.9167 4.58899 12.7162 3.93001 12.3407 3.36957C11.9652 2.80913 11.4315 2.37243 10.8073 2.11458C10.183 1.85673 9.4962 1.78928 8.83357 1.92072C8.17094 2.05216 7.56217 2.37662 7.0843 2.85317C6.60642 3.32973 6.2809 3.93698 6.14901 4.59818C6.01712 5.25938 6.08482 5.94473 6.34351 6.56753C6.60219 7.19032 7.04021 7.72252 7.60207 8.0969ZM18.75 18.9474V19.75H17.1389V18.9474C17.1389 17.485 16.5563 16.0826 15.5196 15.0487C14.4829 14.0149 13.0769 13.4342 11.6111 13.4342H7.38889C5.92305 13.4342 4.51712 14.0149 3.48041 15.0487C2.44367 16.0826 1.86111 17.485 1.86111 18.9474V19.75H0.25V18.9474C0.25 17.0597 1.00196 15.2491 2.34069 13.9141C3.67944 12.5791 5.49531 11.8289 7.38889 11.8289H11.6111C13.5047 11.8289 15.3206 12.5791 16.6593 13.9141C17.998 15.2491 18.75 17.0597 18.75 18.9474Z"
-                          stroke-width="0.5"></path>
-                      </svg>
-                    </span>
-                    Login
-                  </a>
-                </li>
-              </ul>
+            <div
+              class="col-xl-7 col-lg-7 d-none d-md-none d-lg-flex justify-content-center"
+            >
+              <div class="header-navbar">
+                <nav class="navbar navbar-expand-lg">
+                  <div class="container-fluid p-0">
+                    <button
+                      class="navbar-toggler"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#navbarNav"
+                      aria-controls="navbarNav"
+                      aria-expanded="false"
+                      aria-label="Toggle navigation"
+                    >
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                      <ul class="navbar-nav">
+                        <li class="nav-item">
+                          <a
+                            class="nav-link active"
+                            aria-current="page"
+                            href="{% url 'frontend:index' %}"
+                            >Home</a
+                          >
+                        </li>
+                        <li class="nav-item">
+                          <a href="{% url 'frontend:about_us' %}" class="nav-link">About Us</a>
+                        </li>
+                          <li class="nav-item">
+                          <a href="{% url 'frontend:How_it_works' %}" class="nav-link">How It Works</a>
+                        </li>
+                        <li class="nav-item">
+                          <a href="{% url 'frontend:Pricing' %}" class="nav-link">Pricing</a>
+                        </li>
+                        <li class="nav-item">
+                          <a href="{% url 'frontend:contact_us' %}" class="nav-link">Contact Us</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </nav>
+              </div>
             </div>
-          </nav>
+            <div class="col-xl-3 col-lg-3 col-md-9 col-8 ms-auto">
+              <div
+                class="header-rt-card d-none d-md-none d-lg-flex align-items-center justify-content-end gap-3"
+              >
+                <a class="common-wht-btn" title="Download App" href="#">
+                  Download App
+                  <span class="btn-arrow">
+                    <img src="{% static 'admin-assets/images/arrow.svg' %}" />
+                  </span>
+                </a>
+              </div>
+
+              <!-- Mobile Head Menu Card -->
+              <div
+                class="header-rt-card d-lg-none d-flex align-items-center justify-content-end gap-3"
+              >
+                <a
+                  class="menu-btn"
+                  href="#Menuoffcanvas"
+                  data-bs-toggle="offcanvas"
+                >
+                  Menu
+                </a>
+              </div>
+              <!-- Mobile Head Menu Card -->
+            </div>
+          </div>
         </div>
       </div>
+    </header>
+    <!-- Header section end  -->
+
+    <!-- Mobile Sidebar Menu Start -->
+    <div
+      class="offcanvas nav-mobile offcanvas-start"
+      tabindex="-1"
+      id="Menuoffcanvas"
+      aria-labelledby="MenuoffcanvasLabel"
+    >
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title text-dark" id="MenuoffcanvasLabel">
+          <img src="{% static 'admin-assets/images/logo-black.svg' %}" />
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <div class="side-bar-links">
+          <ul class="side-link-list">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'frontend:index' %}"
+                >Home</a
+              >
+            </li>
+           <li class="nav-item">
+            <a href="{% url 'frontend:about_us' %}" class="nav-link">About Us</a>
+          </li>
+            <li class="nav-item">
+            <a href="{% url 'frontend:How_it_works' %}" class="nav-link">How It Works</a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'frontend:Pricing' %}" class="nav-link">Pricing</a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'frontend:contact_us' %}" class="nav-link">Contact Us</a>
+          </li>
+          </ul>
+        </div>
+        <div class="app-download p-2">
+        <a class="common-black-btn w-100 text-center mb-0" title="Download App" href="#">
+            Download App
+            <span class="btn-arrow">
+              <img src="{% static 'admin-assets/images/wht-arrow.svg' %}" />
+            </span>
+          </a>
+          </div>
+      </div>
+    </div>
+  <!-- Mobile Sidebar Menu End -->

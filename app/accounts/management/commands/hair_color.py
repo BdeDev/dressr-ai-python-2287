@@ -1,21 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from accounts.models import *
+from .default_data import default_hair_colors
 
-default_hair_colors = [
-    {"name": "Black", "hex": "#1C1C1C"},
-    {"name": "Dark Brown", "hex": "#4B3621"},
-    {"name": "Medium Brown", "hex": "#6B4226"},
-    {"name": "Light Brown", "hex": "#8B5A2B"},
-    {"name": "Chestnut", "hex": "#954535"},
-    {"name": "Auburn", "hex": "#A52A2A"},
-    {"name": "Dark Blonde", "hex": "#C19A6B"},
-    {"name": "Blonde", "hex": "#F2D16B"},
-    {"name": "Light Blonde", "hex": "#FAE7B5"},
-    {"name": "Platinum Blonde", "hex": "#F9F6EE"},
-    {"name": "Gray", "hex": "#A0A0A0"},
-    {"name": "White", "hex": "#FFFFFF"}
-]
 
 class Command(BaseCommand):
     help = "Adding defaut skin tone"

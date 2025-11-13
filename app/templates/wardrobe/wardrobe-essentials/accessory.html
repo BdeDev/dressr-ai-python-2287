@@ -38,7 +38,7 @@
 								</thead>
 								<thead>
 									<tr class="search-row">
-                                        <td><input disabled type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
+                                        <td><input disabled type="text" value="{{search_filters.id}}" class="form-control" name="id" maxlength="20"></td>
                                         <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
 										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
@@ -92,13 +92,13 @@
             </div>
             <div class="modal-body">
                 <div class="basic-form">
-                    <form onsubmit="Loader(this.id)" id="add-cloth-category" action="{% url 'wardrobe:accessory' %}" method="POST" enctype="multipart/form-data">
+                    <form onsubmit="Loader(this.id)" id="add-accessories" action="{% url 'wardrobe:accessory' %}" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" placeholder="Title" name="title" id="title" class="form-control" maxlength="100" required>
+                                    <input type="text" placeholder="Enter Title" name="title" id="title" class="form-control" maxlength="100">
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -120,14 +120,14 @@
             </div>
             <div class="modal-body">
                 <div class="basic-form">
-                    <form onsubmit="Loader(this.id)" id="edit-cloth-category" action="{% url 'wardrobe:accessory' %}" method="POST" enctype="multipart/form-data">
+                    <form onsubmit="Loader(this.id)" id="edit-accessories" action="{% url 'wardrobe:accessory' %}" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <input type="hidden" name="accessory_id" id="edit_accessory_id" value="">
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" name="title" id="edit_title" class="form-control" maxlength="100" required>
+                                    <input type="text" name="title" id="edit_title" class="form-control" maxlength="100">
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -142,39 +142,10 @@
 </div>
 
 {% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/validations/accessory.js' %}"></script>
 <script>
 function GetValue(id, title){
     $('#edit_accessory_id').val(id);
     $('#edit_title').val(title);
 }
-</script>
-<script type="text/javascript">
-$("#add-cloth-category").validate({
-	ignore: [],
-	rules: {
-		title: {
-			required: true,
-			},
-		},
-	messages: {
-		title: {
-			required: "Please Enter Title",
-			},
-        }
-	});  
-
-
-$("#edit-cloth-category").validate({
-	ignore: []
-	rules: {
-		title: {
-			required: true,
-			},
-		},
-	messages: {
-		title: {
-			required: "Please Enter Title",
-			},
-		},
-})
 </script>

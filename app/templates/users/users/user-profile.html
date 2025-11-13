@@ -48,16 +48,25 @@
                                     </li>
                                     <li>
                                         <h4>First Name </h4>
-                                        <h6>{% if user.first_name %}{{user.first_name}}{% else %} - {% endif %}</h6>
+                                        <h6>{% if user.first_name %}{{user.first_name|capfirst}}{% else %} - {% endif %}</h6>
                                     </li>
                                     <li>
                                         <h4>Last Name </h4>
-                                        <h6>{% if user.last_name %}{{user.last_name}}{% else %} - {% endif %}</h6>
+                                        <h6>{% if user.last_name %}{{user.last_name|capfirst}}{% else %} - {% endif %}</h6>
                                     </li>
                                     <li>
                                         <h4>Full Name </h4>
-                                        <h6>{% if user.full_name %}{{user.full_name}}{% else %} - {% endif %}</h6>
+                                        <h6>{% if user.full_name %}{{user.full_name|capfirst}}{% else %} - {% endif %}</h6>
                                     </li>
+                                    <li>
+                                        <h4>Mobile Number </h4>
+                                        <h6>{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}} {% endif %}{{user.mobile_no}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Email </h4>
+                                        <h6>{% if user.email %}{{user.email}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                   
                                     <li>
                                         <h4>Gender</h4>
                                         <h6>
@@ -95,6 +104,10 @@
                                         </h6>
                                     </li> 
                                     <li>
+                                        <h4>Body Type </h4>
+                                        <h6>{{user.body_type.title|default:"-"}}</h6>
+                                    </li>
+                                    <li>
                                         <h4>Skin Tone </h4>
                                         <h6>{{user.skin_tone.title|default:"-"}}</h6>
                                     </li>
@@ -102,6 +115,9 @@
                                         <h4>Hair Color </h4>
                                         <h6>{{user.hair_color.title|default:"-"}}</h6>
                                     </li>
+                                    <li>
+                                        <h4>Height </h4>
+                                        <h6>{% if user.hieght_cm %}{{user.hieght_cm}}{% else %} - {% endif %}</h6>
                                     </li>
                                     {% if user.status == 3 %}
                                     <li>
@@ -111,15 +127,7 @@
                                         </h6>
                                     </li> 
                                     {% endif %}
-                                    <li>
-                                        <h4>Mobile Number </h4>
-                                        <h6>{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}} {% endif %}{{user.mobile_no}}{% else %} - {% endif %}</h6>
-                                    </li>
-                                    <li>
-                                        <h4>Email </h4>
-                                        <h6>{% if user.email %}{{user.email}}{% else %} - {% endif %}</h6>
-                                    </li>
-                                   
+                                    
                                     <li>
                                         <h4>Created On </h4>
                                         <h6>
@@ -132,6 +140,7 @@
                                 </ul>
                             </div>
                             <div class="col-md-6 productdetails">
+                                
                                 <h5><b>Login Information</b></h5>
                                 <ul class="product-bar mb-2">
                                     <li>
@@ -148,7 +157,19 @@
                                     <li>
                                         <h4>Wardrobe</h4>
                                         <h6>
-                                            {% if wardrobe %}<a href="{% url 'wardrobe:view_wardrobe'  wardrobe.id %}">{{wardrobe.id}}</a>{% else %}{% endif %}
+                                            {% if wardrobe %}<a href="{% url 'wardrobe:view_wardrobe'  wardrobe.id %}">{{wardrobe.name}}</a>{% else %}{% endif %}
+                                        </h6>
+                                    </li> 
+                                    <li>
+                                        <h4>Wardrobe Item Count</h4>
+                                        <h6>
+                                            {{item_count|default:"0"}}
+                                        </h6>
+                                    </li> 
+                                    <li>
+                                        <h4>Wardrobe Item Count</h4>
+                                        <h6>
+                                            {{item_count|default:"-"}}
                                         </h6>
                                     </li> 
                                     <li>
@@ -171,6 +192,7 @@
                                         </h6>
                                     </li>
                                 </ul>
+
                                 {% if device %}
                                 <h5 class=""><b>Device Information</b></h5>
                                 <ul class="product-bar mb-2">
@@ -202,10 +224,27 @@
                                             {% if device.device_token %}{{device.device_token}}{% else %}-{% endif %}                 
                                         </h6>
                                     </li>
+                                    
                                 </ul>
                                 {% endif %}
-                            </div>
-                            
+                                {% if user.user_image %}
+                                <ul class="product-bar mb-2">
+                                    <li>
+                                        <h4>Avatar Image</h4>
+                                        <h6>
+                                            {% if user.user_image %}
+                                                <a class="product-img" href="{{ user.user_image.url }}" data-fancybox="gallery">
+                                                    <img style="height: 50px;" src="{{ user.user_image.url }}" alt="image">
+                                                </a>
+                                                {% else %}
+                                                <a class="product-img" href="{% static 'admin-assets/images/dp.png' %}" data-fancybox="gallery">
+                                                    <img style="height: auto;" src="{% static 'admin-assets/images/dp.png' %}" alt="image">
+                                                </a>
+                                            {% endif %}
+                                        </h6>
+                                    </li>
+                                </ul>
+                                {% endif %}
                         </div>
                         <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
                             {% if user.status == 1 %}
@@ -227,6 +266,9 @@
                             <ul class="nav nav-tabs" id="myTab">
                                 <li class="nav-item">
                                     <a href="#sectionA" class="nav-link nav-link-items active nav-link1" data-toggle="tab">Login History</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="#sectionB" class="nav-link nav-link-items nav-link1" data-toggle="tab">Outfit</a>
                                 </li>
                             </ul>
                             <div class="tab-content">
@@ -275,6 +317,63 @@
                                                     <!-- pagination-->
                                                     {% include "admin-includes/pagination.html" with listing_objects=loginhistory %}
                                                     <!-- pagination end-->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div id="sectionB" class="tab-pane fade show">
+                                    <section id="tab" class="tab-panel">
+                                        <div class="card custom-card">
+                                            <div class="card-body">
+                                                <div class=" dataview">
+                                                    <div class="table-responsive">
+                                                        <table class="table datatable">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th><strong>Title</strong></th>
+                                                                    <th><strong>Occasion</strong></th>
+                                                                    <th><strong>Season</strong></th>
+                                                                    <th><strong>Created On</strong></th>
+                                                                    <th><strong>Actions</strong></th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% if outfits %}
+                                                                    {% for outfit in outfits %}
+                                                                    <tr>
+                                                                        <td> {{outfit.title|default:"-"}}</td>
+                                                                        <td> {{outfit.occasion.title|default:"-"}}</td>
+                                                                        <td> 
+                                                                            {% if outfit.weather_type == 1 %}
+                                                                                <span class="badge bg-success">SUMMER</span>
+                                                                            {% elif outfit.weather_type == 2 %}
+                                                                                <span class="badge bg-warning">WINTER</span>
+                                                                            {% elif outfit.weather_type == 3 %}
+                                                                                <span class="badge bg-primary">RAINY</span>
+                                                                            {% elif outfit.weather_type == 4 %}
+                                                                                <span class="badge bg-secondary">SPRING</span>
+                                                                            {% elif outfit.weather_type == 5 %}
+                                                                                <span class="badge bg-secondary">ALL SEASON</span>
+                                                                            {% endif %}
+                                                                        </td>
+                                                                        <td>
+                                                                            <script>
+                                                                                var date = ConvertDateTime("{{ outfit.created_on|date:'Y-m-d' }}", "{{ outfit.created_on|time:'H:i' }}");
+                                                                                document.write(date);
+                                                                            </script>
+                                                                        </td>
+                                                                        <td>
+                                                                            <div class="d-flex">
+                                                                                <a title="View" href="{% url 'wardrobe:view_outfit_detail' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                {% endif %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

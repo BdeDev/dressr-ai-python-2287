@@ -1,0 +1,186 @@
+{% load static %}
+{% load extras %}
+{% include 'frontend/includes/header.html' %}
+<div id="main-wrapper">
+ <section class="page-title-area rest-title-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-title-wrapper text-center">
+                        <h1 class="page-title mb-10">Pricing</h1>
+                        <div class="breadcrumb-menu">
+                            <nav aria-label="Breadcrumbs" class="breadcrumb-trail breadcrumbs">
+                                <ul class="trail-items mb-0">
+                                    <li class="trail-item trail-begin">
+                                        <a href="#"><span>Home</span></a>
+                                    </li>
+                                    <li class="trail-item trail-end"><span>Pricing</span></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <section class="plan-section pd-100 bg-grey">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <div class="section-hd-card mb-5">
+              <h4 class="section-subhd">Start Free</h4>
+              <h2 class="section-hd">Upgrade Anytime.</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-lg-4">
+            <div class="plan-card">
+              <h4>Free Tier</h4>
+              <p>
+                Get started with your smart wardrobe<br />
+                for free
+              </p>
+              <div class="plan-price">$0 <span>/ month</span></div>
+              <ul class="plan-lists">
+                <li>
+                  Digitize wardrobe
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+                <li>
+                  Basic avatar
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+
+                <li>
+                  5 try-ons/month
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+
+                <li>
+                  Daily outfit suggestions
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+              </ul>
+              <a
+                class="common-black-btn w-100 mt-4"
+                title="Download App"
+                href="#"
+              >
+                Start Free
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="plan-card">
+              <h4>Premium</h4>
+              <p>
+                Unlock advanced AI styling and full<br />
+                wardrobe insights.
+              </p>
+              <div class="plan-price">$99 <span>/ month</span></div>
+              <ul class="plan-lists">
+                <li>
+                  Unlimited try-ons
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+                <li>
+                  Advanced AI styling
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+
+                <li>
+                  Weather-wise looks
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+
+                <li>
+                  Vacation packing planner
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+              </ul>
+              <a
+                class="common-black-btn w-100 mt-4"
+                title="Download App"
+                href="#"
+              >
+                Start Free
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+
+    <section class="join-sec pd-100 ">
+      <div class="container">
+        <div class="join-inr animate-on-scroll" data-animate="animate__fadeInUp">
+          <div class="join-card-top">
+            <p>Your closet, reimagined.</p>
+            <h4>
+              Join 50,000+ users styling <br />
+              smarter with Dressr.
+            </h4>
+          </div>
+          <div class="join-card-bottom">
+            <div class="join-plan">
+              <h4>
+                Plan outfits, get inspiration, and<br />
+                rediscover your wardrobe all in one<br />
+                place
+              </h4>
+              <a class="common-black-btn" href="#">
+                Download App
+                <span class="btn-arrow">
+                  <img
+                    src="{% static 'admin-assets/images/wht-arrow.svg' %}"
+                  /> </span
+              ></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+</div>
+{% include 'frontend/includes/footer.html' %}

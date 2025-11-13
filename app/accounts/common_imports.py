@@ -25,7 +25,7 @@ from urllib.request import urlopen
 from django.core.files import File
 from io import BytesIO
 from django.db import transaction
-from accounts.utils import *
+# from accounts.utils import *
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 from threading import Thread
 

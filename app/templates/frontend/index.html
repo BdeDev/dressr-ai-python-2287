@@ -1,369 +1,655 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dresser AI - Your Personal Fashion Assistant</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
-    <style>
-        .hero-gradient {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .transition-all {
-            transition: all 0.3s ease;
-        }
-    </style>
-</head>
-<body class="font-sans antialiased text-gray-800">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm fixed w-full z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center">
-                        <i data-feather="box" class="h-8 w-8 text-indigo-600"></i>
-                        <span class="ml-2 text-xl font-bold text-indigo-600">Dresser AI</span>
-                    </div>
-                </div>
-                <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
-                    <a href="#" class="text-indigo-600 border-b-2 border-indigo-600 px-3 py-2 text-sm font-medium">Home</a>
-                    <a href="#" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Features</a>
-                    <a href="#" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">Pricing</a>
-                    <a href="#" class="text-gray-500 hover:text-indigo-600 px-3 py-2 text-sm font-medium">About</a>
-                </div>
-                <div class="flex items-center">
-                    <a href="{% url 'accounts:login' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-all">Get Started</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+{% load static %}
+{% load extras %}
 
-    <!-- Hero Section -->
-    <div id="hero" class="hero-gradient pt-24 pb-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
-                <div class="mt-12 lg:mt-0" data-aos="fade-right">
-                    <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                        <span class="block">Your Personal</span>
-                        <span class="block text-indigo-600">Fashion Assistant</span>
-                    </h1>
-                    <p class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                        Dresser AI uses artificial intelligence to help you discover your perfect style, create outfits, and shop smarter.
+{% include "frontend/includes/header.html" %} 
+
+    <!-- Banner Section Start -->
+    <section class="banner-card" id="hero">
+      <div class="container">
+        <div class="banner-caption">
+          <h1 class="animate-on-scroll" data-animate="animate__fadeInUp">
+            Smart wardrobe<br />
+            assistant
+          </h1>
+          <p class="animate-on-scroll" data-animate="animate__fadeInUp">
+            Digitize your wardrobe, create your virtual avatar, and get daily
+            outfit ideas in seconds.
+          </p>
+          <a class="common-wht-btn mt-5 mb-4" title="Download App" href="#">
+            Download App
+            <span class="btn-arrow">
+              <img src="{% static 'admin-assets/images/arrow.svg' %}" />
+            </span>
+          </a>
+          <h5>Available on iOS, Android & Web.</h5>
+        </div>
+      </div>
+    </section>
+    <!-- Banner Section End -->
+
+    <!-- Re-imagine Section Start -->
+    <section class="re-imagine-sec pd-100">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <div class="section-hd-card mb-5">
+              <h4 class="section-subhd">Re-imagine the Way</h4>
+              <h2 class="section-hd">You Dress</h2>
+              <p>
+                Your wardrobe, smarter than ever. From digitizing your closet to
+                AI-powered styling,<br />
+                Dressr transforms how you choose what to wear.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6">
+            <div
+              class="animate-on-scroll imagine-card" data-animate="animate__fadeInLeft"
+              style="
+                background: url('../../static/admin-assets/images/imagine-lft.png');
+              "
+            >
+              <h4>
+                Digitize Your<br />
+                Wardrobe
+              </h4>
+              <p>🧺 Upload your real clothes and manage them anywhere</p>
+              <h5>"Turn your closet into a smart, searchable wardrobe."</h5>
+              <a class="common-black-btn" href="#">See How</a>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div
+               class="animate-on-scroll imagine-card" data-animate="animate__fadeInRight"
+              style="
+                background: url('../../static/admin-assets/images/imagine-rt.png');
+              "
+            >
+              <h4 class="text-white">Try On Virtually</h4>
+              <p class="text-white">
+                🪞 Use your AI avatar to preview outfits before you wear or buy
+                them.
+              </p>
+              <h5 class="text-white">"Shop and style with confidence."</h5>
+              <a class="common-wht-btn" href="#">See How</a>
+            </div>
+          </div>
+          <div class="col-lg-12">
+            <div
+              class="imagine-card imagine-card-main mt-4 animate-on-scroll" data-animate="animate__fadeInUp"
+              style="
+                background: url('../../static/admin-assets/images/imagine-main.png');
+              "
+            >
+              <h4>AI Outfit <br />Suggestions</h4>
+              <p>
+                🤖 Personalized looks based on weather, trends & your taste.
+              </p>
+              <h5>"Let Dressr be your daily stylist."</h5>
+              <a class="common-black-btn" href="#">See How</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Re-imagine Section End -->
+
+    <!-- Your Style Section Start -->
+    <section class="your-style-section pd-100">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <div class="section-hd-card mb-5">
+              <h4 class="section-subhd">Your Style,</h4>
+              <h2 class="section-hd">Simplified in 3 Steps</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="upload-card text-center p-4">
+              <div class="upload-icon mb-4">
+                <img
+                  src="{% static 'admin-assets/images/upload-dress.svg' %}"
+                />
+              </div>
+              <h4 class="upload-hd mb-3">Upload Your Wardrobe</h4>
+              <p class="upload-para mb-0">Take photos or upload items</p>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="upload-card text-center p-4">
+              <div class="upload-icon mb-4">
+                <img src="{% static 'admin-assets/images/create.svg' %}" />
+              </div>
+              <h4 class="upload-hd mb-3">Create Your Avatar</h4>
+              <p class="upload-para mb-0">
+                AI builds your personal digital twin
+              </p>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="upload-card text-center p-4">
+              <div class="upload-icon mb-4">
+                <img src="{% static 'admin-assets/images/dressed.svg' %}" />
+              </div>
+              <h4 class="upload-hd mb-3">Get Dressed by AI</h4>
+              <p class="upload-para mb-0">
+                Receive outfit ideas every day, for any occasion.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-5">
+          <a class="common-black-btn" title="Download App" href="#">
+            Create My Free Account
+            <span class="btn-arrow">
+              <img src="{% static 'admin-assets/images/wht-arrow.svg' %}" />
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+    <!-- Your Style Section End -->
+
+    <!-- Feature Section Start -->
+    <section class="feature-sec pd-100">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <div class="section-hd-card mb-5">
+              <h4 class="section-subhd">Features that make</h4>
+              <h2 class="section-hd">Styling effortless</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="feature-card text-center p-4">
+              <div class="feature-img">
+                <img src="{% static 'admin-assets/images/feature-1.png' %}" />
+              </div>
+              <h4 class="feature-hd mb-2">Effortless Style</h4>
+              <p class="feature-para mb-0">Perfect looks for every occasion.</p>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="feature-card text-center p-4">
+              <div class="feature-img">
+                <img src="{% static 'admin-assets/images/feature-2.png' %}" />
+              </div>
+              <h4 class="feature-hd mb-2">Try It On</h4>
+              <p class="feature-para mb-0">Dressr Try-On: Your look</p>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="feature-card text-center p-4">
+              <div class="feature-img">
+                <img src="{% static 'admin-assets/images/feature-3.png' %}" />
+              </div>
+              <h4 class="feature-hd mb-2">Your Wardrobe</h4>
+              <p class="feature-para mb-0">
+                Style smarter with your own closet
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Feature Section End -->
+
+    <!-- Client Section Start -->
+    <section class="Client-sec pd-100">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <div class="section-hd-card mb-5">
+              <h4 class="section-subhd">Loved by Modern Stylists</h4>
+              <h2 class="section-hd">and Everyday Users</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="client-main">
+          <div class="swiper ClientSwiper">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide">
+                <div class="client-card">
+                  <span class="cleint-img">
+                    <img
+                      src="{% static 'admin-assets/images/client-1.png' %}"
+                    />
+                  </span>
+                  <div class="client-name-card">
+                    <h4 class="client-name">Emily R.</h4>
+                    <p class="client-designation">Marketing Manager</p>
+                  </div>
+                  <div class="client-dis">
+                    <p class="client-para">
+                      "I finally stopped saying 'I have nothing to wear!'
+                      Thanks, Dressr!"
                     </p>
-                    <div class="mt-8 sm:flex sm:justify-center lg:justify-start">
-                        <div class="rounded-md shadow">
-                            <a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition-all">
-                                Try It Free
-                            </a>
-                        </div>
-                        <div class="mt-3 sm:mt-0 sm:ml-3">
-                            <a href="#" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10 transition-all">
-                                See Demo
-                            </a>
-                        </div>
-                    </div>
+                  </div>
                 </div>
-                <div class="mt-12 lg:mt-0 relative" data-aos="fade-left">
-                    <div class="relative w-full rounded-lg shadow-xl overflow-hidden">
-                        <img class="w-full h-auto" 
-                            src="https://cdn.prod.website-files.com/603f5d1df4ee236b69719ff2/65e83bc12fd78453d57f7398_6594377ac8ad1ccaa393528a.webp" 
-                            alt="Virtual Try-On AI Fashion">
-                        <div class="absolute inset-0 bg-indigo-600 opacity-20"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center">
-                <h2 class="text-base text-indigo-600 font-semibold tracking-wide uppercase">Features</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    AI-Powered Fashion Assistance
-                </p>
-                <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-                    Discover how Dresser AI can transform your wardrobe and shopping experience.
-                </p>
-            </div>
-
-            <div class="mt-20">
-                <div class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
-                    <!-- Feature 1 -->
-                    <div class="feature-card bg-white p-8 rounded-xl shadow-md transition-all" data-aos="fade-up">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                            <i data-feather="star"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg font-medium text-gray-900">Personalized Outfits</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Get custom outfit recommendations based on your style preferences, body type, and occasion.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 2 -->
-                    <div class="feature-card bg-white p-8 rounded-xl shadow-md transition-all" data-aos="fade-up" data-aos-delay="100">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                            <i data-feather="shopping-bag"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg font-medium text-gray-900">Smart Shopping</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Our AI finds the best deals and suggests items that match your existing wardrobe.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 3 -->
-                    <div class="feature-card bg-white p-8 rounded-xl shadow-md transition-all" data-aos="fade-up" data-aos-delay="200">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                            <i data-feather="camera"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg font-medium text-gray-900">Virtual Try-On</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                See how clothes will look on you before buying with our augmented reality feature.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 4 -->
-                    <div class="feature-card bg-white p-8 rounded-xl shadow-md transition-all" data-aos="fade-up">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                            <i data-feather="calendar"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg font-medium text-gray-900">Seasonal Planning</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Get prepared for seasonal changes with curated capsule wardrobes.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 5 -->
-                    <div class="feature-card bg-white p-8 rounded-xl shadow-md transition-all" data-aos="fade-up" data-aos-delay="100">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                            <i data-feather="trending-up"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg font-medium text-gray-900">Trend Analysis</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Stay ahead with real-time fashion trend reports tailored to your style.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 6 -->
-                    <div class="feature-card bg-white p-8 rounded-xl shadow-md transition-all" data-aos="fade-up" data-aos-delay="200">
-                        <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                            <i data-feather="database"></i>
-                        </div>
-                        <div class="mt-5">
-                            <h3 class="text-lg font-medium text-gray-900">Wardrobe Management</h3>
-                            <p class="mt-2 text-base text-gray-500">
-                                Digitally catalog your clothes and get suggestions on how to mix and match.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Testimonials -->
-    <div class="bg-indigo-50 py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center mb-12">
-                <h2 class="text-base text-indigo-600 font-semibold tracking-wide uppercase">Testimonials</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    Loved by fashion enthusiasts
-                </p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Testimonial 1 -->
-                <div class="bg-white p-6 rounded-lg shadow-md" data-aos="zoom-in">
-                    <div class="flex items-center mb-4">
-                        <img class="w-12 h-12 rounded-full" src="http://static.photos/people/200x200/1" alt="Sarah J.">
-                        <div class="ml-4">
-                            <h4 class="text-lg font-semibold">Sarah J.</h4>
-                            <p class="text-indigo-600">Fashion Blogger</p>
-                        </div>
-                    </div>
-                    <p class="text-gray-600">
-                        "Dresser AI has completely transformed how I plan my outfits. The personalized recommendations are spot on!"
+              </div>
+              <div class="swiper-slide">
+                <div class="client-card">
+                  <span class="cleint-img">
+                    <img
+                      src="{% static 'admin-assets/images/client-2.png' %}"
+                    />
+                  </span>
+                  <div class="client-name-card">
+                    <h4 class="client-name">David K.</h4>
+                    <p class="client-designation">Marketing Manager</p>
+                  </div>
+                  <div class="client-dis">
+                    <p class="client-para">
+                      "The virtual try-on actually works. I can test looks
+                      before buying."
                     </p>
-                    <div class="mt-4 flex text-yellow-400">
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <!-- Testimonial 2 -->
-                <div class="bg-white p-6 rounded-lg shadow-md" data-aos="zoom-in" data-aos-delay="100">
-                    <div class="flex items-center mb-4">
-                        <img class="w-12 h-12 rounded-full" src="http://static.photos/people/200x200/2" alt="Michael T.">
-                        <div class="ml-4">
-                            <h4 class="text-lg font-semibold">Michael T.</h4>
-                            <p class="text-indigo-600">Business Executive</p>
-                        </div>
-                    </div>
-                    <p class="text-gray-600">
-                        "As someone who hates shopping, this app has saved me so much time and stress. The virtual try-on is revolutionary."
+              <div class="swiper-slide">
+                <div class="client-card">
+                  <span class="cleint-img">
+                    <img
+                      src="{% static 'admin-assets/images/client-3.png' %}"
+                    />
+                  </span>
+                  <div class="client-name-card">
+                    <h4 class="client-name">Emily R.</h4>
+                    <p class="client-designation">Marketing Manager</p>
+                  </div>
+                  <div class="client-dis">
+                    <p class="client-para">
+                      "AI picks my outfits based on weather — it's scary good."
                     </p>
-                    <div class="mt-4 flex text-yellow-400">
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <!-- Testimonial 3 -->
-                <div class="bg-white p-6 rounded-lg shadow-md" data-aos="zoom-in" data-aos-delay="200">
-                    <div class="flex items-center mb-4">
-                        <img class="w-12 h-12 rounded-full" src="http://static.photos/people/200x200/3" alt="Emma L.">
-                        <div class="ml-4">
-                            <h4 class="text-lg font-semibold">Emma L.</h4>
-                            <p class="text-indigo-600">College Student</p>
-                        </div>
-                    </div>
-                    <p class="text-gray-600">
-                        "I've discovered so many new ways to wear the clothes I already own. The wardrobe management feature is a game changer!"
+              <div class="swiper-slide">
+                <div class="client-card">
+                  <span class="cleint-img">
+                    <img
+                      src="{% static 'admin-assets/images/client-1.png' %}"
+                    />
+                  </span>
+                  <div class="client-name-card">
+                    <h4 class="client-name">Emily R.</h4>
+                    <p class="client-designation">Marketing Manager</p>
+                  </div>
+                  <div class="client-dis">
+                    <p class="client-para">
+                      "I finally stopped saying 'I have nothing to wear!'
+                      Thanks, Dressr!"
                     </p>
-                    <div class="mt-4 flex text-yellow-400">
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
-                        <i data-feather="star" class="w-5 h-5 fill-current"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="swiper-slide">
+                <div class="client-card">
+                  <span class="cleint-img">
+                    <img
+                      src="{% static 'admin-assets/images/client-2.png' %}"
+                    />
+                  </span>
+                  <div class="client-name-card">
+                    <h4 class="client-name">David K.</h4>
+                    <p class="client-designation">Marketing Manager</p>
+                  </div>
+                  <div class="client-dis">
+                    <p class="client-para">
+                      "The virtual try-on actually works. I can test looks
+                      before buying."
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="swiper-slide">
+                <div class="client-card">
+                  <span class="cleint-img">
+                    <img
+                      src="{% static 'admin-assets/images/client-3.png' %}"
+                    />
+                  </span>
+                  <div class="client-name-card">
+                    <h4 class="client-name">Emily R.</h4>
+                    <p class="client-designation">Marketing Manager</p>
+                  </div>
+                  <div class="client-dis">
+                    <p class="client-para">
+                      "AI picks my outfits based on weather — it's scary good."
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Client Section End -->
+
+    <section class="plan-section pd-100 bg-grey">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <div class="section-hd-card mb-5">
+              <h4 class="section-subhd">Start Free</h4>
+              <h2 class="section-hd">Upgrade Anytime.</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-lg-4">
+            <div class="plan-card animate-on-scroll" data-animate="animate__fadeInLeft">
+              <h4>Free Tier</h4>
+              <p>
+                Get started with your smart wardrobe<br />
+                for free
+              </p>
+              <div class="plan-price">$0 <span>/ month</span></div>
+              <ul class="plan-lists">
+                <li>
+                  Digitize wardrobe
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+                <li>
+                  Basic avatar
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+
+                <li>
+                  5 try-ons/month
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+
+                <li>
+                  Daily outfit suggestions
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+              </ul>
+              <a
+                class="common-black-btn w-100 mt-4"
+                title="Download App"
+                href="#"
+              >
+                Start Free
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="plan-card animate-on-scroll" data-animate="animate__fadeInRight">
+              <h4>Premium</h4>
+              <p>
+                Unlock advanced AI styling and full<br />
+                wardrobe insights.
+              </p>
+              <div class="plan-price">$99 <span>/ month</span></div>
+              <ul class="plan-lists">
+                <li>
+                  Unlimited try-ons
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+                <li>
+                  Advanced AI styling
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+
+                <li>
+                  Weather-wise looks
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+
+                <li>
+                  Vacation packing planner
+                  <span class="plan-chk">
+                    <img
+                      src="{% static 'admin-assets/images/plan-chk.svg' %}"
+                    />
+                  </span>
+                </li>
+              </ul>
+              <a
+                class="common-black-btn w-100 mt-4"
+                title="Download App"
+                href="#"
+              >
+                Start Free
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq-sec pd-100">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="faq-img">
+              <img src="{% static 'admin-assets/images/faq-img.png' %}" />
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="faq-rt">
+              <div class="section-hd-card mb-5 text-start">
+                <h4 class="section-subhd">Frequently asked</h4>
+                <h2 class="section-hd">questions</h2>
+              </div>
+
+              <div class="faq-accordion">
+                <div class="accordion" id="accordionExample">
+                  <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="headingOne">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne"
+                      aria-expanded="true"
+                        aria-controls="collapseOne"
+                      >
+                        1. What devices does Dressr work on?
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseOne"
+                      class="accordion-collapse collapse show"
+                      aria-labelledby="headingOne"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div class="accordion-body">
+                        <p>
+                          Dressr works seamlessly across all modern devices and
+                          browsers including Desktop computers (Windows, Mac,
+                          Linux), Mobile phones (iOS and Android)
+                        </p>
+                      </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                  </div>
 
-    <!-- CTA Section -->
-    <div class="bg-indigo-700">
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8 lg:flex lg:items-center lg:justify-between">
-            <h2 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                <span class="block">Ready to revolutionize your wardrobe?</span>
-                <span class="block text-indigo-200">Start your free trial today.</span>
-            </h2>
-            <div class="mt-8 flex lg:mt-0 lg:flex-shrink-0">
-                <div class="inline-flex rounded-md shadow">
-                    <a href="#" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 transition-all">
-                        Get started
-                    </a>
-                </div>
-                <div class="ml-3 inline-flex rounded-md shadow">
-                    <a href="#" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 bg-opacity-60 hover:bg-opacity-70 transition-all">
-                        Learn more
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+                  <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="headingTwo">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseTwo"
+                        aria-expanded="false"
+                        aria-controls="collapseTwo"
+                      >
+                        2. Can I try clothes from other brands?
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseTwo"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="headingTwo"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div class="accordion-body">
+                        <p>
+                          Yes! Dressr partners with hundreds of major clothing
+                          brands and retailers. You can virtually try on clothes
+                          from your favorite stores all in one place. Our
+                          catalog includes popular brands across all price
+                          points and styles.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800">
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div>
-                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase">Product</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Features</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Pricing</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">API</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Integrations</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase">Company</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">About</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Blog</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Careers</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Press</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase">Resources</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Documentation</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Guides</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Community</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Support</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase">Legal</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Privacy</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Terms</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Cookie Policy</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="mt-12 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-white transition-all">
-                        <i data-feather="facebook" class="h-6 w-6"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-all">
-                        <i data-feather="instagram" class="h-6 w-6"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-all">
-                        <i data-feather="twitter" class="h-6 w-6"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-all">
-                        <i data-feather="youtube" class="h-6 w-6"></i>
-                    </a>
-                </div>
-                <p class="mt-4 md:mt-0 text-gray-400 text-sm">
-                    &copy; 2023 Dresser AI. All rights reserved.
-                </p>
-            </div>
-        </div>
-    </footer>
+                  <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="headingThree">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseThree"
+                        aria-expanded="false"
+                        aria-controls="collapseThree"
+                      >
+                        3. Do I need to pay to use Dressr?
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseThree"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="headingThree"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div class="accordion-body">
+                        <p>
+                          Dressr offers both free and premium plans. The free
+                          plan lets you try basic features like virtual try-ons
+                          and outfit planning. Our premium plan ($99/month)
+                          unlocks advanced features like unlimited try-ons,
+                          personal styling recommendations, and exclusive brand
+                          partnerships.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-    <script>
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
-        feather.replace();
-        
-        // Initialize Vanta.js effect
-        VANTA.GLOBE({
-            el: "#hero",
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            scale: 1.00,
-            scaleMobile: 1.00,
-            color: 0x5f6ee8,
-            backgroundColor: 0xf5f7fa,
-            size: 0.8
-        });
-    </script>
-</body>
-</html>
+                  <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseFour"
+                        aria-expanded="false"
+                        aria-controls="collapseFour"
+                      >
+                        4. How does the virtual try-on work?
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseFour"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="headingFour"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div class="accordion-body">
+                        <p>
+                          Our virtual try-on technology uses advanced AI and
+                          computer vision to create realistic visualizations of
+                          how clothes will look on you. Simply upload a photo or
+                          use your camera, select items you want to try, and our
+                          AI will generate a realistic preview showing how the
+                          clothes fit and look on your body type.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-5">
+          <div class="col-lg-12">
+            <div class="still-have-ques text-center mt-5">
+              <h4 class="mb-3">Still have Questions?</h4>
+              <p>Get answers from an experienced local host.</p>
+              <a class="common-black-btn" href="#"> Ask a host </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="join-sec pd-100 ">
+      <div class="container">
+        <div class="join-inr animate-on-scroll" data-animate="animate__fadeInUp">
+          <div class="join-card-top">
+            <p>Your closet, reimagined.</p>
+            <h4>
+              Join 50,000+ users styling <br />
+              smarter with Dressr.
+            </h4>
+          </div>
+          <div class="join-card-bottom">
+            <div class="join-plan">
+              <h4>
+                Plan outfits, get inspiration, and<br />
+                rediscover your wardrobe all in one<br />
+                place
+              </h4>
+              <a class="common-black-btn" href="#">
+                Download App
+                <span class="btn-arrow">
+                  <img
+                    src="{% static 'admin-assets/images/wht-arrow.svg' %}"
+                  /> </span
+              ></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+{% include "frontend/includes/footer.html" %}

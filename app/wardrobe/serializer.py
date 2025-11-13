@@ -1,13 +1,17 @@
 from rest_framework.serializers import ModelSerializer
 from .models import *
+from accounts.utils import *
 from api.serializer import *
 
-
-
 class ClothItemSerializer(ModelSerializer):
+    cloth_category = SerializerMethodField()
+    
     class Meta:
         model = ClothingItem
         fields = ('__all__')
+
+    def get_cloth_category(self,obj):
+        return obj.cloth_category.id,obj.cloth_category.title
 
 
 class WardrobeSerializer(ModelSerializer):
@@ -44,6 +48,31 @@ class ClothCategorySerializer(ModelSerializer):
         fields = ('__all__')
 
 class MyOutFitSerializer(ModelSerializer):
+    items = SerializerMethodField(read_only=True)
+
     class Meta:
         model = Outfit
+        fields = ('__all__')
+
+
+    def get_items(self, obj):
+        items = obj.items.all()
+        return [
+            {
+                "id": item.id,
+                "title": item.title,
+                "image": self.context.get('request').build_absolute_uri(item.image.url) if USE_HTTPS else self.context.get('request').build_absolute_uri(item.image.url)
+            }
+            for item in items
+        ]
+
+class TripsSerializer(ModelSerializer):
+    class Meta:
+        model = Trips
+        fields = ('__all__')
+
+
+class ActivityFlagSerializer(ModelSerializer):
+    class Meta:
+        model = ActivityFlag
         fields = ('__all__')

@@ -110,7 +110,7 @@ def send_user_email(
         # Get sender email from SMTP settings or environment fallback
         smtp = SMTPSetting.objects.filter(is_active=True).first()
         from_email = smtp.from_email if smtp else settings.DEFAULT_FROM_EMAIL
-        from_email_formatted = f"Baro Barato <{from_email}>"
+        from_email_formatted = f"My Dressr <{from_email}>"
 
         # Render email content
         message = render_to_string(template_name, context)
@@ -153,7 +153,7 @@ def resend_email_function(email_log):
     ## function  will be use for resend email if email got failed
     smtp=SMTPSetting.objects.filter(is_active=True).first()
     from_email = smtp.email_host_user if smtp else settings.DEFAULT_FROM_EMAIL
-    from_email_mail = f"Baro Barato  <{from_email}>"  ## this formate is use to show : custom sender name along with email address to user email inbox
+    from_email_mail = f"My Dressr  <{from_email}>"  ## this formate is use to show : custom sender name along with email address to user email inbox
 
     recievers_emails = email_log.recievers_email.split(',')
     recievers_emails = [i.strip() for i in recievers_emails if i ]

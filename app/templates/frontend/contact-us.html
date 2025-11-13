@@ -1,0 +1,146 @@
+{% load static %} {% load extras %} 
+{% include 'frontend/includes/header.html'%}
+<div id="main-wrapper">
+  <section class="page-title-area rest-title-area">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="page-title-wrapper text-center">
+            <h1 class="page-title mb-10">Contact Us</h1>
+            <div class="breadcrumb-menu">
+              <nav
+                aria-label="Breadcrumbs"
+                class="breadcrumb-trail breadcrumbs"
+              >
+                <ul class="trail-items mb-0">
+                  <li class="trail-item trail-begin">
+                    <a href="#"><span>Home</span></a>
+                  </li>
+                  <li class="trail-item trail-end"><span>Contact Us</span></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- <section id="about-us" class="about-us-wrapper">
+        <div class="download-app-wrapper section-ptb">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="about-wrapper">
+                            {% if data %}
+                            <p class="paragraph-text mt-35">{{data.content|safe}}</p>
+                            {% else %}
+                            <p class="paragraph-text mt-2">No Data Found</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+
+
+ <section class="contact-us py-5">
+    <div class="container">
+        <div class="contact-us-inr mb-1">
+            <div class="contact-content">
+                <div class="row">
+                    <div class="col-xl-4 col-md-6">
+                        <div class="contact-info">
+                            <div class="contact-info-icon">
+                                <i class="far fa-map"></i>
+                            </div>
+                            <div class="contact-info-content">
+                                <h5>Address</h5>
+                                <p>A1510, Shipra Neo, Shipra Sun City, Indirapuram</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="contact-info">
+                            <div class="contact-info-icon">
+                                <i class="far fa-phone-alt"></i>
+                            </div>
+                            <div class="contact-info-content">
+                                <h5>Call Us</h5>
+                                <p>+1 (5555) 123-4567</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="contact-info">
+                            <div class="contact-info-icon">
+                                <i class="far fa-envelope"></i>
+                            </div>
+                            <div class="contact-info-content">
+                                <h5>Email Us</h5>
+                                <p><a href="mailto:hello@dressr.com" class="__cf_email__">hello@dressr.com</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                 
+                </div>
+            </div>
+        </div>
+        <div class="contact-wrapper">
+            <div class="row">
+                <div class="col-lg-6 align-self-center">
+                    <div class="contact-img">
+                        <img src="{% static 'admin-assets/images/contact-img.jpg' %}" />
+                    </div>
+                </div>
+                <div class="col-lg-6 align-self-center">
+                    <div class="contact-form">
+                        <div class="contact-form-header">
+                            <h2>Get In Touch</h2>
+                            <p>It is a long established fact that a reader will be distracted by the readable
+                                content of a page randomised words which don't look even slightly when looking
+                                at its layout. </p>
+                        </div>
+                        <form method="post" id="contact-form">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <input type="text" class="form-control" name="name" placeholder="Your Name">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <input type="email" class="form-control" name="email" placeholder="Your Email">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group mb-3">
+                                <input type="text" class="form-control" name="subject" placeholder="Your Subject" required="">
+                            </div>
+                            <div class="form-group mb-3">
+                                <textarea name="message" cols="30" rows="5" class="form-control" placeholder="Write Your Message"></textarea>
+                            </div>
+                            <div class="text-center">
+                            <button type="submit" class="common-black-btn">Send
+                                Message </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="map-card">
+    <div class="container-fluid">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3430.1858849053356!2d76.70709767631952!3d30.71317427459373!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390f954ea4b2c735%3A0x44c7b39d86228a72!2sToXSL%20Technologies%20-%20Mobile%20App%20Development%20And%20Web%20Development%20Company!5e0!3m2!1sen!2sin!4v1688710190651!5m2!1sen!2sin" width="100%" height="500" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+</section>
+
+
+</div>
+{% include 'frontend/includes/footer.html' %}
