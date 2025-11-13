@@ -889,6 +889,7 @@ class UpdateProfileDetails(APIView):
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='first name'),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='last name'),
             openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='body type id'),
+            openapi.Parameter('profile_pic', openapi.IN_FORM, type=openapi.TYPE_FILE, description="Add profile pic image"),
             openapi.Parameter('height', openapi.IN_FORM, type=openapi.TYPE_STRING,description='height in cm'),
             openapi.Parameter('gender', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Male:1 Female:2, Other:3 '),
             openapi.Parameter('skin_tone_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='skin tone id'),
@@ -903,6 +904,7 @@ class UpdateProfileDetails(APIView):
         first_name = data.get('first_name')
         last_name = data.get('last_name')
         gender = data.get('gender')
+        profile_pic = request.FILES.get('profile_pic')
         user_image = request.FILES.get('image')
         others = data.get('others')
         hieght_cm = data.get('hieght_cm')
@@ -940,6 +942,9 @@ class UpdateProfileDetails(APIView):
         user.hieght_cm = hieght_cm
         if request.FILES.get('image'):
             user.user_image = user_image
+
+        if request.FILES.get('profile_pic'):
+            user.profile_pic = profile_pic
         # Profile setup status
         message = "Profile updated successfully!"
         if not user.is_profile_setup:
