@@ -215,7 +215,7 @@ class NotificationsList(View):
         notifications = Notifications.objects.filter(created_for=user).order_by('-created_on')
         return render(request, "admin/notifications.html",{
             "head_title": "Notifications Management",
-            "notifications":  notifications,
+            "notifications": get_pagination(request,notifications),
             "total_objects": notifications.count(),
             "user":user
         })

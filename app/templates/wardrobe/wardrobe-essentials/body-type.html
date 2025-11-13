@@ -62,13 +62,10 @@
 											</td>
 											<td>
 												<div class="d-flex">
-													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{type.id}}','{{type.title}}','{{type.title}}')"  data-bs-target="#edit-body-type" class="btn btn-info shadow btn-xs sharp me-1">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{type.id}}','{{type.title}}','{{type.description}}')"  data-bs-target="#edit-body-type" class="btn btn-info shadow btn-xs sharp me-1">
 														<i class="fa fa-edit"></i>
 													</a>
-                                                    <a title="Delete" href="{% url 'wardrobe:delete_body_type' type.id %}"
-														id="delete-btn" class="btn btn-danger shadow btn-xs sharp">
-														<i class="fa fa-trash"></i>
-													</a>
+                                                    <a title="Delete" href="{% url 'wardrobe:delete_body_type' type.id %}" id="delete-btn" class="btn btn-danger shadow btn-xs sharp"><i class="fa fa-trash"></i></a>
 												</div>
 											</td>
 										</tr>
@@ -137,13 +134,13 @@
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" name="title" id="title" class="form-control" maxlength="100" required>
+                                    <input type="text" name="title" id="body_type_title" class="form-control" maxlength="100" required>
                                 </div>
                             </div>
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Description</label>
-                                    <textarea type="text" placeholder="Description" name="description" id="description" class="form-control" maxlength="100" required></textarea>
+                                    <textarea type="text" placeholder="Description" name="description" id="body_type_description" class="form-control" maxlength="100" required></textarea>
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -160,8 +157,8 @@
 <script>
     function GetValue(id, title,description){
         $('#id').val(id);
-        $('#title').val(title);
-        $('#description').val(description);
+        $('#body_type_title').val(title);
+        $('#body_type_description').val(description);
     }
 </script>
 <script src="{% static 'admin-assets/js/validations/body-type.js' %}"></script>

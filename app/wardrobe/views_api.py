@@ -290,8 +290,7 @@ class CreateOutfitAPI(APIView):
         operation_id="Create Outfit",
         operation_description="Create Outfit",
         manual_parameters=[
-            openapi.Parameter('accessory_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Accessory IDs'),
-            openapi.Parameter('category_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Category IDs'),
+            openapi.Parameter('item_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Category IDs'),
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
             openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
@@ -300,37 +299,27 @@ class CreateOutfitAPI(APIView):
     )
     def post(self, request):
         user = request.user
-       
-        if request.data.get('accessory_ids'):
-            valid_accessories = Accessory.objects.filter(id__in=request.data.get('accessory_ids').split(','))
-           
-        if request.data.get('category_ids'):
-            valid_categories = ClothCategory.objects.filter(id__in=request.data.get('category_ids').split(','))
-
         occasion = Occasion.objects.filter(id=request.data.get('occasion_id')).first()
         if not occasion:
             return Response({"message": "Invalid occasion ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
         if int(request.data.get('weather_type')) not in [1, 2, 3, 4, 5]:
             return Response({"message": "Invalid weather type","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        # Build the clothing item query
-        items = ClothingItem.objects.filter(wardrobe__user=user)
 
-        # Combine filters more cleanly
-        items = items.filter(
-            Q(weather_type=int(request.data.get('weather_type'))) | Q(occasion_id=occasion),
-            Q(cloth_category__in=valid_categories) | Q(accessory__in=valid_accessories)
-            )
-        
-     
-        # if request.data.get('color'):
-        #     items = items.filter(Q(color__iexact=request.data.get('color')) | Q(color__isnull=True))
+        # Build the clothing item query
+        items = ClothingItem.objects.filter(id__in=request.data.getlist('item_ids'),wardrobe__user=user)
+
+        if request.data.get('color'):
+            items = items.filter(Q(color__iexact=request.data.get('color')) | Q(color__isnull=True))
 
         if not items.exists():
             return Response({"message": "No matching clothing items found for the given filters.", "status": status.HTTP_404_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
 
+        if Outfit.objects.filter(title=request.data.get('title').strip(),occasion=occasion).exists():
+            return Response({"message":"Outfit already exist with title !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
         outfit = Outfit.objects.create(
-            title=request.data.get('title').strip() ,
+            title=request.data.get('title').strip(),
             occasion=occasion,
             weather_type=int(request.data.get('weather_type')),
             created_by=user,
@@ -393,7 +382,7 @@ class DeleteOutfitAPI(APIView):
         response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
             {"field_name": "outfit_id", "method": "get", "error_message": "Please enter outfit id"},
         ])
-        outfit = get_or_none(Outfit, "Invalid outfit id", id=request.query_params.get('outfit_id'))
+        outfit = get_or_none(Outfit, "Invalid outfit id", id=request.query_params.get('outfit_id').strip())
         outfit.delete()
         return Response({"message":"Outfit Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
@@ -423,11 +412,11 @@ class EditOutfitAPI(APIView):
         user = request.user 
         outfit = get_or_none(Outfit, "Invalid outfit id", id=request.data.get('outfit_id'),created_by=request.user)
 
-        if request.data.get('accessory_ids'):
-            valid_accessories = Accessory.objects.filter(id__in=request.data.get('accessory_ids').split(','))
+        if request.data.getlist('accessory_ids'):
+            valid_accessories = Accessory.objects.filter(id__in=request.data.getlist('accessory_ids')[0].split(','))
            
-        if request.data.get('category_ids'):
-            valid_categories = ClothCategory.objects.filter(id__in=request.data.get('category_ids').split(','))
+        if request.data.getlist('category_ids'):
+            valid_categories = ClothCategory.objects.filter(id__in=request.data.getlist('category_ids')[0].split(','))
 
         occasion = Occasion.objects.filter(id=request.data.get('occasion_id')).first()
         if not occasion:
