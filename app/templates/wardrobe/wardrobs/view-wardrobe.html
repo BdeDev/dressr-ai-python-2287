@@ -45,7 +45,7 @@
                                                     class="rounded-lg me-2" width="50" alt="">
                                                 </a>
                                             {% endif %}
-                                            <span>{{wardrobe.user.full_name|capfirst}}</span>
+                                            <span ><a href="{% url 'users:view_user' wardrobe.user.id %}" class="w-100">{{wardrobe.user.full_name|capfirst}}</a></span>
                                         </div>
                                     </h6>
                                 </li>

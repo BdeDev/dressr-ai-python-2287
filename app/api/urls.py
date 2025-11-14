@@ -22,7 +22,7 @@ urlpatterns = [
     re_path(r'^change-password-api/$',ChangePassword.as_view(),name="change_password_api"),
     re_path(r'^forgot-password-api/$',ForgotPassword.as_view(),name="forgot_password_api"),
     re_path(r'^forgot-password-resend-link/$',ForgotPasswordResendLink.as_view(),name="forgot_password_resend_link_api"),
-    re_path(r'^reset-password/$',ResetPasswordView.as_view(),name="reset_password_api"),
+    # re_path(r'^reset-password/$',ResetPasswordView.as_view(),name="reset_password_api"),
     
     ## Profile Management
     re_path(r'^profile-details-api/$',UserProfileDetails.as_view(),name="user_profile_details_api"),

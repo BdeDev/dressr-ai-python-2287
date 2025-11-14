@@ -160,14 +160,14 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-## Swagger Settings
 SWAGGER_SETTINGS = {
     'JSON_EDITOR': True,
     'SECURITY_DEFINITIONS': {
-        'Bearer': {
+        'TokenAuth': {
             'type': 'apiKey',
             'name': 'Authorization',
-            'in': 'header'
+            'in': 'header',
+            'description': "Use: Token <your_token>"
         }
     },
     'PERSIST_AUTH': True

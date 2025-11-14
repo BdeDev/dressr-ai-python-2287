@@ -49,6 +49,7 @@ urlpatterns = [
     re_path(r'^get-items-api/$', GetItemsAPI.as_view(), name='get_items_api'),
     re_path(r'^marked-favourite-item-api/$', MarkItemFavouriteAPI.as_view(), name='mark_favourite_item_api'),
     re_path(r'^get-cloth-item-by-category-api/$', GetItemByCategoryAPI.as_view(), name='get_cloth_item_by_category_api'),
+    re_path(r'^add-multiple-item-api/$', AddMultipleItemInWardrobeAPI.as_view(), name='add_multiple_item_api'),
 
     ###--------------------------------Wardrobe essentials--------------------------####
     re_path(r'^accessories-api/$', GetAccessoriesAPI.as_view(), name='accessories_api'),
@@ -76,11 +77,6 @@ urlpatterns = [
     re_path(r'^get-trip-list-api/$', GetMyAllTripAPI.as_view(), name='get_trip_list_api'),
     re_path(r'^get-trip-api/$', GetMyTripOutfitsAPI.as_view(), name='get_trip_api'),
     re_path(r'^delete-trip-api/$', DeleteTripAPI.as_view(), name='delete_trip_api'),
-
-    ###--------------------------------Wardrobe essentials-----------------------####
-    re_path(r'^accessories-api/$', GetAccessoriesAPI.as_view(), name='accessories_api'),
-    re_path(r'^occasions-api/$', GetOccasionsAPI.as_view(), name='occasions_api'),
-
 
     # admin panel
     re_path(r'^wardrobe-list/$', WardrobeList.as_view(), name='wardrobe_list'),

@@ -16,7 +16,6 @@ from accounts.utils import *
 from rest_framework.authtoken.models import Token
 
 
-
 db_logger = logging.getLogger('db')
 env = environ.Env()
 environ.Env.read_env()

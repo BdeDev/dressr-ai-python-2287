@@ -13,7 +13,48 @@
             </div>
         </div>
         <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-title mb-0">
+					Contact Us
+				</div>
+                <div class="page-btn d-flex flex-wrap">
+                    <a title="Edit" class="btn btn-primary" href="{% url 'contact_us:update_contact_details' %}"><i class="fas fa-edit me-1"></i>Contact Details</a>
+                </div>
+            </div>
             <div class="card-body">
+                <div class="contact-sec">
+                    <div class="row pt-45 justify-content-center">
+                        <div class="col-lg-4 col-12">
+                            <div class="contact-info-item">
+                                <i class="far fa-map-marker-plus contact-info-bg contact-info-item-i"></i>
+                                <h3>Address</h3>
+                                <p>{% if contact_details.address %}{{contact_details.address}}{% else %}--{% endif %}</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <div class="contact-info-item">
+                                <i class="far fa-phone-alt contact-info-bg2 contact-info-item-i"></i>
+                                <h3>Call Us</h3>
+                                <p>{% if contact_details.mobile_no %}
+                                    <a href="tel:{% if contact_details.country_code %}{{contact_details.country_code}}{% endif %}{{contact_details.mobile_no}}">
+                                        {% if contact_details.country_code %}{{contact_details.country_code}}{% endif %}{{contact_details.mobile_no}}
+                                    </a>
+                                    {% else %}--{% endif %}</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-12">
+                            <div class="contact-info-item">
+                                <i class="far fa-envelope contact-info-bg3 contact-info-item-i"></i>
+                                <h3>Email</h3>
+                                <p>{% if contact_details.email %}
+                                    <a href="mailto:{% if contact_details.email %}{{contact_details.email}}{% endif %}">
+                                        {% if contact_details.email %}{{contact_details.email}}{% endif %}
+                                    </a>
+                                    {% else %}--{% endif %}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class='d-flex flex-wrap justify-content-between'>
                     <!-- showing_objects-->
 					{% include "admin-includes/showing_objects.html" with listing_objects=contacts %}

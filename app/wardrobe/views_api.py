@@ -111,6 +111,81 @@ class AddItemInWardrobeAPI(APIView):
         )
         return Response({"message": "Item added successfully!","status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
     
+
+class AddMultipleItemInWardrobeAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="Add Multiple Item in Wardrobe",
+        operation_description="Add Multiple Item in Wardrobe",
+        manual_parameters=[
+            openapi.Parameter('items',
+                openapi.IN_FORM,
+                type=openapi.TYPE_OBJECT,
+                description='''
+                List of items 
+                [{"title":"White Shirt","category_id":"c8826aa5-8aa9-476f-b9ee-854b1b6b6956","occasion_id":"de23ab9f-7e5e-4f54-93a4-2cdd05c76f03","weather_type":"1","color":"white","brand":"H&M","image":"Frame(8).png"},...]'''
+            ), 
+        ], 
+    )
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        wardrobe = get_or_none(Wardrobe,"User wardrobe does not exist !",user=user)
+        
+        try:
+            items = json.loads(request.data.get("items"))
+        except Exception:
+            return Response({"message": "Invalid JSON format for items.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not items:
+            return Response({"message": "Items list is empty.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_items = []
+
+        for idx, item in enumerate(items):
+            category = ClothCategory.objects.filter(id=item.get("category_id")).first()
+            if not category:
+                return Response({"message": "Invalid category ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+            occasion = None
+            if item.get("occasion_id"):
+                occasion = Occasion.objects.filter(id=item.get("occasion_id")).first()
+                if not occasion:
+                    return Response({"message": "Invalid occasion ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+            accessory = None
+            if item.get("accessory_id"):
+                accessory = Accessory.objects.filter(id=item.get("accessory_id")).first()
+                if not accessory:
+                    return Response({"message": "Invalid accessory ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+            if int(item.get("weather_type")) not in [1, 2, 3, 4, 5]:
+                return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+
+            image = request.FILES.get(f"image_{idx}")
+
+            cloth_item = ClothingItem.objects.create(
+                title=item.get("title"),
+                wardrobe=wardrobe,
+                cloth_category=category,
+                occasion=occasion,
+                accessory=accessory,
+                weather_type=int(item.get("weather_type")),
+                color=item.get("color"),
+                brand=item.get("brand"),
+                date_added=datetime.now(),
+                image=image
+            )
+
+            created_items.append(cloth_item.id)
+
+        return Response({"message": "Items added successfully!","created_item_ids": created_items,"status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
+
+    
 class RemoveItemFromWardrobeAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
     parser_classes = [MultiPartParser,FormParser]
@@ -306,7 +381,6 @@ class CreateOutfitAPI(APIView):
         if int(request.data.get('weather_type')) not in [1, 2, 3, 4, 5]:
             return Response({"message": "Invalid weather type","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Build the clothing item query
         items = ClothingItem.objects.filter(id__in=request.data.getlist('item_ids'),wardrobe__user=user)
 
         if request.data.get('color'):

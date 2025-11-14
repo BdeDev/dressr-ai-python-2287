@@ -26,26 +26,6 @@
     </div>
   </section>
 
-  <!-- <section id="about-us" class="about-us-wrapper">
-        <div class="download-app-wrapper section-ptb">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="about-wrapper">
-                            {% if data %}
-                            <p class="paragraph-text mt-35">{{data.content|safe}}</p>
-                            {% else %}
-                            <p class="paragraph-text mt-2">No Data Found</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section> -->
-
-
-
  <section class="contact-us py-5">
     <div class="container">
         <div class="contact-us-inr mb-1">
@@ -104,11 +84,11 @@
                                 content of a page randomised words which don't look even slightly when looking
                                 at its layout. </p>
                         </div>
-                        <form method="post" id="contact-form">
+                        <form method="post" id="contact-us" action="{% url 'contact_us:contact_us_request' %}" enctype="multipart/form-data">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">
-                                        <input type="text" class="form-control" name="name" placeholder="Your Name">
+                                        <input type="text" class="form-control" name="full_name" placeholder="Your Name">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -118,14 +98,13 @@
                                 </div>
                             </div>
                             <div class="form-group mb-3">
-                                <input type="text" class="form-control" name="subject" placeholder="Your Subject" required="">
+                                <input type="text" class="form-control" name="subject" placeholder="Your Subject">
                             </div>
                             <div class="form-group mb-3">
                                 <textarea name="message" cols="30" rows="5" class="form-control" placeholder="Write Your Message"></textarea>
                             </div>
                             <div class="text-center">
-                            <button type="submit" class="common-black-btn">Send
-                                Message </button>
+                            <button type="submit" class="common-black-btn">Send Message </button>
                             </div>
                         </form>
                     </div>
@@ -144,3 +123,4 @@
 
 </div>
 {% include 'frontend/includes/footer.html' %}
+<script src="{% static 'admin-assets/js/validations/contact-us-validation.js' %}"></script>

@@ -107,7 +107,7 @@ $("#add-booster").validate({
         },
     },
 }); 
-//Add Dressr AI TV Videos
+//Add My Dressr TV Videos
 $("#add-video").validate({
     ignore: [],
     rules: {
