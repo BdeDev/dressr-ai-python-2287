@@ -18,18 +18,18 @@ services:
       interval: 2s
       timeout: 10s
       retries: 10
-    # command: ["--default-authentication-plugin=caching_sha2_password"]
+    command: ["--default-authentication-plugin=mysql_native_password"]
     restart: unless-stopped
 
   django:
     volumes:
       - ./app:/app
     env_file:
-      - ./app/project/.env_production
+      - ./app/project/.env_testing
     build:
       context: ./app
     ports:
-      - "2287:8000"
+      - "8000:8000"
     depends_on:
       - mysql 
     restart: unless-stopped
@@ -42,10 +42,9 @@ services:
       - PMA_HOST=mysql
       - PMA_PORT=3306
       - PMA_USER=${MYSQL_USER}
-      - PMA_PASSWORD=${MYSQL_PASSWORD}
+      - PMA_PASSWORD=${MYSQL_ROOT_PASSWORD}
     depends_on:
       - mysql
-
 
   redis:
     image: redis:latest
@@ -58,16 +57,14 @@ services:
       timeout: 10s
       retries: 5
 
-  # lb:
-  #   image: nginx
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
-  #     # - /etc/letsencrypt/live/thek.ai/fullchain.pem:/etc/nginx/fullchain.pem:ro
-  #     # - /etc/letsencrypt/live/thek.ai/privkey.pem:/etc/nginx/privkey.pem:ro
+  lb:
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
 
-  #   depends_on:
-  #     - django
-  #   ports:
-  #     - '83:80'
-  #     # - '443:443'
-  #   restart: unless-stopped 
+    depends_on:
+      - django
+
+    ports:
+      - '80:80'
+    restart: unless-stopped 
