@@ -213,12 +213,10 @@ def create_connected_account(user):
             )
             user.account_id = account.id
             user.save()
-            print(f"New Account Created: {account.id}")
             return account.id
         else:
             return user.account_id  
     except Exception as e:
-        print(f"Error creating new account: {e}")
         db_logger.exception(e)
         return None
     
@@ -241,6 +239,5 @@ def stripe_webhook(request):
         # Subscription renewed
         data = event['data']['object']
         customer_id = data['customer']
-        print(f"✅ Subscription renewed for customer {customer_id}")
 
     return HttpResponse(status=200)

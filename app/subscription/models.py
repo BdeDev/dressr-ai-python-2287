@@ -1,7 +1,4 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from accounts.models import *
 from jsonfield import JSONField
 
@@ -16,6 +13,7 @@ class SubscriptionPlans(CommonInfo):
     created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
+    is_free_plan = models.BooleanField(default=False)
 
     # Feature limits
     max_uploads = models.PositiveIntegerField(default=50)      # e.g., number of wardrobe items

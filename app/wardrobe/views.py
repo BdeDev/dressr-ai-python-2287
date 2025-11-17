@@ -311,7 +311,7 @@ class HairColorList(View):
         hair_colors  = HairColor.objects.filter(is_active=True).order_by('-created_on')
         hair_colors = query_filter_constructer(request,hair_colors,{
             "title__icontains":"title",
-            "color_code":"color_code",
+            "color_code__icontains":"color_code",
             "created_on__date":"created_on"
         })
         if request.GET and not hair_colors:
@@ -363,7 +363,7 @@ class SkinToneList(View):
         skin_tones  = SkinTone.objects.filter(is_active=True).order_by('-created_on')
         skin_tones = query_filter_constructer(request,skin_tones,{
             "title__icontains":"title",
-            "color_code":"color_code",
+            "color_code__icontains":"color_code",
             "created_on__date":"created_on"
         })
         if request.GET and not skin_tones:

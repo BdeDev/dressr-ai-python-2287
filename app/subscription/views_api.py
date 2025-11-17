@@ -185,7 +185,6 @@ class BuySubscriptionPlan(APIView):
             user=User.objects.get(id=request.user.id,role_id=CUSTOMER)
         except:
             return Response({"message":"User does not exists!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        
         try:
             plan=SubscriptionPlans.objects.get(id=request.data.get('id'))
         except:
@@ -195,8 +194,6 @@ class BuySubscriptionPlan(APIView):
         if not is_valid_purchse['is_valid']:
             return Response({"message":is_valid_purchse['message'],"status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
         
-    
-        ## buy plan
         purchased_plan = UserPlanPurchased.objects.create(
             plan_id=generate_plan_id(),
             subscription_plan = plan,
@@ -209,11 +206,11 @@ class BuySubscriptionPlan(APIView):
             validity = plan.validity,
         )
         #generating invoice
-        target_name = f"subscription-invoice-{purchased_plan.plan_id}.pdf"
-        pdf = render_to_pdf_file(request,'pdf-templates/subscription_invoice.html',context={
-                        'plan':purchased_plan
-                    })
-        purchased_plan.invoice.save(target_name, File(BytesIO(pdf.content)))
+        # target_name = f"subscription-invoice-{purchased_plan.plan_id}.pdf"
+        # pdf = render_to_pdf_file(request,'pdf-templates/subscription_invoice.html',context={
+        #                 'plan':purchased_plan
+        #             })
+        # purchased_plan.invoice.save(target_name, File(BytesIO(pdf.content)))
 
         activate_subscription(user)
         user.save()
@@ -303,6 +300,7 @@ class PayAndRenewPlan(APIView):
                     })
         first_purchased_plan.invoice.save(target_name, File(BytesIO(pdf.content)))
         first_purchased_plan.save()
+        
         activate_subscription(user)
 
         # ## for managing transactions 

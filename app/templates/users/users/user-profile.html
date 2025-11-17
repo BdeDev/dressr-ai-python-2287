@@ -252,133 +252,132 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- tabs -->
-                <div class="col-lg-12 col-sm-12 mt-5">
-                    <div class="row  mt-4">
-                        <div class="bs-example action-tabs">
-                            <ul class="nav nav-tabs" id="myTab">
-                                <li class="nav-item">
-                                    <a href="#sectionA" class="nav-link nav-link-items active nav-link1" data-toggle="tab">Login History</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="#sectionB" class="nav-link nav-link-items nav-link1" data-toggle="tab">Outfit</a>
-                                </li>
-                            </ul>
-                            <div class="tab-content">
-                                <div id="sectionA" class="tab-pane fade show active ">
-                                    <section id="tab" class="tab-panel">
-                                        <div class="card custom-card">
-                                            <div class="card-body">
-                                                <div class=" dataview">
-                                                    <div class="table-responsive">
-                                                        <table class="table datatable">
-                                                            <thead>
+            </div>
+            <!-- tabs -->
+            <div class="col-lg-12 col-sm-12 mt-5">
+                <div class="row  mt-4">
+                    <div class="bs-example action-tabs">
+                        <ul class="nav nav-tabs" id="myTab">
+                            <li class="nav-item">
+                                <a href="#sectionA" class="nav-link nav-link-items active nav-link1" data-toggle="tab">Login History</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#sectionB" class="nav-link nav-link-items nav-link1" data-toggle="tab">Outfit</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="sectionA" class="tab-pane fade show active ">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>User IP</strong></th>
+                                                                <th><strong>Agent</strong></th>
+                                                                <th><strong>Status</strong></th>
+                                                                <th><strong>Created On </strong></th>
+                                                                <th><strong>Url </strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if loginhistory %}
+                                                                {% for history in loginhistory %}
                                                                 <tr>
-                                                                    <th><strong>User IP</strong></th>
-                                                                    <th><strong>Agent</strong></th>
-                                                                    <th><strong>Status</strong></th>
-                                                                    <th><strong>Created On </strong></th>
-                                                                    <th><strong>Url </strong></th>
+                                                                    <td>{{history.user_ip}}</td>
+                                                                    <td>{{history.user_agent}}</td>
+                                                                    <td>
+                                                                        {% if history.status == 1 %}
+                                                                        <div class="badge bg-success">SUCCESS</div>
+                                                                        {% else %}
+                                                                        <div class="badge bg-danger">FAILURE</div>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ history.created_on|date:'Y-m-d' }}", "{{ history.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                    <td>{% if history.url %}{{history.url}}{% else %}-{% endif %}</td>
                                                                 </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {% if loginhistory %}
-                                                                    {% for history in loginhistory %}
-                                                                    <tr>
-                                                                        <td>{{history.user_ip}}</td>
-                                                                        <td>{{history.user_agent}}</td>
-                                                                        <td>
-                                                                            {% if history.status == 1 %}
-                                                                            <div class="badge bg-success">SUCCESS</div>
-                                                                            {% else %}
-                                                                            <div class="badge bg-danger">FAILURE</div>
-                                                                            {% endif %}
-                                                                        </td>
-                                                                        <td>
-                                                                            <script>
-                                                                                var date = ConvertDateTime("{{ history.created_on|date:'Y-m-d' }}", "{{ history.created_on|time:'H:i' }}");
-                                                                                document.write(date);
-                                                                            </script>
-                                                                        </td>
-                                                                        <td>{% if history.url %}{{history.url}}{% else %}-{% endif %}</td>
-                                                                    </tr>
-                                                                    {% endfor %}
-                                                                {% endif %}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                    <!-- pagination-->
-                                                    {% include "admin-includes/pagination.html" with listing_objects=loginhistory %}
-                                                    <!-- pagination end-->
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <!-- pagination-->
+                                                {% include "admin-includes/pagination.html" with listing_objects=loginhistory %}
+                                                <!-- pagination end-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                            <div id="sectionB" class="tab-pane fade show">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>Title</strong></th>
+                                                                <th><strong>Occasion</strong></th>
+                                                                <th><strong>Season</strong></th>
+                                                                <th><strong>Created On</strong></th>
+                                                                <th><strong>Actions</strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if outfits %}
+                                                                {% for outfit in outfits %}
+                                                                <tr>
+                                                                    <td> {{outfit.title|default:"-"}}</td>
+                                                                    <td> {{outfit.occasion.title|default:"-"}}</td>
+                                                                    <td> 
+                                                                        {% if outfit.weather_type == 1 %}
+                                                                            <span class="badge bg-success">SUMMER</span>
+                                                                        {% elif outfit.weather_type == 2 %}
+                                                                            <span class="badge bg-warning">WINTER</span>
+                                                                        {% elif outfit.weather_type == 3 %}
+                                                                            <span class="badge bg-primary">RAINY</span>
+                                                                        {% elif outfit.weather_type == 4 %}
+                                                                            <span class="badge bg-secondary">SPRING</span>
+                                                                        {% elif outfit.weather_type == 5 %}
+                                                                            <span class="badge bg-secondary">ALL SEASON</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ outfit.created_on|date:'Y-m-d' }}", "{{ outfit.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="d-flex">
+                                                                            <a title="View" href="{% url 'wardrobe:view_outfit_detail' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
                                         </div>
-                                    </section>
-                                </div>
-                                <div id="sectionB" class="tab-pane fade show">
-                                    <section id="tab" class="tab-panel">
-                                        <div class="card custom-card">
-                                            <div class="card-body">
-                                                <div class=" dataview">
-                                                    <div class="table-responsive">
-                                                        <table class="table datatable">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th><strong>Title</strong></th>
-                                                                    <th><strong>Occasion</strong></th>
-                                                                    <th><strong>Season</strong></th>
-                                                                    <th><strong>Created On</strong></th>
-                                                                    <th><strong>Actions</strong></th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {% if outfits %}
-                                                                    {% for outfit in outfits %}
-                                                                    <tr>
-                                                                        <td> {{outfit.title|default:"-"}}</td>
-                                                                        <td> {{outfit.occasion.title|default:"-"}}</td>
-                                                                        <td> 
-                                                                            {% if outfit.weather_type == 1 %}
-                                                                                <span class="badge bg-success">SUMMER</span>
-                                                                            {% elif outfit.weather_type == 2 %}
-                                                                                <span class="badge bg-warning">WINTER</span>
-                                                                            {% elif outfit.weather_type == 3 %}
-                                                                                <span class="badge bg-primary">RAINY</span>
-                                                                            {% elif outfit.weather_type == 4 %}
-                                                                                <span class="badge bg-secondary">SPRING</span>
-                                                                            {% elif outfit.weather_type == 5 %}
-                                                                                <span class="badge bg-secondary">ALL SEASON</span>
-                                                                            {% endif %}
-                                                                        </td>
-                                                                        <td>
-                                                                            <script>
-                                                                                var date = ConvertDateTime("{{ outfit.created_on|date:'Y-m-d' }}", "{{ outfit.created_on|time:'H:i' }}");
-                                                                                document.write(date);
-                                                                            </script>
-                                                                        </td>
-                                                                        <td>
-                                                                            <div class="d-flex">
-                                                                                <a title="View" href="{% url 'wardrobe:view_outfit_detail' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                    {% endfor %}
-                                                                {% endif %}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </section>
-                                </div>
+                                    </div>
+                                </section>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- tabs end -->
             </div>
+            <!-- tabs end -->
         </div>
     </div>
 </div>

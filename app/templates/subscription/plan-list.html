@@ -63,8 +63,8 @@
 										{% for plan in subscription_plans %}
 										<tr>
                                             <td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}"> {{plan.title|default:"-"}}</td>
-											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}"> {{plan.price|floatformat:'2g'}}</td>
-											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}"> {{plan.final_price|floatformat:'2g'}}</td>
+											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}">$ {{plan.price|floatformat:'2g'}}</td>
+											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}">$ {{plan.final_price|floatformat:'2g'}}</td>
 											
 											<td class='clickable-row' data-href="{% url 'subscription:view_plan' plan.id %}">
 												{% if plan.validity == 1 %}

@@ -25,14 +25,22 @@
                         <div class="col-lg-6 col-md-6 col-12">
                             <div class="form-group required-field">
                                 <label class="form-label">Title </label>
-                                <input type="text" maxlength="10" placeholder="Enter Title" {% if plan.title %}value="{{plan.title}}"{% endif %} name="title" class="form-control" maxlength="10">
+                                <input type="text" placeholder="Enter Title" {% if plan.title %}value="{{plan.title}}"{% endif %} name="title" class="form-control">
                             </div>
                         </div>
 
-                        <div class="col-lg-6 col-md-6 col-12">
+                        <div class="col-lg-3 col-md-3 col-12">
                             <div class="form-group required-field">
                                 <label class="form-label">Price / Month </label>
-                                <input type="number" maxlength="10" placeholder="Enter Price" {% if plan.price %}value="{{plan.price}}"{% endif %} name="price" class="form-control number_field" maxlength="10">
+                                <input type="number" placeholder="Enter Price" name="price" class="form-control number_field">
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Free Plan</label>
+                               <div class="form-check form-switch">
+                                    <input disabled class="form-check-input" type="checkbox" id="freePlanToggle" name="is_free_plan" {% if plan.is_free_plan %} value="{{ plan.is_free_plan}}" checked {% endif %}>
+                                </div>
                             </div>
                         </div>
                         <div class="col-lg-6 col-md-6 col-12">
@@ -99,4 +107,23 @@
 </div>
 {% include "admin-includes/footer.html" %}
 <script src="{% static 'admin-assets/js/customized-js/add-subscription.js' %}"></script>
+<script>
+    function handleFreePlanToggle() {
+        let toggle = document.getElementById("freePlanToggle");
+        let priceInput = document.querySelector("input[name='price']");
+        console.log(toggle)
+        if (toggle.checked) {
+            priceInput.value = "0.00";
+            priceInput.setAttribute("disabled", true);
+        } else {
+            priceInput.removeAttribute("disabled");
+            priceInput.value = "";
+        }
+    }
 
+    // Run when user toggles
+    document.getElementById("freePlanToggle").addEventListener("change", handleFreePlanToggle);
+
+    // Run once on page load to apply correct initial state
+    window.addEventListener("load", handleFreePlanToggle);
+</script>

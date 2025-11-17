@@ -78,21 +78,45 @@
                 </div>
             </div>
             <div class="row gap-3">
-            {% for item in cloth_items %}
-            <div class="card" style="width: 18rem;">
-                {% if item.image %}
-                <a href="{{ item.image.url }}" data-fancybox>
-                    <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
-                </a>
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{item.title|default:"-"}}</h5>
-                    <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
+                <div class="card-body" id="card_body_div">
+                    <div class="scroll-row">
+                        <div class="row flex-nowrap gap-3">
+                            {% for item in cloth_items %}
+                                <div class="card" style="width: 18rem;">
+                                    {% if item.image %}
+                                    <a href="{{ item.image.url }}" data-fancybox>
+                                        <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
+                                    </a>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{item.title|default:"-"}}</h5>
+                                        <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
-            </div>
-            {% endfor %}
             </div>
         </div>
     </div>
 </div>
 {% include "admin-includes/footer.html" %}
+
+<style>
+    .scroll-row {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 10px;
+    }
+    .scroll-row .card {
+        display: inline-block;
+        margin-right: 15px;
+        white-space: normal;
+    }
+
+    /* Optional: hide scrollbar on Chrome/Edge */
+    .scroll-row::-webkit-scrollbar {
+        height: 6px;
+    }
+</style>

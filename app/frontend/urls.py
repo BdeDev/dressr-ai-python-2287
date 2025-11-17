@@ -20,7 +20,7 @@ urlpatterns = [
     re_path(r'^sitemap.xml$', sitemap, {'sitemaps': sitemaps}),
     re_path(r'^$', index.as_view(), name='index'),
     re_path(r'^about-us/$', AboutUsview.as_view(), name='about_us'),
-    re_path(r'^contact-us/$', ContactUsview.as_view(), name='contact_us'),
+    re_path(r'^contact-us/$', ContactUsView.as_view(), name='contact_us'),
     re_path(r'^privacy_policy/$', PrivacyPolicyview.as_view(), name='privacy_policy'),
     re_path(r'^terms_and_conditions/$', TermsAndConditionsView.as_view(), name='terms_view'),
     re_path(r'^How_it_works/$', HowItWorksView.as_view(), name='How_it_works'),

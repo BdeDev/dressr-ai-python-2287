@@ -146,7 +146,7 @@
 												{% if user.email %}{{ user.email }}{% else %}-{% endif %}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
-												{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %}{{ user.mobile_no }}{% else %}-{% endif %}
+												{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %} {{ user.mobile_no }}{% else %}-{% endif %}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
 												<span class="w-space-no">
