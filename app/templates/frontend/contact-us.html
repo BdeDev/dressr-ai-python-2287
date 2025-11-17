@@ -38,7 +38,7 @@
                             </div>
                             <div class="contact-info-content">
                                 <h5>Address</h5>
-                                <p>A1510, Shipra Neo, Shipra Sun City, Indirapuram</p>
+                                <p>{% if contact_detail.address %}{{contact_detail.address}}{% else %}A1510, Shipra Neo, Shipra Sun City, Indirapuram{% endif %}</p>
                             </div>
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                             </div>
                             <div class="contact-info-content">
                                 <h5>Call Us</h5>
-                                <p>+1 (5555) 123-4567</p>
+                                <p><a href="tel:{% if contact_detail.mobile_no %}{{contact_detail.country_code}}{{contact_detail.mobile_no}}{% else %}+1 (5555) 123-4567{% endif %}" class="__cf_email__">{% if contact_detail.mobile_no %}{{contact_detail.country_code}}{{contact_detail.mobile_no}}{% else %}+1 (5555) 123-4567{% endif %}</a></p>
                             </div>
                         </div>
                     </div>
@@ -60,8 +60,10 @@
                             </div>
                             <div class="contact-info-content">
                                 <h5>Email Us</h5>
-                                <p><a href="mailto:hello@dressr.com" class="__cf_email__">hello@dressr.com</a>
-                                </p>
+                                <p><a href="mailto:{% if contact_detail.email %}{{contact_detail.email}}{% else %}sales@toxsl.com{% endif %}" class="__cf_email__">{% if contact_detail.email %}{{contact_detail.email}}{% else %}support@dressr.com{% endif %}</a>
+                                    </p>
+                                {% comment %} <p><a href="mailto:hello@dressr.com" class="__cf_email__">hello@dressr.com</a>
+                                </p> {% endcomment %}
                             </div>
                         </div>
                     </div>
@@ -84,7 +86,7 @@
                                 content of a page randomised words which don't look even slightly when looking
                                 at its layout. </p>
                         </div>
-                        <form method="post" id="contact-us" action="{% url 'contact_us:contact_us_request' %}" enctype="multipart/form-data">
+                        <form method="post" id="contact-us" action="{% url 'frontend:contact_us' %}" enctype="multipart/form-data">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group mb-3">

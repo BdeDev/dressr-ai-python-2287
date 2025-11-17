@@ -46,6 +46,7 @@ class ClothingItem(CommonInfo):
     last_worn = models.DateTimeField(blank=True, null=True)
     wear_count = models.PositiveIntegerField(default=0)
     favourite = models.ManyToManyField(User, related_name='favourite_item')
+    item_url = models.URLField(blank=True, null=True)
 
     class Meta:
         db_table = 'clothing_item'

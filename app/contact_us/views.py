@@ -62,24 +62,24 @@ class DeleteContactUs(View):
         messages.success(request, "Contact Deleted Successfully!")
         return redirect('contact_us:contactus_list')
 
-class ContactUsView(View):
-    """
-    Contact Us View
-    """
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect('frontend:index')
-        return render(request, 'contactus/contact-us.html',{"contact_details":ContactDetails.objects.last()})
+# class ContactUsView(View):
+#     """
+#     Contact Us View
+#     """
+#     def get(self, request, *args, **kwargs):
+#         if request.user.is_authenticated:
+#             return redirect('frontend:index')
+#         return render(request, 'contactus/contact-us.html',{"contact_details":ContactDetails.objects.last()})
         
-    def post(self, request, *args, **kwargs):
-        ContactUs.objects.create(
-            full_name = request.POST.get('full_name').strip(),
-            email = request.POST.get('email').strip(),
-            subject = request.POST.get('subject'),
-            message = request.POST.get('message')
-        )
-        messages.success(request,"Thank you for contacting us. We will get back to you shortly!")
-        return redirect('frontend:index')
+#     def post(self, request, *args, **kwargs):
+#         ContactUs.objects.create(
+#             full_name = request.POST.get('full_name').strip(),
+#             email = request.POST.get('email').strip(),
+#             subject = request.POST.get('subject'),
+#             message = request.POST.get('message')
+#         )
+#         messages.success(request,"Thank you for contacting us. We will get back to you shortly!")
+#         return redirect('frontend:index')
     
 
 

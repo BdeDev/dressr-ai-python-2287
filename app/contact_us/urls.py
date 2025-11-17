@@ -13,7 +13,7 @@ urlpatterns = [
     re_path(r'view-contact-us-details/(?P<id>[-\w]+)/$',ViewContactUsDetails.as_view(),name="view_contact"),
     re_path(r'delete-contact-us/(?P<id>[-\w]+)/$',DeleteContactUs.as_view(),name="delete_contact"),
     re_path(r'contactus-reply/$',ContactUsReplyView.as_view(),name="contactus_reply"),
-    re_path(r'contact-us-request/$',ContactUsView.as_view(),name="contact_us_request"),
+    # re_path(r'contact-us-request/$',ContactUsView.as_view(),name="contact_us_request"),
     re_path(r'clear-admin-details/$',ClearAdminDetails.as_view(),name="clear_admin_details"),
 
     ## Contact Details

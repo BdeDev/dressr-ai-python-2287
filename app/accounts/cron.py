@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from accounts.views import *
 from django_db_logger .models import StatusLog
 from accounts.constants import *
+from logger.models import *
 from celery import shared_task
 
 

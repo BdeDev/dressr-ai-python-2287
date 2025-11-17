@@ -62,6 +62,7 @@ class AddItemInWardrobeAPI(APIView):
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
             openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Accessory ID (e.g., Watch, Bag, Earrings)'),
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1: Summer, 2: Winter, 3: Rainy, 4: Spring, 5: All Season'),
+            openapi.Parameter('item_url', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Provide the website link if the item is not available'),
             openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
             openapi.Parameter('brand', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Brand'),
             openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description='Image file'),
@@ -96,7 +97,7 @@ class AddItemInWardrobeAPI(APIView):
 
         if not int(request.data.get('weather_type')) in [1,2,3,4,5]:
             return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         cloth_item = ClothingItem.objects.create(
             title = request.data.get('title'),
             wardrobe=wardrobe,
@@ -109,6 +110,10 @@ class AddItemInWardrobeAPI(APIView):
             date_added=datetime.now(),
             image=request.FILES.get('image')
         )
+        if request.data.get('item_url'):
+            cloth_item.item_url  = request.data.get('item_url')
+        cloth_item.save()
+
         return Response({"message": "Item added successfully!","status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
     
 
@@ -126,7 +131,7 @@ class AddMultipleItemInWardrobeAPI(APIView):
                 type=openapi.TYPE_OBJECT,
                 description='''
                 List of items 
-                [{"title":"White Shirt","category_id":"c8826aa5-8aa9-476f-b9ee-854b1b6b6956","occasion_id":"de23ab9f-7e5e-4f54-93a4-2cdd05c76f03","weather_type":"1","color":"white","brand":"H&M","image":"Frame(8).png"},...]'''
+                [{"title":"White Shirt","category_id":"c8826aa5-8aa9-476f-b9ee-854b1b6b6956","occasion_id":"de23ab9f-7e5e-4f54-93a4-2cdd05c76f03","weather_type":"1","color":"white","brand":"H&M","image":"Frame(8).png","item_url":"https://amazon.com/"},...]'''
             ), 
         ], 
     )
@@ -134,17 +139,38 @@ class AddMultipleItemInWardrobeAPI(APIView):
     def post(self, request, *args, **kwargs):
         user = request.user
         wardrobe = get_or_none(Wardrobe,"User wardrobe does not exist !",user=user)
+        wardrobe_item_count = ClothingItem.objects.filter(wardrobe=wardrobe).count()
         
-        try:
-            items = json.loads(request.data.get("items"))
-        except Exception:
-            return Response({"message": "Invalid JSON format for items.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        items = json.loads(request.data.get("items", "[]"))
+        incoming_count = len(items)
 
+        # If NO premium plan purchased, validate free plan
+        if not user.is_plan_purchased:
+            purchased_plan = UserPlanPurchased.objects.filter(purchased_by=request.user).first()   # Get first object safely
+            if not purchased_plan:
+                return Response({"message": "No active free plan found. Please activate a plan.","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
+            # Expiry Check
+            if purchased_plan.expire_on <= datetime.now():
+                return Response({"message": "Your free plan has expired! Please purchase a premium plan to continue.","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST )
+            
+            # Upload Limit Check
+            max_uploads = purchased_plan.subscription_plan.max_uploads
+            remaining_uploads = max_uploads - wardrobe_item_count
+            new_total = wardrobe_item_count + incoming_count
+
+            # If no uploads remaining
+            if remaining_uploads <= 0:
+                return Response({"message": f"You have reached your free plan upload limit of {max_uploads}. Please upgrade to a premium plan for more uploads.","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if incoming upload size exceeds remaining limit
+            if incoming_count > remaining_uploads:
+                return Response({"message": f"You can upload only {remaining_uploads} more item(s) with your current free plan. Please reduce the number of items or upgrade to a premium plan.","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+     
         if not items:
             return Response({"message": "Items list is empty.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
         created_items = []
-
         for idx, item in enumerate(items):
             category = ClothCategory.objects.filter(id=item.get("category_id")).first()
             if not category:
@@ -165,8 +191,7 @@ class AddMultipleItemInWardrobeAPI(APIView):
             if int(item.get("weather_type")) not in [1, 2, 3, 4, 5]:
                 return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
-
-            image = request.FILES.get(f"image_{idx}")
+            image = item.get("image")
 
             cloth_item = ClothingItem.objects.create(
                 title=item.get("title"),
@@ -180,7 +205,9 @@ class AddMultipleItemInWardrobeAPI(APIView):
                 date_added=datetime.now(),
                 image=image
             )
-
+            if item.get('item_url'):
+                cloth_item.item_url = item.get('item_url')
+            cloth_item.save()
             created_items.append(cloth_item.id)
 
         return Response({"message": "Items added successfully!","created_item_ids": created_items,"status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
@@ -356,6 +383,9 @@ class GetClothCategoriesAPI(APIView):
         data = ClothCategorySerializer(occasions[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
+
+
+####--------------------OutFit Management API's------------------######
 class CreateOutfitAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser]
@@ -571,7 +601,7 @@ class AddItemInOutfitAPI(APIView):
         outfit.save()
         return Response({"message":"Outfit addedd Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
-
+#####----------------------Trip Management API's--------------------------###
 # class AddTripAPI(APIView):
 #     permission_classes = [permissions.IsAuthenticated]
 #     parser_classes = [MultiPartParser, FormParser]

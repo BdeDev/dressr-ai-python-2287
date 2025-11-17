@@ -12,7 +12,7 @@ $("#add-subscription-plan").validate({
         },
         price: {
             required: true,
-            min:1,
+            min:0,
             max:10000,
             normalizer: function (value) {
                 return $.trim(value);
@@ -93,7 +93,7 @@ $("#update-subscription-plan").validate({
         },
         price: {
             required: true,
-            min:1,
+            min:0,
             max:10000,
             normalizer: function (value) {
                 return $.trim(value);
