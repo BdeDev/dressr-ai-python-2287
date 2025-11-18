@@ -64,11 +64,12 @@ API_PAGINATION = 10
 '''
 Notification Type
 '''
-NOTIFICATION_TYPE = ((1,'Admin Notification'),(2,'Loan Status Notification'),(3,'User Related Notification'),(3,'Query Ticket Notification'))
+NOTIFICATION_TYPE = ((1,'Admin Notification'),(2,'Loan Status Notification'),(3,'User Related Notification'),(3,'Query Ticket Notification'),(3,'Subscription Notification'))
 ADMIN_NOTIFICATION=1
 LOAN_STATUS_NOTIFICATION = 2
 USER_RELATED_NOTIFICATION = 3
 QUERY_TICKET_NOTIFICATION = 4
+SUBSCRIPTION_STATUS_NOTIFICATION = 5
 
 """
 LOGIN_STATE

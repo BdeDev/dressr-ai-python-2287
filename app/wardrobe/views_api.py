@@ -126,73 +126,82 @@ class AddMultipleItemInWardrobeAPI(APIView):
         operation_id="Add Multiple Item in Wardrobe",
         operation_description="Add Multiple Item in Wardrobe",
         manual_parameters=[
-            openapi.Parameter('items',
+            openapi.Parameter(
+                'items',
                 openapi.IN_FORM,
-                type=openapi.TYPE_OBJECT,
-                description='''
-                List of items 
-                [{"title":"White Shirt","category_id":"c8826aa5-8aa9-476f-b9ee-854b1b6b6956","occasion_id":"de23ab9f-7e5e-4f54-93a4-2cdd05c76f03","weather_type":"1","color":"white","brand":"H&M","image":"Frame(8).png","item_url":"https://amazon.com/"},...]'''
-            ), 
-        ], 
+                type=openapi.TYPE_STRING,
+                description='Example: '
+                            '[{"title":"White Shirt","category_id":"...","image_key":0},'
+                            '{"title":"Black Jeans","category_id":"...","image_key":1}]'
+            ),
+            openapi.Parameter('images',openapi.IN_FORM,type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_FILE),description="Upload images in array order: image[0], image[1], ..."),
+        ],
     )
-
     def post(self, request, *args, **kwargs):
         user = request.user
-        wardrobe = get_or_none(Wardrobe,"User wardrobe does not exist !",user=user)
-        wardrobe_item_count = ClothingItem.objects.filter(wardrobe=wardrobe).count()
-        
-        items = json.loads(request.data.get("items", "[]"))
+        wardrobe = get_or_none(Wardrobe, "User wardrobe does not exist !", user=user)
+        raw_items = request.data.get("items")
+        if not raw_items:
+            return Response({"message": "Items list missing!", "status": 400}, status=400)
+
+        try:
+            items = json.loads(raw_items)
+        except:
+            return Response({"message": "Invalid JSON format for items.", "status": 400}, status=400)
+
+        if not isinstance(items, list) or not items:
+            return Response({"message": "Items must be a non-empty list.", "status": 400}, status=400)
+
         incoming_count = len(items)
+        wardrobe_item_count = ClothingItem.objects.filter(wardrobe=wardrobe).count()
 
-        # If NO premium plan purchased, validate free plan
+        # Free plan validation
         if not user.is_plan_purchased:
-            purchased_plan = UserPlanPurchased.objects.filter(purchased_by=request.user).first()   # Get first object safely
+            purchased_plan = UserPlanPurchased.objects.filter(purchased_by=request.user).first()
             if not purchased_plan:
-                return Response({"message": "No active free plan found. Please activate a plan.","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-            
-            # Expiry Check
+                return Response({"message": "No active free plan found.", "status": 400}, status=400)
+
             if purchased_plan.expire_on <= datetime.now():
-                return Response({"message": "Your free plan has expired! Please purchase a premium plan to continue.","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST )
-            
-            # Upload Limit Check
+                return Response({"message": "Your free plan has expired.", "status": 400}, status=400)
+
             max_uploads = purchased_plan.subscription_plan.max_uploads
-            remaining_uploads = max_uploads - wardrobe_item_count
-            new_total = wardrobe_item_count + incoming_count
+            remaining = max_uploads - wardrobe_item_count
 
-            # If no uploads remaining
-            if remaining_uploads <= 0:
-                return Response({"message": f"You have reached your free plan upload limit of {max_uploads}. Please upgrade to a premium plan for more uploads.","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            if remaining <= 0:
+                return Response({"message": "Upload limit reached.", "status": 400}, status=400)
 
-            # Check if incoming upload size exceeds remaining limit
-            if incoming_count > remaining_uploads:
-                return Response({"message": f"You can upload only {remaining_uploads} more item(s) with your current free plan. Please reduce the number of items or upgrade to a premium plan.","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-     
-        if not items:
-            return Response({"message": "Items list is empty.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+            if incoming_count > remaining:
+                return Response({"message": f"You can upload only {remaining} items.", "status": 400}, status=400)
 
         created_items = []
+        images = request.FILES.getlist("images")
+
         for idx, item in enumerate(items):
             category = ClothCategory.objects.filter(id=item.get("category_id")).first()
             if not category:
-                return Response({"message": "Invalid category ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-
+                return Response({"message": "Invalid category ID", "status": 400}, status=400)
             occasion = None
             if item.get("occasion_id"):
                 occasion = Occasion.objects.filter(id=item.get("occasion_id")).first()
                 if not occasion:
-                    return Response({"message": "Invalid occasion ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-
+                    return Response({"message": "Invalid occasion ID", "status": 400}, status=400)
+                
             accessory = None
             if item.get("accessory_id"):
                 accessory = Accessory.objects.filter(id=item.get("accessory_id")).first()
                 if not accessory:
-                    return Response({"message": "Invalid accessory ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"message": "Invalid accessory ID", "status": 400}, status=400)
 
             if int(item.get("weather_type")) not in [1, 2, 3, 4, 5]:
-                return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": "Invalid weather type", "status": 400}, status=400)
 
-            image = item.get("image")
-
+            image_file = None
+            image_index = item.get("image_key")
+            if image_index is not None:
+                try:
+                    image_file = images[int(image_index)]
+                except:
+                    image_file = None
             cloth_item = ClothingItem.objects.create(
                 title=item.get("title"),
                 wardrobe=wardrobe,
@@ -202,17 +211,22 @@ class AddMultipleItemInWardrobeAPI(APIView):
                 weather_type=int(item.get("weather_type")),
                 color=item.get("color"),
                 brand=item.get("brand"),
-                date_added=datetime.now(),
-                image=image
+                image=image_file,
+                date_added=datetime.now()
             )
-            if item.get('item_url'):
-                cloth_item.item_url = item.get('item_url')
+
+            if item.get("item_url"):
+                cloth_item.item_url = item.get("item_url")
+
             cloth_item.save()
             created_items.append(cloth_item.id)
 
-        return Response({"message": "Items added successfully!","created_item_ids": created_items,"status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
+        return Response({
+            "message": "Items added successfully!",
+            "created_item_ids": created_items,
+            "status": 201
+        }, status=201)
 
-    
 class RemoveItemFromWardrobeAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
     parser_classes = [MultiPartParser,FormParser]

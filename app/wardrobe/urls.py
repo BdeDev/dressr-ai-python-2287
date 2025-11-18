@@ -28,8 +28,6 @@ urlpatterns = [
     re_path(r'^delete-skin-tone/(?P<id>[-\w]+)/$', DeleteSkinTone.as_view(), name='delete_skin_tone'),
 
 
-
-
     re_path(r'^activity-flags/$', ActivityFlags.as_view(), name='activity_flags'),
     re_path(r'^delete-activity-flag/(?P<id>[-\w]+)/$', DeleteActivityFlag.as_view(), name='delete_activity_flag'),
     re_path(r'^sync-default-activity-flag/$', SyncDefaultActivityFlag.as_view(), name='sync_default_activity_flag'),
@@ -78,7 +76,15 @@ urlpatterns = [
     re_path(r'^get-trip-api/$', GetMyTripOutfitsAPI.as_view(), name='get_trip_api'),
     re_path(r'^delete-trip-api/$', DeleteTripAPI.as_view(), name='delete_trip_api'),
 
+
+    ###--------------------------------Wardrobe essentials-----------------------####
+    re_path(r'^accessories-api/$', GetAccessoriesAPI.as_view(), name='accessories_api'),
+    re_path(r'^occasions-api/$', GetOccasionsAPI.as_view(), name='occasions_api'),
+    re_path(r'^cloth-category-listing-api/$', GetClothCategoriesAPI.as_view(), name='clothcategories_api'),
+
+
     # admin panel
     re_path(r'^wardrobe-list/$', WardrobeList.as_view(), name='wardrobe_list'),
     re_path(r'^view-wardrobe/(?P<id>[-\w]+)/$', WardrobeView.as_view(), name='view_wardrobe'),
+    re_path(r'^view-item-details/(?P<id>[-\w]+)/$', ViewItemDetails.as_view(), name='view_item_detais'),
 ]

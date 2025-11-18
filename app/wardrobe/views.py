@@ -182,7 +182,7 @@ class WardrobeList(View):
         wardrobs = Wardrobe.objects.all().order_by('-created_on')
         wardrobs = query_filter_constructer(request,wardrobs,{
             "name__icontains":"name",
-            "user__full_name__icontains":"user__full_name",
+            "user__full_name__icontains":"user",
             "is_shared":"is_shared",
         })
 
@@ -191,9 +191,8 @@ class WardrobeList(View):
         return render(request,'wardrobe/wardrobs/wardrobe-list.html',{
             "head_title":'Wardrobe Management',
             "wardrobs" : get_pagination(request, wardrobs),
+            "total_objects":wardrobs.count(),
             "search_filters":request.GET.copy(),
-            "scroll_required":True if request.GET else False,
-            "total_objects":wardrobs.count()
         })
     
 class WardrobeView(View):
@@ -205,6 +204,15 @@ class WardrobeView(View):
             "head_title":'Wardrobe Management',
             "wardrobe":wardrobe,
             "cloth_items":cloth_items
+        })
+
+class ViewItemDetails(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        cloth_item = ClothingItem.objects.get(id = self.kwargs['id'])
+        return render(request,'wardrobe/wardrobs/view-wardrobe.html',{
+            "head_title":'Wardrobe Management',
+            "cloth_item":cloth_item
         })
 
 class ActivityFlags(View):

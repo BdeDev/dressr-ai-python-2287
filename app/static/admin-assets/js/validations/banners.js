@@ -21,14 +21,14 @@ $("#add-banners").validate({
 	});  
 
 
-$("#edit-banner").validate({
+$("#edit-banners").validate({
 	ignore: [],
 	rules: {
 		title: {
 			required: true,
 			},
 		image: {
-			required: true,
+			required: false,
 			},
 		},
 	messages: {

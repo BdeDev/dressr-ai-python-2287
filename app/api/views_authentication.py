@@ -26,6 +26,7 @@ class UserSignupView(APIView):
         operation_id="User Signup",
         operation_description="User Signup",
         manual_parameters=[
+            openapi.Parameter('username', openapi.IN_FORM, type=openapi.TYPE_STRING ,description='Set Username'),
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING ,description='First Name'),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING ,description='Last Name'),
             openapi.Parameter('email', openapi.IN_FORM, type=openapi.TYPE_STRING ,description='Email Address'),
@@ -83,8 +84,18 @@ class UserSignupView(APIView):
         if not re.fullmatch(r'^\+[1-9]\d{1,14}$', full_number):
             return Response({"message": "Invalid phone number. Must be in international E.164 format (e.g., +14151234567).","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
 
+        username  = request.data.get('username')
+        if not username:
+            suggestions = generate_mydressr_username(request.data.get('first_name'))
+            username = suggestions[0]
+
+        if User.objects.filter(username=username).exists():
+            suggestions = generate_mydressr_username(request.data.get('first_name'))
+            return Response({"message": "Username already taken.","suggestions": suggestions,"status": 400}, status=400)
+
         user = User.objects.create(
             role_id = CUSTOMER,
+            username=username,
             first_name = request.data.get('first_name'),
             last_name = request.data.get('last_name'),
             full_name = request.data.get('first_name')+' '+request.data.get('last_name'),
@@ -848,6 +859,13 @@ class UpdateProfileDetails(APIView):
             else:
                 return Response({"message": "Hair colour not found!", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
             
+        if request.data.get('username'):
+            if User.objects.filter(username=request.data.get('username')).exists():
+                suggestions = generate_mydressr_username(user.first_name)
+                return Response({"message": "Username already taken.","suggestions": suggestions,"status": 400}, status=400)
+
+            user.username = request.data.get('username')
+            
         user.others = others
         user.hieght_cm = hieght_cm
         if request.FILES.get('image'):
@@ -855,7 +873,7 @@ class UpdateProfileDetails(APIView):
 
         if request.FILES.get('profile_pic'):
             user.profile_pic = profile_pic
-        # Profile setup status
+
         message = "Profile updated successfully!"
         if not user.is_profile_setup:
             user.is_profile_setup = True
