@@ -36,7 +36,7 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model=User
-        fields= ("id","first_name","last_name","full_name","gender","role_id","last_login","profile_pic","email",
+        fields= ("id","first_name","last_name","full_name","username","gender","role_id","last_login","profile_pic","email",
                  "mobile_no","country_code","country_iso_code","status","temp_otp","is_profile_setup","notification_enable","token",
                  "created_on","updated_on",'hair_color','skin_tone','user_image','body_type')
 

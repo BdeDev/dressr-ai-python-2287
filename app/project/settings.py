@@ -114,10 +114,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# CRONJOBS = [
-#     ('0 0 * * 7', 'accounts.cron.WeeklyDataBaseBackup'),
-#     ('0 0 */10 * *', 'accounts.cron.DeleteUnnecessaryData'),
-# ]
+CRONJOBS = [
+    ('0 0 * * 7', 'accounts.cron.WeeklyDataBaseBackup'),
+    ('0 0 */10 * *', 'accounts.cron.DeleteUnnecessaryData'),
+    ('0 0 */10 * *', 'accounts.cron.SendEmailForSubscriptionPurchase'),
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LANGUAGE_CODE = 'en-us'

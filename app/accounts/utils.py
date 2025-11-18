@@ -38,11 +38,24 @@ import random
 import string
 from accounts.tasks import *
 from wardrobe.models import *
+from django.utils.text import slugify
 
 
 db_logger = logging.getLogger('db')
 env = environ.Env()
 environ.Env.read_env()
+
+
+def generate_mydressr_username(name):
+    base = slugify(name) or "user"
+    suggestions = set()
+
+    while len(suggestions) < 3:
+        username = f"mdr-{base}-{random.randint(1000, 9999)}"
+        if not User.objects.filter(username=username).exists():
+            suggestions.add(username)
+
+    return list(suggestions)
 
 
 def get_admin():

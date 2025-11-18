@@ -25,12 +25,10 @@ class AdminLoginView(TemplateView):
     def get(self, request, *args, **kwargs):
         return redirect('accounts:login')
 
-
 class LogOutView(View):
     def get(self,request,*args,**kwargs):
         logout(request)
         return redirect('accounts:login')
-
 
 class LoginView(View):
     def get(self, request, *args, **kwargs):
@@ -127,8 +125,6 @@ def Validations(request):
 """
 Password Management
 """
-
-  # or wherever your token model is
 
 class ResetPassword(View):
     def get(self, request, *args, **kwargs):
@@ -433,15 +429,31 @@ class BannersList(View):
     
     @method_decorator(admin_only)
     def post(self, request,*args,**kwargs):
-        if request.FILES.get('image'):
-            Banners.objects.create(
-                title = request.POST.get('title'),
-                image = request.FILES.get('image',None),
-                is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
-            )
-            messages.success(request, 'Banner Added Successfully!')
+        banner_id = request.POST.get('banner_id')
+        if banner_id:
+            banner = get_or_none(Banners,'Banner does not exist !',id=banner_id)
+            if Banners.objects.filter(title=request.POST.get('title')).exclude(id=banner_id).exists():
+                messages.error(request, "Banner already exists!")
+                return redirect('accounts:banners_list')
+            if request.POST.get('title'):
+                banner.title = request.POST.get('title').strip()
+            if request.FILES.get('image'):
+                banner.image = request.FILES.get('image').strip()
+            banner.save()
+            messages.success(request, "Banner updated successfully!")
+        else:
+            if Banners.objects.filter(title=request.POST.get('title')).exists():
+                messages.error(request, "Banner already exists!")
+                return redirect('accounts:banners_list')
+            if request.FILES.get('image'):
+                Banners.objects.create(
+                    title = request.POST.get('title'),
+                    image = request.FILES.get('image',None),
+                    is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
+                )
+                messages.success(request, "Banner added successfully!")
         return redirect('accounts:banners_list')
-
+    
 
 class ChangeBannerStatus(View):
     @method_decorator(admin_only)
@@ -467,23 +479,3 @@ class DeleteBanner(View):
         Banners.objects.get(id=self.kwargs['id']).delete()
         messages.success(request,'Banner Deleted Successfully!')
         return redirect('accounts:banners_list')
-
-
-
-# class AddBanner(View):
-#     @method_decorator(admin_only)
-#     def get(self, request, *args, **kwargs):
-#         return render(request,'ecommerce/banners/add-banner.html',{
-#             "head_title":"Banners Management",
-            
-#         })
-#     @method_decorator(admin_only)
-#     def post(self, request,*args,**kwargs):
-#         if request.FILES.get('image'):
-#             Banners.objects.create(
-#                 title = request.POST.get('title'),
-#                 image = request.FILES.get('image',None),
-#                 is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
-#             )
-#             messages.success(request, 'Banner Added Successfully!')
-#         return redirect('services:banners_list')
