@@ -41,6 +41,7 @@ class ClothingItem(CommonInfo):
     # manual_category = models.CharField(max_length=50,blank=True, null=True)
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
     color = models.CharField(max_length=30,blank=True, null=True)
+    price = models.FloatField(default=0.0, null=True, blank=True)
     brand = models.CharField(max_length=50, blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     last_worn = models.DateTimeField(blank=True, null=True)
@@ -69,13 +70,15 @@ class Outfit(CommonInfo):
     class Meta:
         db_table = 'outfit'
 
-class WearLog(CommonInfo):
-    clothing_item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name="wear_logs",blank=True, null=True)
-    date_worn = models.DateField()
-    occasion = models.CharField(max_length=20, blank=True, null=True)
+class WearHistory(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    outfit = models.ForeignKey(Outfit, on_delete=models.SET_NULL, null=True, blank=True)
+    item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, null=True, blank=True)
+    worn_on = models.DateField()
 
     class Meta:
-        db_table = 'wearLog'
+        db_table = 'wear_history'
+        unique_together = ('user', 'item', 'worn_on')
 
 class ActivityFlag(CommonInfo):
     name = models.CharField(max_length=100, blank=True, null=True)

@@ -47,6 +47,10 @@
                                         <h6>{% if user.id %}{{user.id}}{% else %}-{% endif %}</h6>
                                     </li>
                                     <li>
+                                        <h4>Username</h4>
+                                        <h6>{% if user.username %}{{user.username}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
                                         <h4>First Name </h4>
                                         <h6>{% if user.first_name %}{{user.first_name|capfirst}}{% else %} - {% endif %}</h6>
                                     </li>
@@ -66,7 +70,6 @@
                                         <h4>Email </h4>
                                         <h6>{% if user.email %}{{user.email}}{% else %} - {% endif %}</h6>
                                     </li>
-                                   
                                     <li>
                                         <h4>Gender</h4>
                                         <h6>
@@ -140,7 +143,6 @@
                                 </ul>
                             </div>
                             <div class="col-md-6 productdetails">
-                                
                                 <h5><b>Login Information</b></h5>
                                 <ul class="product-bar mb-2">
                                     <li>
@@ -239,6 +241,7 @@
                                     </li>
                                 </ul>
                                 {% endif %}
+                            </div>
                         </div>
                         <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
                             {% if user.status == 1 %}
