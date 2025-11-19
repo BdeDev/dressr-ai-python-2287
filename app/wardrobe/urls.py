@@ -43,6 +43,7 @@ urlpatterns = [
     re_path(r'^add-item-api/$', AddItemInWardrobeAPI.as_view(), name='add_item_api'),
     re_path(r'^edit-wardrobe-item-api/$', EditWardrobeItemAPI.as_view(), name='edit_wardrobe_item_api'),
     re_path(r'^remove-item-api/$', RemoveItemFromWardrobeAPI.as_view(), name='remove_item_api'),
+    re_path(r'^remove-all-items-api/$', RemoveAllItemFromWardrobeAPI.as_view(), name='remove_all_items_api'),
     re_path(r'^get-item-api/$', GetItemAPI.as_view(), name='get_item_api'),
     re_path(r'^get-items-api/$', GetItemsAPI.as_view(), name='get_items_api'),
     re_path(r'^marked-favourite-item-api/$', MarkItemFavouriteAPI.as_view(), name='mark_favourite_item_api'),
@@ -82,9 +83,11 @@ urlpatterns = [
     re_path(r'^occasions-api/$', GetOccasionsAPI.as_view(), name='occasions_api'),
     re_path(r'^cloth-category-listing-api/$', GetClothCategoriesAPI.as_view(), name='clothcategories_api'),
 
-
     # admin panel
     re_path(r'^wardrobe-list/$', WardrobeList.as_view(), name='wardrobe_list'),
     re_path(r'^view-wardrobe/(?P<id>[-\w]+)/$', WardrobeView.as_view(), name='view_wardrobe'),
     re_path(r'^view-item-details/(?P<id>[-\w]+)/$', ViewItemDetails.as_view(), name='view_item_detais'),
+
+    re_path(r'^view-item-wear-calender/(?P<id>[-\w]+)/$', ViewItemWearCalender.as_view(), name='view_item_wear_calender'),
+
 ]

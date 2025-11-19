@@ -156,23 +156,19 @@ class AddMultipleItemInWardrobeAPI(APIView):
         wardrobe_item_count = ClothingItem.objects.filter(wardrobe=wardrobe).count()
 
         # Free plan validation
-        if not user.is_plan_purchased:
-            purchased_plan = UserPlanPurchased.objects.filter(purchased_by=request.user).first()
-            if not purchased_plan:
-                return Response({"message": "No active free plan found.", "status": 400}, status=400)
+        purchased_plan = UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE,purchased_by=request.user).first()
+        if purchased_plan.expire_on <= datetime.now():
+            return Response({"message": "Your free plan has expired.", "status": 400}, status=400)
 
-            if purchased_plan.expire_on <= datetime.now():
-                return Response({"message": "Your free plan has expired.", "status": 400}, status=400)
+        max_uploads = purchased_plan.subscription_plan.max_uploads
+        remaining = max_uploads - wardrobe_item_count
 
-            max_uploads = purchased_plan.subscription_plan.max_uploads
-            remaining = max_uploads - wardrobe_item_count
+        if remaining <= 0:
+            return Response({"message": "Upload limit reached.", "status": 400}, status=400)
 
-            if remaining <= 0:
-                return Response({"message": "Upload limit reached.", "status": 400}, status=400)
-
-            if incoming_count > remaining:
-                return Response({"message": f"You can upload only {remaining} items.", "status": 400}, status=400)
-
+        if incoming_count > remaining:
+            return Response({"message": f"You can upload only {remaining} items.", "status": 400}, status=400)
+      
         created_items = []
         images = request.FILES.getlist("images")
 
@@ -217,15 +213,10 @@ class AddMultipleItemInWardrobeAPI(APIView):
 
             if item.get("item_url"):
                 cloth_item.item_url = item.get("item_url")
-
             cloth_item.save()
             created_items.append(cloth_item.id)
 
-        return Response({
-            "message": "Items added successfully!",
-            "created_item_ids": created_items,
-            "status": 201
-        }, status=201)
+        return Response({"message": "Items added successfully!","created_item_ids": created_items,"status": 201}, status=201)
 
 class RemoveItemFromWardrobeAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
@@ -246,6 +237,22 @@ class RemoveItemFromWardrobeAPI(APIView):
         cloth_item = get_or_none(ClothingItem, "Invalid cloth item id", id=request.query_params.get('cloth_item_id'))
         cloth_item.delete()
         return Response({"message":"Coth Item Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+class RemoveAllItemFromWardrobeAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['WarDrobe management'],
+        operation_id="Delete All Items From wardrobe",
+        operation_description="Delete All Items From wardrobe",
+        manual_parameters=[],
+    )
+    def delete(self, request, *args, **kwargs):
+        wardrobe  = get_or_none(Wardrobe,'Wardrobe does not exist !',user=request.user)
+        cloth_item = ClothingItem.objects.filter(wardrobe=wardrobe)
+        cloth_item.delete()
+        return Response({"message":"Coth Items Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
 class GetItemAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -290,12 +297,12 @@ class EditWardrobeItemAPI(APIView):
 
     @swagger_auto_schema(
         tags=["WarDrobe management"],
-        operation_id="Edit Wardrobe",
-        operation_description="Edit Wardrobe",
+        operation_id="Edit Wardrobe Item api",
+        operation_description="Edit Wardrobe Item api",
         manual_parameters=[
             openapi.Parameter('cloth_item_id', openapi.IN_FORM, type=openapi.TYPE_STRING),
-            openapi.Parameter('wardrobe_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Wardrobe Id'),
-            openapi.Parameter('category_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Cloth category Id'),
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING,description='title'),
+            openapi.Parameter('category_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='category id'),
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Occasion Id'),
             openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Accessory Id'),
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='1:Summer , 2:Winter , 3:Rainy , 4:Spring , 5:All Season'),
@@ -309,35 +316,47 @@ class EditWardrobeItemAPI(APIView):
         ## Validate Required Fields
         response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
             {"field_name": "cloth_item_id", "method": "post", "error_message": "Please enter cloth item id"},
-            {"field_name": "image", "method": "post", "error_message": "Please enter wardrobe name"},
         ])
-        user = request.user 
-        cloth_item = get_or_none(ClothingItem, "Invalid cloth item id", id=request.data.get('cloth_item_id'))
-        wardrobe = Wardrobe.objects.get(id=request.data.get('wardrobe_id'))
-        category = ClothCategory.objects.get(id = request.data.get('category_id'))
-        occasion = Occasion.objects.get(id = request.data.get('occasion_id'))
-        accessory = Accessory.objects.get(id = request.data.get('accessory_id'))
-
-        if not wardrobe:
-            return Response({"message": "Wardrobe does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not category:
-            return Response({"message": "Category does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not occasion:
-            return Response({"message": "Occasion does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not accessory:
-            return Response({"message": "Accessory does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not int(request.data.get('weather_type')) in [1,2,3,4,5]:
-            return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        wardrobe = Wardrobe.objects.get(user=request.user)
+        cloth_item = get_or_none(ClothingItem, "Invalid cloth item id", id=request.data.get('cloth_item_id'),wardrobe=wardrobe)
         
-        cloth_item.wardrobe = wardrobe
-        cloth_item.cloth_category = category
-        cloth_item.accessory = accessory
-        cloth_item.occasion = occasion
-        cloth_item.weather_type = int(request.data.get('weather_type'))
-        cloth_item.color = request.data.get('color')
-        cloth_item.brand = request.data.get('brand')
-        cloth_item.price = request.data.get('price')
-        cloth_item.image = request.FILES.get('image')
+        if request.data.get('category_id'):
+            category = ClothCategory.objects.get(id = request.data.get('category_id'))
+            if not category:
+                return Response({"message": "Category does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        if  request.data.get('occasion_id'):
+            occasion = Occasion.objects.get(id = request.data.get('occasion_id'))
+            if not occasion:
+                return Response({"message": "Occasion does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('accessory_id'):
+            accessory = Accessory.objects.get(id = request.data.get('accessory_id'))
+            if not accessory:
+                return Response({"message": "Accessory does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('weather_type'):
+            weather_type = int(request.data.get('weather_type'))
+            if not int(request.data.get('weather_type')) in [1,2,3,4,5]:
+                return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('title'):
+            cloth_item.title = request.data.get('title').strip()
+        if request.data.get('weather_type'):
+            cloth_item.weather_type = weather_type
+        if request.data.get('category_id'):
+            cloth_item.cloth_category = category
+        if request.data.get('accessory_id'):
+            cloth_item.accessory = accessory
+        if request.data.get('occasion_id'):
+            cloth_item.occasion = occasion
+        if request.data.get('color'):
+            cloth_item.color = request.data.get('color')
+        if request.data.get('brand'):
+            cloth_item.brand = request.data.get('brand')
+        if request.data.get('price'):
+            cloth_item.price = request.data.get('price')
+        if request.FILES.get('image'):
+            cloth_item.image = request.FILES.get('image')
         cloth_item.save()
         data = ClothItemSerializer(cloth_item,context = {"request":request}).data
         return Response({"data":data,"message": "Wardrobe updated successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -359,7 +378,6 @@ class GetAccessoriesAPI(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), accessories)
         data = AccessorySerializer(accessories[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-    
 
 class GetOccasionsAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -398,7 +416,6 @@ class GetClothCategoriesAPI(APIView):
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
 
-
 ####--------------------OutFit Management API's------------------######
 class CreateOutfitAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -409,7 +426,7 @@ class CreateOutfitAPI(APIView):
         operation_id="Create Outfit",
         operation_description="Create Outfit",
         manual_parameters=[
-            openapi.Parameter('item_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Category IDs'),
+            openapi.Parameter('item_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Item IDs'),
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
             openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
@@ -981,6 +998,35 @@ class GetItemByCategoryAPI(APIView):
     def get(self, request, *args, **kwargs):
         category = get_or_none(ClothCategory,'category does not exist !', id = request.query_params.get('category_id'))
         items = ClothingItem.objects.filter(cloth_category = category,wardrobe__user  = request.user).order_by('created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), items)
+        data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+
+class ItemSeachFilterAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Wardrobe Management"],
+        operation_id="Search Items",
+        operation_description="Search Items",
+        manual_parameters=[
+            openapi.Parameter('search', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+            openapi.Parameter('category_ids', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,description='List of category ids'),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        wardrobe = get_or_none(Wardrobe,"wardrobe does not exist !",user=request.user)
+        items = ClothingItem.objects.filter(wardrobe=wardrobe).order_by("-created_on")
+        if request.query_params.get('search'):
+            items = items.filter(Q(brand__icontains = request.query_params.get('search'))|
+                        Q(color__icontains=request.query_params.get('search'))|
+                        Q(title__icontains=request.query_params.get('search'))|
+                        Q(cloth_category__title__icontains = request.query_params.get('search'))|
+                        Q(occasion__title__icontains = request.query_params.get('search'))|
+                        Q(accessory__title__icontains = request.query_params.get('search')))
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), items)
         data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)

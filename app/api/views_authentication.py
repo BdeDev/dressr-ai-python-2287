@@ -106,6 +106,30 @@ class UserSignupView(APIView):
             password = make_password(request.data.get('password')),
             status = ACTIVE,
         )
+
+        if not user.is_plan_purchased:
+            try:
+                plan=SubscriptionPlans.objects.filter(is_free_plan=True).first()
+            except:
+                return Response({"message":"Subscription plan not found!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
+            is_valid_purchse = is_first_time_subscription_purchase(user)
+            if not is_valid_purchse['is_valid']:
+                return Response({"message":is_valid_purchse['message'],"status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
+            purchased_plan = UserPlanPurchased.objects.create(
+                plan_id=generate_plan_id(),
+                subscription_plan = plan,
+                purchased_by = user,
+                status = USER_PLAN_IN_QUEUE,
+                amount = plan.price,
+                final_amount = plan.final_price,
+                features = plan.features,
+                month_year = plan.month_year,
+                validity = plan.validity,
+            )
+            activate_subscription(user)
+            user.save()
         wardrobe,_ = Wardrobe.objects.get_or_create(user=user)
         try:
             device = Device.objects.get(user = user)
@@ -807,6 +831,7 @@ class UpdateProfileDetails(APIView):
         operation_id="Update Profile ( Customer )",
         operation_description="Update Profile ( Customer )",
         manual_parameters=[
+            openapi.Parameter('username', openapi.IN_FORM, type=openapi.TYPE_STRING,description='username'),
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='first name'),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='last name'),
             openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='body type id'),
@@ -860,11 +885,22 @@ class UpdateProfileDetails(APIView):
                 return Response({"message": "Hair colour not found!", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
             
         if request.data.get('username'):
-            if User.objects.filter(username=request.data.get('username')).exists():
-                suggestions = generate_mydressr_username(user.first_name)
-                return Response({"message": "Username already taken.","suggestions": suggestions,"status": 400}, status=400)
+            new_username = request.data.get('username').strip()
 
-            user.username = request.data.get('username')
+            # Check if username exists
+            if User.objects.filter(username=new_username).exclude(id=user.id).exists():
+                # Generate suggestions using the user's first name
+                suggestions = generate_mydressr_username(user.first_name)
+                return Response({"message": "Username already taken.",
+                    "suggestions": suggestions,
+                    "status": 400
+                }, status=400)
+
+            # If username does NOT exist, apply formatting rule
+            formatted_suggestions = generate_mydressr_username(new_username)
+            final_username = formatted_suggestions[0]  # Select first recommended formatted username
+
+            user.username = final_username
             
         user.others = others
         user.hieght_cm = hieght_cm
