@@ -13,6 +13,7 @@
                 </nav>
             </div>
             <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary me-2" href="{% url 'wardrobe:view_item_wear_calender' wardrobe.id %}" ><i class="fas fa-calendar-alt me-1"></i> Calender</a>
                 <a class="btn btn-secondary" href="{% url 'wardrobe:wardrobe_list' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
             </div>
         </div>
@@ -82,14 +83,13 @@
                     <div class="scroll-row">
                         <div class="row flex-nowrap gap-3">
                             {% for item in cloth_items %}
-                                
                                 <div class="card" style="width: 18rem;">
                                     {% if item.image %}
                                     <a href="{{ item.image.url }}" data-fancybox>
                                         <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
                                     </a>
-                                    {% endif %}
                                     <a title="View" data-bs-toggle="modal" onclick="GetValue('{{item.id}}','{{item.title}}','{{item.cloth_category.title}}','{{item.weather_type}}','{{item.color}}','{{item.brand}}','{{item.occasion.title}}','{{item.image.url}}','{{item.created_on|date:"Y-m-d"}}T{{item.created_on|date:"H:i"}}')"  data-bs-target="#view-details">
+                                    {% endif %}
                                     <div class="card-body">
                                         <h5 class="card-title">{{item.title|default:"-"}}</h5>
                                         <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
@@ -107,18 +107,20 @@
 <div class="modal fade" id="view-details"  data-bs-backdrop='static' data-bs-keyboard='false' tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            {% comment %} <div class="modal-header">
                 <h4 class="modal-title">Item Detail View</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
+            </div> {% endcomment %}
             <div class="modal-body">
                 <div class="basic-form">
                     <div class="row">
                         <div class="col-md-12 col-lg-12 col-sm-12">
+                            <button type="button" class="btn-close d-flex justify-content-end align-items-center" data-bs-dismiss="modal" aria-label="Close"></button>    
                             <div class="card my-4">
                                 <div class="card-body">
                                     <div class="row">
                                     <div class=" col-md-6  productdetails">
+                                        <h5><b>Item Detail</b></h5>
                                         <ul class="product-bar mb-2">
                                             <li>
                                                 <h4>Id </h4>
