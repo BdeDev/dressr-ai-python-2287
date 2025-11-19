@@ -1,0 +1,82 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>User Trips </h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'wardrobe:trip_list' %}">User Trips</a></li>
+					</ol>
+				</nav>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=trips %}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'wardrobe:trip_list' %}" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+                                        <th><strong>Name</strong></th>
+                                        <th><strong>Created By</strong></th>
+                                        <th><strong>Trip Length</strong></th>
+										<th><strong>Created On</strong></th>
+										<th><strong>Actions </strong></th>
+									</tr>
+								</thead>
+								<thead>
+									<tr class="search-row">
+                                        <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
+                                        <td><input type="text" value="{{search_filters.created_by.full_name}}" class="form-control" name="created_by" maxlength="20"></td>
+                                        <td><input type="number" value="{{search_filters.trip_length}}" class="form-control" name="trip_length" maxlength="20"></td>
+										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if trips %}
+										{% for trip in trips %}
+										<tr>
+                                            <td> {{trip.title|default:"-"}}</td>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' trip.created_by.id %}" > {{trip.created_by.full_name|default:"-"}}</td>
+                                            <td> {{trip.trip_length|default:"-"}}</td>
+											<td>
+												<script>
+													var date = ConvertDateTime("{{ trip.created_on|date:'Y-m-d' }}", "{{ trip.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											<td>
+												<div class="d-flex">
+													<a title="View Wardrobe" href="{% url 'wardrobe:view_trip_detail' trip.id %}"
+														id="update-btn" class="btn btn-success shadow btn-xs sharp me-1">
+														<i class="fa fa-eye"></i>
+													</a>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=trips %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

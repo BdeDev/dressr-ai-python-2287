@@ -1,0 +1,102 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>User Outfit </h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'wardrobe:user_outfit_list' %}">User Outfit</a></li>
+					</ol>
+				</nav>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=outfits %}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'wardrobe:user_outfit_list' %}" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+                                        <th><strong>Title</strong></th>
+										<th><strong>Occasion</strong></th>
+                                        <th><strong>Created By</strong></th>
+                                        <th><strong>Season</strong></th>
+										<th><strong>Created On</strong></th>
+										<th><strong>Actions </strong></th>
+									</tr>
+								</thead>
+								<thead>
+									<tr class="search-row">
+                                        <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
+										<td><input type="text" value="{{search_filters.occasion.title}}" class="form-control" name="occasion" maxlength="20"></td>
+                                        <td><input type="text" value="{{search_filters.created_by.full_name}}" class="form-control" name="created_by" maxlength="20"></td>
+										<td>
+											<select class="form-control" name="season" onchange="this.form.submit()">
+												<option  value=""></option>
+												<option {% if search_filters.season == '1' %} selected {% endif %} value="1">SUMMER</option>
+												<option {% if search_filters.season == '2' %} selected {% endif %} value="2">WINTER</option>
+												<option {% if search_filters.season == '3' %} selected {% endif %} value="3">RAINY</option>
+												<option {% if search_filters.season == '4' %} selected {% endif %} value="4">ALL SEASON</option>
+											</select>
+										</td>
+										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if outfits %}
+										{% for outfit in outfits %}
+										<tr>
+                                            <td> {{outfit.title|default:"-"}}</td>
+											<td> {{outfit.occasion.title|default:"-"}}</td>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' outfit.created_by.id %}"> {{outfit.created_by.full_name|capfirst|default:"-"}}</td>
+											<td> 
+                                                {% if outfit.weather_type == 1 %}
+                                                    <span class="badge bg-success">SUMMER</span>
+                                                {% elif outfit.weather_type == 2 %}
+                                                    <span class="badge bg-warning">WINTER</span>
+                                                {% elif outfit.weather_type == 3 %}
+                                                    <span class="badge bg-primary">RAINY</span>
+                                                {% elif outfit.weather_type == 4 %}
+                                                    <span class="badge bg-secondary">SPRING</span>
+                                                {% elif outfit.weather_type == 5 %}
+                                                    <span class="badge bg-secondary">ALL SEASON</span>
+                                                {% endif %}
+											</td>
+                                            <td>
+												<script>
+													var date = ConvertDateTime("{{ outfit.created_on|date:'Y-m-d' }}", "{{ outfit.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											<td>
+												<div class="d-flex">
+                                                    <a title="View" href="{% url 'wardrobe:view_outfit_detail' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=trips %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

@@ -13,6 +13,7 @@ class Wardrobe(CommonInfo):
 
 class ClothCategory(CommonInfo):
     title = models.CharField(max_length=100, blank=True, null=True)
+    icon = models.FileField(upload_to="wardrobe/icons/",blank=True, null=True)
 
     class Meta:
         db_table = 'cloth_category'
@@ -30,6 +31,7 @@ class Accessory(CommonInfo):
         db_table = 'accessories'
 
 class ClothingItem(CommonInfo):
+    title = models.CharField(max_length=200,blank=True, null=True)
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="items",blank=True, null=True)
     image = models.FileField(upload_to="wardrobe/items/",blank=True, null=True)
     cloth_category = models.ForeignKey(ClothCategory,on_delete=models.SET_NULL, null=True,blank=True)
@@ -40,10 +42,11 @@ class ClothingItem(CommonInfo):
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
     color = models.CharField(max_length=30,blank=True, null=True)
     brand = models.CharField(max_length=50, blank=True, null=True)
-    price = models.FloatField(default=0.0, null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     last_worn = models.DateTimeField(blank=True, null=True)
     wear_count = models.PositiveIntegerField(default=0)
+    favourite = models.ManyToManyField(User, related_name='favourite_item')
+    item_url = models.URLField(blank=True, null=True)
 
     class Meta:
         db_table = 'clothing_item'
@@ -56,13 +59,12 @@ class ClothingItem(CommonInfo):
 class Outfit(CommonInfo):
     title = models.CharField(max_length=200,blank=True, null=True)
     items = models.ManyToManyField(ClothingItem, related_name="outfits",blank=True)
-    cloth_category = models.ForeignKey(ClothCategory,on_delete=models.SET_NULL, null=True,blank=True)
     occasion = models.ForeignKey(Occasion,on_delete=models.SET_NULL, null=True,blank=True)
-    accessory = models.ForeignKey(Accessory,on_delete=models.SET_NULL,null=True,blank=True)
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_outfits")
     color = models.CharField(max_length=30,blank=True, null=True)
     notes = models.TextField(blank=True, null=True)  # Style suggestions
+    favourite = models.ManyToManyField(User, related_name='favourite_outfit')
 
     class Meta:
         db_table = 'outfit'
@@ -75,55 +77,41 @@ class WearLog(CommonInfo):
     class Meta:
         db_table = 'wearLog'
 
-class VacationPlan(CommonInfo):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="vacation_plans")
-    destination = models.CharField(max_length=255,blank=True, null=True)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    trip_length = models.PositiveIntegerField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'vacation_plan'
-
-
 class ActivityFlag(CommonInfo):
     name = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    icon = models.CharField(max_length=255, blank=True, null=True)
+    create_by = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name="activity_flag")
 
     class Meta:
         db_table = 'activity_flag'
 
-
-class VacationActivity(CommonInfo):
-    vacation_plan = models.ForeignKey(VacationPlan, on_delete=models.CASCADE, related_name="activities")
-    activity_flag = models.ForeignKey(ActivityFlag, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'vacation_activity'
-        unique_together = ("vacation_plan", "activity_flag")
-
-class PackingItem(CommonInfo):
-    name = models.CharField(max_length=255,null=True, blank=True)
-    category = models.PositiveIntegerField(default=CLOTHING,choices=PACKING_CATEGORY)
-    activity_flag = models.ForeignKey(ActivityFlag, on_delete=models.SET_NULL, null=True, blank=True)
-
-    class Meta:
-        db_table = 'packing_item'
-
-class VacationPackingList(CommonInfo):
-    vacation_plan = models.ForeignKey(VacationPlan, on_delete=models.CASCADE, related_name="packing_list")
-    packing_item = models.ForeignKey(PackingItem, on_delete=models.CASCADE)
-    source = models.PositiveIntegerField(choices=SOURCE_CHOICES, default=WARDROBE)
-    quantity = models.PositiveIntegerField(default=1)
+class Trips(CommonInfo):
+    outfit = models.ManyToManyField(Outfit)
+    title = models.CharField(max_length=200,blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    location = models.TextField(null=True,blank=True)
+    latitude=models.FloatField(null=True,blank=True)
+    longitude=models.FloatField(null=True,blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_trips")
+    activity_flag = models.ManyToManyField(ActivityFlag)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+    trip_length = models.PositiveIntegerField(blank=True, null=True)
 
     class Meta:
-        db_table = 'vacation_packing'
+        db_table = 'trip'
+        
+# class PackingItem(CommonInfo):
+#     name = models.CharField(max_length=255,null=True, blank=True)
+#     category = models.PositiveIntegerField(default=CLOTHING,choices=PACKING_CATEGORY,blank=True, null=True)
+#     activity_flag = models.ForeignKey(ActivityFlag, on_delete=models.SET_NULL, null=True, blank=True)
 
+#     class Meta:
+#         db_table = 'packing_item'
 
 class Recommendation(CommonInfo):
-    vacation_plan = models.ForeignKey(VacationPlan, on_delete=models.CASCADE, related_name="recommendations")
-    recommended_item = models.CharField(max_length=255)
+    vacation_plan = models.ForeignKey(Trips, on_delete=models.CASCADE, related_name="recommendations",blank=True, null=True)
+    recommended_item = models.CharField(max_length=255,blank=True, null=True)
     category = models.PositiveIntegerField(choices=PACKING_CATEGORY,blank=True, null=True)
     purchase_link = models.URLField(blank=True, null=True)
 

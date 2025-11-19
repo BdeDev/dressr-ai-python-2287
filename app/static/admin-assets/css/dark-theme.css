@@ -25,7 +25,7 @@
 .dropdown-item:hover {
 	color: #000 !important;
 	text-decoration: none!important;
-	background-color: #1b378f!important;
+	background-color: #000!important;
 }
 .dark-mode .breadcrumb .breadcrumb-item a {
 	color: #999!important;

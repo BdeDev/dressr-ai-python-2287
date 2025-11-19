@@ -1,5 +1,3 @@
-
-
 $("#add-fashion-tip").validate({
     ignore: [],
     rules: {
@@ -12,10 +10,20 @@ $("#add-fashion-tip").validate({
         category: {
             required: true,
         },
+        season: {
+            required: true,
+        },
+        style: {
+            required: true,
+        },
+        gender: {
+            required: true,
+        },
         content: {
-            ckrequired:true
+            required:true
         },
         cover_image: {
+            required: true,
             accept: "jpg,png,jpeg,gif"
         },
     },
@@ -26,9 +34,17 @@ $("#add-fashion-tip").validate({
             category: {
                 required: "Please select category",
             },
+            season: {
+                required: "Please select season",
+            },
+            style: {
+                required: "Please select style",
+            },
+            gender: {
+                required: "Please select gender",
+            },
             content: {
-                ckrequired: "Please enter description",
-                cke_maxlength:"Only 50 words are allowed!"
+                required: "Please enter content",
             },
             cover_image: {
                 accept: "Please upload file in these format only (jpg, jpeg, png, gif)"
@@ -50,12 +66,19 @@ $("#edit-fashion-tip").validate({
         category: {
             required: true,
         },
+        season: {
+            required: true,
+        },
+        style: {
+            required: true,
+        },
+        gender: {
+            required: true,
+        },
         content: {
-            ckrequired:true
+            required:true,
         },
-        cover_image: {
-            accept: "jpg,png,jpeg,gif"
-        },
+        
     },
     messages: {
             title: {
@@ -64,12 +87,18 @@ $("#edit-fashion-tip").validate({
             category: {
                 required: "Please select category",
             },
+            season: {
+                required: "Please select season",
+            },
+            style: {
+                required: "Please select style",
+            },
+            gender: {
+                required: "Please select gender",
+            },
             content: {
-                ckrequired: "Please enter description",
-                cke_maxlength:"Only 50 words are allowed!"
+                required: "Please enter description",
             },
-            cover_image: {
-                accept: "Please upload file in these format only (jpg, jpeg, png, gif)"
-            },
+           
         },
 });    

@@ -22,13 +22,14 @@ urlpatterns = [
     re_path(r'^change-password-api/$',ChangePassword.as_view(),name="change_password_api"),
     re_path(r'^forgot-password-api/$',ForgotPassword.as_view(),name="forgot_password_api"),
     re_path(r'^forgot-password-resend-link/$',ForgotPasswordResendLink.as_view(),name="forgot_password_resend_link_api"),
-    re_path(r'^reset-password/$',ResetPasswordView.as_view(),name="reset_password_api"),
+    # re_path(r'^reset-password/$',ResetPasswordView.as_view(),name="reset_password_api"),
     
     ## Profile Management
     re_path(r'^profile-details-api/$',UserProfileDetails.as_view(),name="user_profile_details_api"),
     re_path(r'^update-profile-api/$',UpdateProfileDetails.as_view(),name="update_profile_api"),
     re_path(r'^skin-tone-api/$',SkinToneListView.as_view(),name="skin_tone_api"),
     re_path(r'^hair-color-api/$',HairColorListView.as_view(),name="hair_color_api"),
+    re_path(r'^body-type-api/$',BodyTypeListView.as_view(),name="body_type_api"),
 
     ## Static Pages
     re_path(r'^static-pages-api/$',StaticPages.as_view(),name="static_pages_api"),

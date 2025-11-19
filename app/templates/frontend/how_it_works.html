@@ -1,0 +1,268 @@
+{% load static %}
+{% load extras %}
+{% include 'frontend/includes/header.html' %}
+<div id="main-wrapper">
+ <section class="page-title-area rest-title-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-title-wrapper text-center">
+                        <h1 class="page-title mb-10">How It Works</h1>
+                        <div class="breadcrumb-menu">
+                            <nav aria-label="Breadcrumbs" class="breadcrumb-trail breadcrumbs">
+                                <ul class="trail-items mb-0">
+                                    <li class="trail-item trail-begin">
+                                        <a href="#"><span>Home</span></a>
+                                    </li>
+                                    <li class="trail-item trail-end"><span>How It Works</span></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- <section id="about-us" class="about-us-wrapper">
+        <div class="download-app-wrapper section-ptb">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="about-wrapper">
+                            {% if data %}
+                            <p class="paragraph-text mt-35">{{data.content|safe}}</p>
+                            {% else %}
+                            <p class="paragraph-text mt-2">No Data Found</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+
+        <!-- Your Style Section Start -->
+    <section class="your-style-section pd-100">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 text-center">
+            <div class="section-hd-card mb-5">
+              <h4 class="section-subhd">Your Style,</h4>
+              <h2 class="section-hd">Simplified in 3 Steps</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="upload-card text-center p-4">
+              <div class="upload-icon mb-4">
+                <img
+                  src="{% static 'admin-assets/images/upload-dress.svg' %}"
+                />
+              </div>
+              <h4 class="upload-hd mb-3">Upload Your Wardrobe</h4>
+              <p class="upload-para mb-0">Take photos or upload items</p>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="upload-card text-center p-4">
+              <div class="upload-icon mb-4">
+                <img src="{% static 'admin-assets/images/create.svg' %}" />
+              </div>
+              <h4 class="upload-hd mb-3">Create Your Avatar</h4>
+              <p class="upload-para mb-0">
+                AI builds your personal digital twin
+              </p>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="upload-card text-center p-4">
+              <div class="upload-icon mb-4">
+                <img src="{% static 'admin-assets/images/dressed.svg' %}" />
+              </div>
+              <h4 class="upload-hd mb-3">Get Dressed by AI</h4>
+              <p class="upload-para mb-0">
+                Receive outfit ideas every day, for any occasion.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-5">
+          <a class="common-black-btn" title="Download App" href="#">
+            Create My Free Account
+            <span class="btn-arrow">
+              <img src="{% static 'admin-assets/images/wht-arrow.svg' %}" />
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+    <!-- Your Style Section End -->
+
+
+
+    <section class="faq-sec pd-100">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="faq-img">
+              <img src="{% static 'admin-assets/images/faq-img.png' %}" />
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="faq-rt">
+              <div class="section-hd-card mb-5 text-start">
+                <h4 class="section-subhd">Frequently asked</h4>
+                <h2 class="section-hd">questions</h2>
+              </div>
+
+              <div class="faq-accordion">
+                <div class="accordion" id="accordionExample">
+                  <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="headingOne">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne"
+                      aria-expanded="true"
+                        aria-controls="collapseOne"
+                      >
+                        1. What devices does Dressr work on?
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseOne"
+                      class="accordion-collapse collapse show"
+                      aria-labelledby="headingOne"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div class="accordion-body">
+                        <p>
+                          Dressr works seamlessly across all modern devices and
+                          browsers including Desktop computers (Windows, Mac,
+                          Linux), Mobile phones (iOS and Android)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="headingTwo">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseTwo"
+                        aria-expanded="false"
+                        aria-controls="collapseTwo"
+                      >
+                        2. Can I try clothes from other brands?
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseTwo"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="headingTwo"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div class="accordion-body">
+                        <p>
+                          Yes! Dressr partners with hundreds of major clothing
+                          brands and retailers. You can virtually try on clothes
+                          from your favorite stores all in one place. Our
+                          catalog includes popular brands across all price
+                          points and styles.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="accordion-item mb-3">
+                    <h2 class="accordion-header" id="headingThree">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseThree"
+                        aria-expanded="false"
+                        aria-controls="collapseThree"
+                      >
+                        3. Do I need to pay to use Dressr?
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseThree"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="headingThree"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div class="accordion-body">
+                        <p>
+                          Dressr offers both free and premium plans. The free
+                          plan lets you try basic features like virtual try-ons
+                          and outfit planning. Our premium plan ($99/month)
+                          unlocks advanced features like unlimited try-ons,
+                          personal styling recommendations, and exclusive brand
+                          partnerships.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapseFour"
+                        aria-expanded="false"
+                        aria-controls="collapseFour"
+                      >
+                        4. How does the virtual try-on work?
+                      </button>
+                    </h2>
+                    <div
+                      id="collapseFour"
+                      class="accordion-collapse collapse"
+                      aria-labelledby="headingFour"
+                      data-bs-parent="#accordionExample"
+                    >
+                      <div class="accordion-body">
+                        <p>
+                          Our virtual try-on technology uses advanced AI and
+                          computer vision to create realistic visualizations of
+                          how clothes will look on you. Simply upload a photo or
+                          use your camera, select items you want to try, and our
+                          AI will generate a realistic preview showing how the
+                          clothes fit and look on your body type.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-5">
+          <div class="col-lg-12">
+            <div class="still-have-ques text-center mt-5">
+              <h4 class="mb-3">Still have Questions?</h4>
+              <p>Get answers from an experienced local host.</p>
+              <a class="common-black-btn" href="#"> Ask a host </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+</div>
+{% include 'frontend/includes/footer.html' %}

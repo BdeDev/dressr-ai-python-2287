@@ -317,17 +317,12 @@ strong {
 
 .nav.user-menu > li {
 	border-left: 1px solid #e8e9ea;
-	height: 67px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-}
-.nav.user-menu .main-drop {
 	height: 67px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
 }
+
 .pass-group .toggle-password,
 .product-details,
 .login-wrapper .login-content .toggle-password,
@@ -451,7 +446,7 @@ strong {
 	-webkit-transition: all 0.2s ease;
 	-ms-transition: all 0.2s ease;
 	transition: all 0.2s ease;
-	background-color: #f1f5f9;
+	background-color: #f6f6f6;
 }
 
 .main-wrapper footer {
@@ -709,7 +704,9 @@ div.dataTables_wrapper div.dataTables_info {
 	-ms-transition: all 0.2s ease;
 	transition: all 0.2s ease;
 	border: 0;
-	background: #1e3d9d;
+	background: #000;
+	justify-content: center;
+	border-bottom: 1px solid rgba(255,255,255,.3);
 }
 
 .outer-header {
@@ -920,6 +917,7 @@ hr {
 .user-menu .dropdown-menu {
 	min-width: 200px;
 	box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+	border: none;
 }
 .profilename .profileset h5 {
 	font-size: 14px;
@@ -955,7 +953,7 @@ hr {
 	font-size: 20px;
 	font-weight: 600;
 	padding-left: 0;
-	color: #1b378f;
+	color: #000;
 	line-height: 70px;
 }
 
@@ -965,6 +963,7 @@ hr {
 	position: relative;
 	z-index: 99;
 	align-items: center;
+	padding-right: 10px;
 }
 
 .admin-header .user-menu {
@@ -1002,13 +1001,13 @@ hr {
 .user-menu.nav>li>a:hover {
 	color: #000 !important;
 }
-.user-menu.nav>li>a .badge {
+.user-menu.nav > li > a .badge {
 	color: #fff;
 	font-weight: 700;
 	position: absolute;
 	top: 6px;
-	right: 8px;
-	background: #1b378f;
+	right: 20px;
+	background: #000;
 	width: 20px;
 	height: 20px;
 	line-height: 11px;
@@ -1043,7 +1042,7 @@ hr {
 .sidebar .slimScrollDiv {
 	width: 260px !important;
 	overflow: visible !important;
-	background: #1e3d9d;
+	background: #000;
 }
 
 .sidebar .sidebar-menu {
@@ -1093,7 +1092,7 @@ hr {
 }
 
 .sidebar .sidebar-menu>ul>li>a:hover {
-	background: #1b378f;
+	background: rgba(255,255,255,.3);
 	color: #fff;
 	border-radius: 5px;
 }
@@ -1112,7 +1111,7 @@ hr {
 }
 
 .sidebar .sidebar-menu>ul>li>a.active {
-	background: #1b378f;
+	background: rgba(255,255,255,.3);
 	color: #fff;
 	border-radius: 5px;
 }
@@ -1176,18 +1175,17 @@ hr {
 	-ms-transform: rotate(90deg);
 }
 
-.sidebar .sidebar-menu>ul>li.active a {
-	background: #1b378f;
+.sidebar .sidebar-menu > ul > li.active a {
+	background: rgba(255,255,255,.3);
 	border-radius: 5px;
 }
-
 .sidebar .sidebar-menu>ul>li:hover a span {
 	color: #fff;
 }
 
 
 .sidebar .sidebar-menu>ul>li .subdrop {
-	background: #121A0E;
+	background: rgba(255,255,255,.3);
 	color: #fff;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
@@ -2242,13 +2240,13 @@ b {
 }
 
 .copyright-footer p a {
-	color: #1b378f !important;
+	color: #000 !important;
 	text-decoration: underline !important;
 	font-weight: 600;
 }
 
 .copyright-footer p a:hover {
-	color: #1b378f!important;
+	color: #000!important;
 	font-weight: 600;
 	text-decoration: none !important;
 }
@@ -4108,7 +4106,7 @@ div#cke_notifications_area_content {
     display: none;
 }
 
-/* Dressr AI TV Listing Icon css start*/
+/* My Dressr TV Listing Icon css start*/
 .gallery div {
 	display: inline-block;
 	height: 40px;
@@ -4140,7 +4138,7 @@ div#cke_notifications_area_content {
 .gallery a:hover .overlay {
 	opacity: 0;
 }
-/* Dressr AI TV Listing Icon css end*/
+/* My Dressr TV Listing Icon css end*/
 
 /* Google Translate Start */
 
@@ -4296,7 +4294,7 @@ body {
 	margin-right: auto;
 	-webkit-transition: all 0.3s ease-in-out;
 	transition: all 0.3s ease-in-out;
-	background: #1e3d9d;
+	background: #000;
 }
 .toggle-line.lg-line {
 	width: 26px;
@@ -4310,13 +4308,13 @@ body {
 
 .btn-primary:hover{
 	color:#fff;
-	background-color:#11235e;
-	border-color:#11235e
+	background-color:#000;
+	border-color:#000;
 }
 .btn-primary{
 	color:#fff;
-	background-color:#1e3d9d;
-	border-color:#1e3d9d
+	background-color:#000;
+	border-color:#000
 }
 
 /*  custom for loan overdue  */

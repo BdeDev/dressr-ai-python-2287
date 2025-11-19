@@ -14,7 +14,7 @@ urlpatterns = [
     re_path(r'^logout/$', LogOutView.as_view(), name='logout'),
     re_path(r'^reset-password/(?P<uid>[-\w]+)/(?P<token>[-\w]+)/$',ResetPassword.as_view(),name="reset_password_user"),
     re_path(r'^forgot-password-email/$', ForgotPasswordEmail.as_view(), name='forgot_password_email'),
-    re_path(r'^verify-account/(?P<token>[-\w]+)/$',VerifyUserAccount.as_view(),name="verify_account"),
+    # re_path(r'^verify-account/(?P<token>[-\w]+)/$',VerifyUserAccount.as_view(),name="verify_account"),
 
     ## Users
     re_path(r'^change-password/$', PasswordChange.as_view(), name='change_password'),
@@ -38,6 +38,11 @@ urlpatterns = [
 
     #Django Site Settings
     re_path(r'^update-django-site/$', UpdateDjangoSite.as_view(), name='update_django_site'),
+
+     ## Banners
+    re_path(r'^banners-list/$',BannersList.as_view(), name='banners_list'),
+    re_path(r'^change-banner-status/(?P<id>[-\w]+)/$',ChangeBannerStatus.as_view(), name='change_banner_status'),
+    re_path(r'^delete-banner/(?P<id>[-\w]+)/$',DeleteBanner.as_view(), name='delete_banner'),
 
 ]
 

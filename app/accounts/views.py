@@ -3,7 +3,6 @@ import subprocess
 from django.contrib.auth import authenticate, login,logout
 from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.sites.models import Site
-from django.utils.decorators import method_decorator
 from cron_descriptor import get_description
 from .decorators import *
 from django.views.generic import TemplateView,View
@@ -13,9 +12,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib import messages
 from accounts.common_imports import *
-from rest_framework.authtoken.models import Token
 from accounts.utils import *
-
+from rest_framework.authtoken.models import Token
 
 
 db_logger = logging.getLogger('db')
@@ -27,12 +25,10 @@ class AdminLoginView(TemplateView):
     def get(self, request, *args, **kwargs):
         return redirect('accounts:login')
 
-
 class LogOutView(View):
     def get(self,request,*args,**kwargs):
         logout(request)
         return redirect('accounts:login')
-
 
 class LoginView(View):
     def get(self, request, *args, **kwargs):
@@ -130,8 +126,6 @@ def Validations(request):
 Password Management
 """
 
-  # or wherever your token model is
-
 class ResetPassword(View):
     def get(self, request, *args, **kwargs):
         uid = kwargs.get('uid')
@@ -216,7 +210,7 @@ class NotificationsList(View):
         notifications = Notifications.objects.filter(created_for=user).order_by('-created_on')
         return render(request, "admin/notifications.html",{
             "head_title": "Notifications Management",
-            "notifications":  notifications,
+            "notifications": get_pagination(request,notifications),
             "total_objects": notifications.count(),
             "user":user
         })
@@ -329,6 +323,7 @@ class LoginHistoryView(View):
         return render(request, 'admin/login-history.html', {
             "head_title":"Login History Management",
             "loginhistory": get_pagination(request, loginhistory),
+            "search_filters":request.GET.copy(),
             "total_objects": loginhistory.count(),
         })
 class DeleteHistory(View):
@@ -412,3 +407,75 @@ class ImportSkinToneView(View):
             else:
                 messages.error(request,f"Hair color already exists: {color['name']}")
         return redirect('seatmap:charts_list')
+    
+## Banner Management
+
+class BannersList(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        banners = Banners.objects.all().order_by('-updated_on').only('id')
+        banners  = query_filter_constructer(request,banners,{
+            "title__icontains":"title",
+            "is_active":"state",
+            "created_on__date":"created_on"
+        })
+        if request.GET and not banners:
+            messages.error(request, 'No data found')
+        return render(request, 'ecommerce/banners/banner-list.html',{
+            "banners":get_pagination(request, banners),
+            "search_filters":request.GET.copy(),
+            "head_title":"Banners Management",
+        })
+    
+    @method_decorator(admin_only)
+    def post(self, request,*args,**kwargs):
+        banner_id = request.POST.get('banner_id')
+        if banner_id:
+            banner = get_or_none(Banners,'Banner does not exist !',id=banner_id)
+            if Banners.objects.filter(title=request.POST.get('title')).exclude(id=banner_id).exists():
+                messages.error(request, "Banner already exists!")
+                return redirect('accounts:banners_list')
+            if request.POST.get('title'):
+                banner.title = request.POST.get('title').strip()
+            if request.FILES.get('image'):
+                banner.image = request.FILES.get('image').strip()
+            banner.save()
+            messages.success(request, "Banner updated successfully!")
+        else:
+            if Banners.objects.filter(title=request.POST.get('title')).exists():
+                messages.error(request, "Banner already exists!")
+                return redirect('accounts:banners_list')
+            if request.FILES.get('image'):
+                Banners.objects.create(
+                    title = request.POST.get('title'),
+                    image = request.FILES.get('image',None),
+                    is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
+                )
+                messages.success(request, "Banner added successfully!")
+        return redirect('accounts:banners_list')
+    
+
+class ChangeBannerStatus(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        banner = Banners.objects.get(id=self.kwargs['id'])
+        if banner.is_active:
+            banner.is_active = False
+            message = "Banner Deactivated Successfully!"
+        else:
+            if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER:
+                messages.success(request,f'Sorry ,Maximum {MAX_ACTIVE_BANNER} banner could be activated at same time!')
+                return redirect('accounts:banners_list')
+            banner.is_active = True
+            message = "Banner Activated Successfully!"
+        banner.save()
+        messages.success(request,message)
+        return redirect('accounts:banners_list')
+    
+
+class DeleteBanner(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        Banners.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Banner Deleted Successfully!')
+        return redirect('accounts:banners_list')

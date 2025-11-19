@@ -1,85 +1,83 @@
-<footer class="bg-gray-800">
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div>
-                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase">Product</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Features</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Pricing</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">API</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Integrations</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase">Company</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">About</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Blog</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Careers</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Press</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase">Resources</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Documentation</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Guides</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Community</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Support</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-white text-sm font-semibold tracking-wider uppercase">Legal</h3>
-                    <ul class="mt-4 space-y-4">
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Privacy</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Terms</a></li>
-                        <li><a href="#" class="text-gray-300 hover:text-white transition-all">Cookie Policy</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="mt-12 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-white transition-all">
-                        <i data-feather="facebook" class="h-6 w-6"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-all">
-                        <i data-feather="instagram" class="h-6 w-6"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-all">
-                        <i data-feather="twitter" class="h-6 w-6"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-all">
-                        <i data-feather="youtube" class="h-6 w-6"></i>
-                    </a>
-                </div>
-                <p class="mt-4 md:mt-0 text-gray-400 text-sm">
-                    &copy; 2023 Dresser AI. All rights reserved.
-                </p>
-            </div>
-        </div>
-    </footer>
+{% load static %}
+{% load extras %}
+<div class="auth-ftr">
+    <div class="container">
+        <p class="mb-0 copy-right text-center text-black">
+                © 2025 My Dresser. All rights reserved. Developed By
+                <a href="https://toxsl.com/" target="_blank">
+                  ToXSL Technologies.</a
+                >
+              </p>
+    </div>
+</div>
 
-    <script>
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
+<script src="{% static 'admin-assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/script.js' %}"></script>
+<script src="{% static 'admin-assets/js/validate.js' %}"></script>
+<script src="{% static 'admin-assets/js/intlTelInput-jquery.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/common.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/show-more.js' %}"></script>
+
+<!-- Jquery JS -->
+{% comment %} <script src="{% static 'admin-assets/js/jquery.min.js' %}"></script>
+<!-- Bootstrap JS -->
+<script src="{% static 'admin-assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.19.5/jquery.validate.min.js"></script>
+<script src="{% static 'admin-assets/js/jquery-3.6.0.min.js' %}"></script> {% endcomment %}
+
+
+<script>
+    AOS.init({
+        duration: 800,
+        easing: 'ease-in-out'
+    });
+
+    function changetype(icon) {
+        const passwordInput = document.getElementById("password");
+
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        } else {
+            passwordInput.type = "password";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+    } 
+    document.addEventListener("DOMContentLoaded", () => {
         feather.replace();
-        
-        // Initialize Vanta.js effect
-        VANTA.GLOBE({
-            el: "#hero",
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            scale: 1.00,
-            scaleMobile: 1.00,
-            color: 0x5f6ee8,
-            backgroundColor: 0xf5f7fa,
-            size: 0.8
-        });
-    </script>
+    });
+
+    $("#login").validate({
+        rules: {
+            email: {
+                required: true,
+                normalizer: function (value) {
+                    return $.trim(value);
+                },
+                email: true,
+            },
+            password: {
+                required: true, 
+                minlength: 8,
+                maxlength: 35,
+                normalizer: function (value) {
+                    return $.trim(value);
+                }
+            },
+        },
+        messages: {
+            email: {
+                required: "Please enter your email address",
+            },
+            password: {
+                required: "Please enter password",
+                minlength: "At least 8 characters required!",
+                maxlength: "At most 35 characters only!"
+            },
+        }
+    });
+</script>
 </body>
+</html>

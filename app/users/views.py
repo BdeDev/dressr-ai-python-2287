@@ -45,6 +45,7 @@ class ViewUser(View):
             return render(request, 'admin/admin-profile.html', {"user":user,"site":site,"head_title":"Admin Profile"})
         elif user.role_id == CUSTOMER:
             device = Device.objects.filter(user=user).last()
+            outfits = Outfit.objects.filter(created_by = user).order_by('-created_on')
             return render(request, 'users/users/user-profile.html', {
                 "head_title":"User Management",
                 "isCustomer":True,
@@ -52,7 +53,9 @@ class ViewUser(View):
                 "device":device,
                 "token":Token.objects.filter(user=user).last(),
                 'loginhistory':get_pagination1(request,login_history,1),
-                'wardrobe':Wardrobe.objects.filter(user=user).last(),
+                'wardrobe':Wardrobe.objects.get(user=user),
+                "outfits":get_pagination(request,outfits),
+                "item_count":ClothingItem.objects.filter(wardrobe__user=user).count(),
             })
         else:
             logout(request)
@@ -132,6 +135,16 @@ class UsersList(View):
             "total_objects":users.count()
         })
 
+class AffiliateList(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        affiliate = User.objects.filter(role_id=AFFILIATE).order_by('-created_on')
+        if request.GET.get('mobile_no'):
+            affiliate = affiliate.annotate(full_mobile=Concat('country_code', 'mobile_no')).filter(full_mobile__icontains=request.GET.get('mobile_no'))
+        return render(request,'users/affiliate/affiliate-list.html',{
+            "head_title":'Affiliate Management',
+            "affiliate" : affiliate,
+        })
 
 class AddUser(View):
     @method_decorator(admin_only)

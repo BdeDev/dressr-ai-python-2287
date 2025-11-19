@@ -22,6 +22,7 @@ class ListSubscriptionPlan(View):
             "head_title":'Subscription Plan Management',
             "subscription_plans" : get_pagination(request, subscription_plans),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":subscription_plans.count()
         })
     
@@ -34,20 +35,20 @@ class AddSubscriptionPlan(View):
     def post(self,request,*args,**kwargs):
         title = request.POST.get('title').strip()
         month_year = int(request.POST.get('month_year').strip())
-        validity = YEARLY_PLAN
-        price = float(request.POST.get('price').strip())
+        validity = int(request.POST.get('validity').strip())
+        price = float(request.POST.get('price').strip()) if request.POST.get('price') else 0.00
         final_price = price * (month_year * 12) ## price * year * 12 (number of month in year)
         final_price = round(final_price,2)
 
-        if SubscriptionPlans.objects.filter(validity=validity,month_year=month_year,is_deleted=False).exists():
-            messages.success(request, "Subscription plan already exists")
+        if SubscriptionPlans.objects.filter(validity=validity,month_year=month_year,is_deleted=False,is_free_plan=True).exists():
+            messages.success(request, "Subscription plan already exists !")
             return redirect('subscription:add_subscription_plan')
-        
+      
         plan = SubscriptionPlans.objects.create(
             title = title,
             month_year = month_year,
             validity = validity,
-            features = request.POST.get('description',None),
+            features = request.POST.get('description'),
             price = price,
             final_price = final_price,
             created_by = request.user,
@@ -56,6 +57,9 @@ class AddSubscriptionPlan(View):
             max_try_ons = request.POST.get('max_try_ons'),
             max_shares = request.POST.get('max_shares'),
         )
+        if request.POST.get('is_free_plan'):
+            plan.is_free_plan = True
+        plan.save()
         messages.success(request, "Subscription plan added successfully!")
         return redirect('subscription:view_plan',plan.id)
 
@@ -64,7 +68,7 @@ class ViewSubscriptionPlan(View):
     def get(self,request,*args,**kwargs):
         plan = SubscriptionPlans.objects.get(id=self.kwargs['id'])
         return render(request, 'subscription/view-plan.html',{
-            "head_title":"Subscription Plans Management",
+            "head_title":"Subscription Plan Management",
             "plan":plan,
         })
 
@@ -73,34 +77,36 @@ class EditSubscriptionPlan(View):
     def get(self,request,*args,**kwargs):
         plan = SubscriptionPlans.objects.get(id=self.kwargs['id'])
         return render(request,'subscription/edit-plan.html',{
-            'head_title':'Subscription Plans Management',
+            'head_title':'Subscription Plan Management',
             'plan':plan
         })
     @method_decorator(admin_only)
     def post(self,request,*args,**kwargs):
         plan = SubscriptionPlans.objects.get(id=self.kwargs['id'])
-        title = request.POST.get('title').strip()
-        month_year = int(request.POST.get('month_year').strip())
-        validity = YEARLY_PLAN
-        price = float(request.POST.get('price').strip())
-        final_price = price * (month_year * 12) ## price * year * 12 (number of month in year)
-        final_price = round(final_price,2)
-
-        if SubscriptionPlans.objects.filter(validity=validity,month_year=month_year,is_deleted=False).exclude(id=plan.id):
+        if SubscriptionPlans.objects.filter(month_year=int(request.POST.get('month_year')),is_deleted=False).exclude(id=plan.id).exists():
             messages.error(request,"Subscription plan already exists ")
             return redirect('subscription:edit_plan',id=plan.id)
-        else:
-            plan.title = title
-            plan.month_year=month_year     
-            plan.price = price
+        
+        if request.POST.get('title'):
+            plan.title = request.POST.get('title').strip()
+        if int(request.POST.get('month_year')):
+            plan.month_year=int(request.POST.get('month_year').strip())     
+        if request.POST.get('price'):
+            plan.price = float(request.POST.get('price').strip())
+            final_price = plan.price * (plan.month_year * 12)
+            final_price = round(final_price,2)
             plan.final_price = final_price
-            plan.validity = validity 
+
+        if request.POST.get('description'):
             plan.features=request.POST.get('description',None)
+        if request.POST.get('max_uploads'):
             plan.max_uploads = request.POST.get('max_uploads')
+        if request.POST.get('max_try_ons'):
             plan.max_try_ons = request.POST.get('max_try_ons')
+        if request.POST.get('max_shares'):
             plan.max_shares = request.POST.get('max_shares')
-            plan.save()
-            messages.success(request, "Plan updated successfully!")
+        plan.save()
+        messages.success(request, "Plan updated successfully!")
         return redirect('subscription:view_plan',plan.id)
 
 class DeleteSubscriptionPlan(View):
@@ -110,8 +116,7 @@ class DeleteSubscriptionPlan(View):
         if UserPlanPurchased.objects.filter(subscription_plan=plan):
             messages.error(request, "Plan cannot be deleted because it is being used by the customer")
             return redirect('subscription:all_plans')
-        plan.is_deleted = True
-        plan.save()
+        plan.delete()
         messages.success(request, "Plan deleted successfully!")
         return redirect('subscription:all_plans')
     
@@ -121,10 +126,10 @@ class SubscriptionPlanStatus(View):
         subscription_plan = SubscriptionPlans.objects.get(id=self.kwargs['id'])
         if subscription_plan.status:
             subscription_plan.status = False
-            message="Notification Deactivated Successfully!"
+            message="Subscription Plan Deactivated Successfully!"
         else:
             subscription_plan.status = True
-            message="Notification Activated Successfully!"
+            message="Subscription Plan Activated Successfully!"
         subscription_plan.save()
         messages.success(request,message=message)
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -180,6 +185,7 @@ class ActivatePurchasedPlanNow(View):
     def get(self, request, *args, **kwargs):
         purchase_plan = UserPlanPurchased.objects.get(id=self.kwargs['id'],status= USER_PLAN_IN_QUEUE)
         user = purchase_plan.purchased_by
+
         ## mark activate plan expire 
         UserPlanPurchased.objects.filter(
             purchased_by=user,
@@ -188,11 +194,10 @@ class ActivatePurchasedPlanNow(View):
             status=USER_PLAN_EXPIRED,
             marked_expired_by = request.user
             )
-        
         user.is_subscription_active = False
         user.save()
         user.refresh_from_db()
-        ## create and activate plan 
+        ## create and activate plan s
         activate_subscription(user,purchase_plan)
         messages.success(request,'Plan activated successfully')
 
@@ -213,7 +218,7 @@ class ActivatePurchasedPlanNow(View):
         #     obj_id = str(purchase_plan.id),
         # )
 
-        return redirect('subscriptions:purchased_plan_info',id=purchase_plan.id)
+        return redirect('subscription:purchased_plan_info',id=purchase_plan.id)
     
 from django.views.decorators.csrf import csrf_exempt
 
@@ -241,5 +246,4 @@ class SubscriptionWebhook(View):
 
             return HttpResponse(status=200)
         except Exception as e:
-            print(f"❌ Error processing webhook: {e}")
             return HttpResponse(status=500)

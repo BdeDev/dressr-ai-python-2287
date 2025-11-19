@@ -1,4 +1,4 @@
-from accounts.utils import get_pagination
+from accounts.utils import *
 from .models import *
 from accounts.common_imports import *
 import time
@@ -24,6 +24,7 @@ class BackupsList(View):
         return render(request, 'backup/backup.html',{
             "head_title": "Backup Management",
             "records": get_pagination(request, records),
+            "search_filters":request.GET.copy(),
             "total_objects": records.count(),
         })
 

@@ -29,7 +29,7 @@
                     <tr>
                         <td class="logo-td" align="center" style="padding: 20px;background: #1e3d9d;">
                             <a href="{{ protocol }}://{{ domain }}{% url "frontend:index" %}" title="logo" target="_blank">
-                                <img width="100" src="{{ protocol }}://{{ domain }}/static/admin-assets/images/230x0w.webp" title="logo" alt="logo" style="display:block; margin:auto;">
+                                <img width="100" src="{{ protocol }}://{{ domain }}/static/admin-assets/images/logo-wht.svg" title="logo" alt="logo" style="display:block; margin:auto;">
                             </a>
                         </td>
                     </tr>
@@ -48,46 +48,46 @@
                             {% if title == 'Account Activated' %}
                                 <p style="font-size:14px; color:#000; margin: 0; line-height:24px;padding-bottom: 10px;text-align:left;">
                                     We hope this message finds you well. <br>
-                                    We are writing to inform you that your account with Dressr AI has been successfully activated. <br>
+                                    We are writing to inform you that your account with My Dressr has been successfully activated. <br>
                                     You can now access all the features and services available to you. <br>
                                     To log in, please visit
                                     {% if user.role_id == 2 %}
-                                         <a style="color:#4467ff" target="_blank" href="{{ protocol }}://{{ domain }}{% url 'frontend:index' %}">Dressr AI App</a>
+                                         <a style="color:#4467ff" target="_blank" href="{{ protocol }}://{{ domain }}{% url 'frontend:index' %}">My Dressr App</a>
                                     {% else %}
-                                        <a style="color:#4467ff" target="_blank" href="{{ protocol }}://{{ domain }}{% url 'accounts:login' %}">Dressr AI Login</a>
+                                        <a style="color:#4467ff" target="_blank" href="{{ protocol }}://{{ domain }}{% url 'accounts:login' %}">My Dressr Login</a>
                                     {% endif %}
                                     and use your registered credentials.  <br>
                                     If you have forgotten your password, you can reset it using the "Forgot Password" link on the login page. <br>
                                     If you have any questions or need further assistance, please do not hesitate to reach out to us.<br>
                                     <a style="color:#4467ff" target="_blank" href="">click here for assistance</a>
                                     We are here to help! <br> <br>
-                                    Thank you for choosing Dressr AI. We look forward to serving you. <br>
+                                    Thank you for choosing My Dressr. We look forward to serving you. <br>
                                     Best regards, <br>
-                                    Team Dressr AI
+                                    Team My Dressr
                                 </p>
                             {% elif title == 'Account Deactivated' %}
                                 <p style="font-size:14px; color:#000; margin: 0; line-height:24px;padding-bottom: 10px;text-align:left;">
                                     We hope this message finds you well. <br>
-                                    We are writing to inform you that your account with Dressr AI has been deactivated. <br>
+                                    We are writing to inform you that your account with My Dressr has been deactivated. <br>
                                     If you believe this deactivation was made in error or if you have any questions regarding your account status, 
                                     Please do not hesitate to reach out to us. <br>
                                     <a style="color:#4467ff" target="_blank" href="">click here for assistance</a>
                                     We are here to help! <br> <br>
                                     Thank you for your understanding.<br>
                                     Best regards,<br>
-                                    Team Dressr AI
+                                    Team My Dressr
                                 </p>
                             {% elif title == 'Account Deleted' %}
                                 <p style="font-size:14px; color:#000; margin: 0; line-height:24px;padding-bottom: 10px;text-align:left;">
                                     We hope this message finds you well. <br>
-                                    We are writing to inform you that your account with Dressr AI has been permanently deleted. <br>
+                                    We are writing to inform you that your account with My Dressr has been permanently deleted. <br>
                                     If you believe this deletion was made in error or if you have any questions regarding your account status, 
                                     Please do not hesitate to reach out to us. <br>
                                     <a style="color:#4467ff" target="_blank" href="">click here for assistance</a>
                                     We are here to help! <br> <br>
                                     Thank you for your understanding.<br>
                                     Best regards,<br>
-                                    Team Dressr AI
+                                    Team My Dressr
                                 </p>
                             {% endif %}
                         </td>
@@ -99,7 +99,7 @@
                         <td align="center" style="padding: 20px 0;border-top: 2px solid #cbcbcb4a; background-color: #1e3d9d;">
                             <p style="font-size:14px; color:#fff; line-height:18px; margin:0 0 0;">
                                 Copyright  © <span id="full_year">{% now "Y" as current_year %}{{current_year}}</span>
-                                <a style="color: #fff;text-decoration: none; font-weight: 600;" target="_blank" href="{% url 'frontend:index' %}"> Dressr AI </a> | All Rights Reserved. Developed by <a style="color: #fff; text-decoration: none; font-weight: 600;" href="https://toxsl.com/" target="_blank">TOXSL Technologies</a>
+                                <a style="color: #fff;text-decoration: none; font-weight: 600;" target="_blank" href="{% url 'frontend:index' %}"> My Dressr </a> | All Rights Reserved. Developed by <a style="color: #fff; text-decoration: none; font-weight: 600;" href="https://toxsl.com/" target="_blank">TOXSL Technologies</a>
                             </p>
                         </td>
                     </tr>

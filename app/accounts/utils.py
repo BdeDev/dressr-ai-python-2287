@@ -38,11 +38,24 @@ import random
 import string
 from accounts.tasks import *
 from wardrobe.models import *
+from django.utils.text import slugify
 
 
 db_logger = logging.getLogger('db')
 env = environ.Env()
 environ.Env.read_env()
+
+
+def generate_mydressr_username(name):
+    base = slugify(name) or "user"
+    suggestions = set()
+
+    while len(suggestions) < 3:
+        username = f"mdr-{base}-{random.randint(1000, 9999)}"
+        if not User.objects.filter(username=username).exists():
+            suggestions.add(username)
+
+    return list(suggestions)
 
 
 def get_admin():
@@ -331,15 +344,15 @@ def update_object(self,request, model, fields: list):
         return True
 
 def activate_subscription(user,activate_purchased_plan:SubscriptionPlans=None):
+    user = User.objects.get(first_name=user)
     ## Warning : This function is also used on cronjob to renew plan
     if not activate_purchased_plan:
         upcomming_plan =  UserPlanPurchased.objects.filter(purchased_by=user,status = USER_PLAN_IN_QUEUE).order_by('created_on').first()
     else:
         upcomming_plan = activate_purchased_plan ## if specify which plan have to activate  
-        
     ## check use have any active plan or not 
-    if not UserPlanPurchased.objects.filter(purchased_by=user,status = USER_PLAN_IN_QUEUE).exists() and upcomming_plan:
-        upcomming_plan.status = USER_PLAN_IN_QUEUE
+    if not UserPlanPurchased.objects.filter(purchased_by=user,status = USER_PLAN_IN_QUEUE).exists() or upcomming_plan:
+        upcomming_plan.status = USER_PLAN_ACTIVE
         upcomming_plan.activated_on = datetime.now()
         ## set plan expiry
         if upcomming_plan.validity == MONTHLY_PLAN:

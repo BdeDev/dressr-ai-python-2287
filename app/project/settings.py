@@ -114,10 +114,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# CRONJOBS = [
-#     ('0 0 * * 7', 'accounts.cron.WeeklyDataBaseBackup'),
-#     ('0 0 */10 * *', 'accounts.cron.DeleteUnnecessaryData'),
-# ]
+CRONJOBS = [
+    ('0 0 * * 7', 'accounts.cron.WeeklyDataBaseBackup'),
+    ('0 0 */10 * *', 'accounts.cron.DeleteUnnecessaryData'),
+    ('0 0 */10 * *', 'accounts.cron.SendEmailForSubscriptionPurchase'),
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LANGUAGE_CODE = 'en-us'
@@ -160,14 +161,14 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-## Swagger Settings
 SWAGGER_SETTINGS = {
     'JSON_EDITOR': True,
     'SECURITY_DEFINITIONS': {
-        'Bearer': {
+        'TokenAuth': {
             'type': 'apiKey',
             'name': 'Authorization',
-            'in': 'header'
+            'in': 'header',
+            'description': "Use: Token <your_token>"
         }
     },
     'PERSIST_AUTH': True

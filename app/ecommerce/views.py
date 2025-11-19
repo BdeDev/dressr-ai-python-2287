@@ -1,5 +1,6 @@
 from django.shortcuts import render,get_object_or_404
 from accounts.common_imports import *
+from accounts.utils import *
 from .models import *
 
 
@@ -21,6 +22,7 @@ class CategoryList(View):
             "head_title":'Fashion Tip category Management',
             "fashion_tip_categories" : get_pagination(request, fashion_tip_categories),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":fashion_tip_categories.count()
         })
     
@@ -114,6 +116,7 @@ class FashionTipList(View):
             "head_title":'Fashion Tip Management',
             "fashion_tips" : get_pagination(request, fashion_tips),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":fashion_tips.count()
         })
     
@@ -142,7 +145,8 @@ class AddFashionTip(View):
             category = category,
             season = request.POST.get('season'),
             style = request.POST.get('style'),
-            cover_image = request.FILES.get('cover_image')
+            cover_image = request.FILES.get('cover_image'),
+            gender = request.POST.get('gender')
         )
         messages.success(request, "Fashion tip added successfully!")
         return redirect('ecommerce:view_fashion_tip',fashion_tip.id)
@@ -168,11 +172,18 @@ class EditFashionTip(View):
         
         if request.FILES.get('cover_image'):
             fashion_tip.cover_image = request.FILES.get('cover_image')
-        fashion_tip.title = request.POST.get('title').strip()
-        fashion_tip.content = request.POST.get('content')
-        fashion_tip.category = category
-        fashion_tip.season = request.POST.get('season')
-        fashion_tip.style = request.POST.get('style')
+        if request.POST.get('title'):
+            fashion_tip.title = request.POST.get('title').strip()
+        if request.POST.get('content'):
+            fashion_tip.content = request.POST.get('content')
+        if request.POST.get('category'):
+            fashion_tip.category = category
+        if request.POST.get('season'):
+            fashion_tip.season = request.POST.get('season')
+        if request.POST.get('style'):
+            fashion_tip.style = request.POST.get('style')
+        if request.POST.get('gender'):
+            fashion_tip.gender = request.POST.get('gender')
         fashion_tip.save()
         messages.success(request, "Fashion tip updated successfully!")
         return redirect('ecommerce:view_fashion_tip',fashion_tip.id)
@@ -226,6 +237,7 @@ class PartnerStoreView(View):
             "head_title":'Partner Store Management',
             "partner_store" : get_pagination(request, partner_store),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":partner_store.count()
         })
     
@@ -294,6 +306,7 @@ class DiscountAdsList(View):
             "head_title":'Discount Ads Management',
             "discount_ads" : get_pagination(request, discount_ads),
             "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
             "total_objects":discount_ads.count()
         })
     

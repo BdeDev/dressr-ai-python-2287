@@ -1,0 +1,166 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Hair Colours</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'wardrobe:hair_color_list' %}">Hair Colours</a></li>
+					</ol>
+				</nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a title="Sync" href="{% url 'wardrobe:sync_default_hair_color' %}" id="sync-btn" class="btn btn-theme"><i class="fa fa-sync"></i>Sync Default</a>
+                <a title="Add" class="btn btn-theme" data-bs-toggle="modal" data-bs-target="#add-hair-color"><i class="fas fa-plus ms-1"></i> Add</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=hair_colors %}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'wardrobe:hair_color_list' %}" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+                                        <th><strong>ID</strong></th>
+                                        <th><strong>Title</strong></th>
+                                        <th><strong>Color Code</strong></th>
+										<th><strong>Created On</strong></th>
+										<th><strong>Actions</strong></th>
+									</tr>
+								</thead>
+								<thead>
+									<tr class="search-row">
+                                        <td><input disabled type="text" value="{{request.GET.id}}" class="form-control" name="id" maxlength="20"></td>
+                                        <td><input type="text" value="{{request.GET.title}}" class="form-control" name="title" maxlength="20"></td>
+                                        <td><input type="text" value="{{request.GET.color_code}}" class="form-control" name="color_code" maxlength="20"></td>
+										<td><input type="date" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if hair_colors %}
+										{% for color in hair_colors %}
+										<tr>
+                                            <td> {{color.id|default:"-"}} </td>
+                                            <td> {{color.title|default:"-"}} </td>
+                                            <td> {{color.color_code|default:"-"}} </td>
+											<td>
+												<script>
+													var date = ConvertDateTime("{{ color.created_on|date:'Y-m-d' }}", "{{ color.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											<td>
+												<div class="d-flex">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{color.id}}','{{color.title}}','{{color.color_code}}')"  data-bs-target="#edit-hair-color" class="btn btn-info shadow btn-xs sharp me-1">
+														<i class="fa fa-edit"></i>
+													</a>
+                                                    <a title="Delete" href="{% url 'wardrobe:delete_hair_color' color.id %}"
+														id="delete-btn" class="btn btn-danger shadow btn-xs sharp">
+														<i class="fa fa-trash"></i>
+													</a>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=hair_colors %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="add-hair-color" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Hair Colour</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="add-hair-colors" action="{% url 'wardrobe:hair_color_list' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" placeholder="Enter Title" name="title" id="title" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+							<div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Colour Code</label>
+                                    <input type="text" placeholder="Enter colour code" name="color_code" id="color_code" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="edit-hair-color" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Hair Colour</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form onsubmit="Loader(this.id)" id="edit-hair-colors" action="{% url 'wardrobe:hair_color_list' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="hair_color_id" id="hair_color_id" value="">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Title</label>
+                                    <input type="text" placeholder="Enter Title" name="title" id="hair_title" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Colour Code</label>
+                                    <input type="text" placeholder="Enter Colour" name="color_code" id="hair_color_code" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-end">
+                                <button type="submit" class="btn btn-primary me-2">Update</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/validations/hair-color.js' %}"></script>
+<script>
+	function GetValue(id, title,color_code){
+    $('#hair_color_id').val(id);
+    $('#hair_title').val(title);
+    $('#hair_color_code').val(color_code);
+}
+</script>

@@ -4,14 +4,9 @@ $("#add-category").validate({
     rules: {
         name: {
             required: true,
-            normalizer: function (value) {
-                return $.trim(value);
-            },
-            minlength:5,
-            maxlength:50
         },
         description: {
-            required: false,
+            required: true,
             normalizer: function (value) {
                 return $.trim(value);
             },
@@ -21,7 +16,7 @@ $("#add-category").validate({
     },
     messages: {
         name: {
-            required: "Please enter title",
+            required: "Please enter name",
         },
         description: {
             required: "Please enter description"
@@ -37,14 +32,9 @@ $("#update-category").validate({
     rules: {
         name: {
             required: true,
-            normalizer: function (value) {
-                return $.trim(value);
-            },
-            minlength:5,
-            maxlength:50
         },
         description: {
-            required: false,
+            required: true,
             normalizer: function (value) {
                 return $.trim(value);
             },

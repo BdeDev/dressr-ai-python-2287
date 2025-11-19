@@ -34,10 +34,10 @@
                                     <h4>Email</h4>
                                     <h6>{% if contact.email %}{{ contact.email }}{% else %}-{% endif %}</h6>
                                 </li>
-                                <li>
+                                {% comment %} <li>
                                     <h4>Mobile Number</h4>
                                     <h6>{% if contact.mobile_no %}{{contact.country_code}}{{ contact.mobile_no }}{% else %}-{% endif %}</h6>
-                                </li>
+                                </li> {% endcomment %}
                                 <li>
                                     <h4>Message</h4>
                                     <h6>{% if contact.message %}{{ contact.message }}{% else %}-{% endif %}</h6>

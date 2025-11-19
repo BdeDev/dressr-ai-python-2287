@@ -1,6 +1,7 @@
-from accounts.utils import get_pagination
+
 from .models import *
 from accounts.common_imports import *
+from accounts.utils import *
 from django.http import HttpResponseRedirect
 
 """
@@ -55,6 +56,7 @@ class SMTPListView(View):
         return render(request, 'credentials/smtp_settings/smtp-list.html',{
             "head_title":"SMTP Management",
             "smtp_settings": get_pagination(request, smtp_settings),
+            "search_filters":request.GET.copy(),
             "total_objects": smtp_settings.count(),
         })
 
