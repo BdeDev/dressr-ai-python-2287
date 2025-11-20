@@ -30,6 +30,12 @@ class Accessory(CommonInfo):
     class Meta:
         db_table = 'accessories'
 
+class Tag(CommonInfo):
+    title = models.CharField(max_length=50,blank=True, null=True)
+
+    class Meta:
+        db_table = 'tag'
+
 class ClothingItem(CommonInfo):
     title = models.CharField(max_length=200,blank=True, null=True)
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="items",blank=True, null=True)
@@ -48,6 +54,7 @@ class ClothingItem(CommonInfo):
     wear_count = models.PositiveIntegerField(default=0)
     favourite = models.ManyToManyField(User, related_name='favourite_item')
     item_url = models.URLField(blank=True, null=True)
+    tags = models.ManyToManyField(Tag, related_name="items")
 
     class Meta:
         db_table = 'clothing_item'
@@ -75,6 +82,7 @@ class WearHistory(CommonInfo):
     outfit = models.ForeignKey(Outfit, on_delete=models.SET_NULL, null=True, blank=True)
     item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, null=True, blank=True)
     worn_on = models.DateField()
+    notes = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = 'wear_history'
@@ -120,3 +128,11 @@ class Recommendation(CommonInfo):
 
     class Meta:
         db_table = 'recomendation'
+
+
+class RecentSearch(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recent_searches")
+    keyword = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = 'recent_search'

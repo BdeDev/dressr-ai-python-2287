@@ -1,4 +1,4 @@
-{% include "admin-includes/header.html" %}{% load static %}
+{% include "admin-includes/header.html" %}{% load static %}{% load extras %}
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -80,21 +80,37 @@
             </div>
             <div class="row gap-3">
                 <div class="card-body" id="card_body_div">
-                    <div class="scroll-row">
-                        <div class="row flex-nowrap gap-3">
+                      <div class="swiper mySwiper">
+                        <div class="swiper-wrapper">
                             {% for item in cloth_items %}
-                                <div class="card" style="width: 18rem;">
-                                    {% if item.image %}
-                                    <a href="{{ item.image.url }}" data-fancybox>
-                                        <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
-                                    </a>
-                                    <a title="View" data-bs-toggle="modal" onclick="GetValue('{{item.id}}','{{item.title}}','{{item.cloth_category.title}}','{{item.weather_type}}','{{item.color}}','{{item.brand}}','{{item.occasion.title}}','{{item.image.url}}','{{item.created_on|date:"Y-m-d"}}T{{item.created_on|date:"H:i"}}')"  data-bs-target="#view-details">
-                                    {% endif %}
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{item.title|default:"-"}}</h5>
-                                        <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
+                                {% is_favourite item.wardrobe.user item as item_is_favourite %}
+                                <div class="swiper-slide">
+                                    <div class="card" style="width: 18rem; position: relative;">
+                                        {% if item.image %}
+                                        <a href="{{ item.image.url }}" data-fancybox>
+                                            <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
+                                        </a>
+
+                                        <!-- ❤️ Heart Icon -->
+                                        <span class="heart-icon" onclick="toggleFavorite('{{ item.id }}')">
+                                            {% if item_is_favourite %}
+                                                <i class="fa fa-heart text-danger"></i>
+                                            {% else %}
+                                                <i class="fa fa-heart not-favourite"></i>
+                                            {% endif %}
+                                        </span>
+
+                                        <a title="View" data-bs-toggle="modal"
+                                            onclick="GetValue('{{item.id}}','{{item.title}}','{{item.cloth_category.title}}','{{item.weather_type}}','{{item.color}}','{{item.brand}}','{{item.occasion.title}}','{{item.image.url}}','{{item.created_on|date:"Y-m-d"}}T{{item.created_on|date:"H:i"}}')"
+                                            data-bs-target="#view-details">
+                                        {% endif %}
+
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{item.title|default:"-"}}</h5>
+                                            <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
+                                        </div>
+                                        </a>
                                     </div>
-                                    </a>
                                 </div>
                             {% endfor %}
                         </div>
@@ -104,69 +120,69 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="view-details"  data-bs-backdrop='static' data-bs-keyboard='false' tabindex="-1" role="dialog">
+<div class="modal fade" id="view-details" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            {% comment %} <div class="modal-header">
-                <h4 class="modal-title">Item Detail View</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div> {% endcomment %}
             <div class="modal-body">
                 <div class="basic-form">
                     <div class="row">
                         <div class="col-md-12 col-lg-12 col-sm-12">
-                            <button type="button" class="btn-close d-flex justify-content-end align-items-center" data-bs-dismiss="modal" aria-label="Close"></button>    
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
                             <div class="card my-4">
                                 <div class="card-body">
                                     <div class="row">
-                                    <div class=" col-md-6  productdetails">
-                                        <h5><b>Item Detail</b></h5>
-                                        <ul class="product-bar mb-2">
-                                            <li>
-                                                <h4>Id </h4>
-                                                <h6><span id="item_id"></span></h6>
-                                            </li>
-                                            <li>
-                                                <h4> Title </h4>
-                                                <h6><span id="item_title"></span></h6>
-                                            </li>
-                                            <li>
-                                                <h4> Category </h4>
-                                                <h6><span id="item_category"></span></h6>
-                                            </li>
-                                            {% comment %} <li>
-                                                <h4> Weather Type </h4>
-                                                <h6><span id="weather_type"></span></h6>
-                                            </li> {% endcomment %}
-                                            <li>
-                                                <h4> Colour </h4>
-                                                <h6><span id="item_color"></span></h6>
-                                            </li>
-                                            <li>
-                                                <h4> Brand </h4>
-                                                <h6><span id="item_brand"></span></h6>
-                                            </li>
-                                            <li>
-                                                <h4> Occasion </h4>
-                                                <h6><span id="item_occasion"></span></h6>
-                                            </li>
-                                            <li>
-                                                <h4>Created On </h4>
-                                                <h6>
-                                                    <span id="item_addedd_on"> </span>
-                                                </h6>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-6 productdetails">
-                                        <h5><b>Item Image</b></h5>
-                                        <ul class="product-bar mb-2">
-                                            <li>
-                                            <a id="item_image_link" data-fancybox>
-                                                <img id="item_image_img"  alt="">
-                                            </a>
-                                            </li>
-                                        </ul>
+                                        <div class="col-md-6  productdetails">
+                                            <h5><b>Item Detail</b></h5>
+                                            <ul class="product-bar mb-2">
+                                                <li>
+                                                    <h4>Id </h4>
+                                                    <h6><span id="item_id"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Title </h4>
+                                                    <h6><span id="item_title"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Category </h4>
+                                                    <h6><span id="item_category"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Weather Type </h4>
+                                                    <h6><span id="weather_type"></span>
+                                                    </h6>
+                                                </li> 
+                                                <li>
+                                                    <h4> Colour </h4>
+                                                    <h6><span id="item_color"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Brand </h4>
+                                                    <h6><span id="item_brand"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Occasion </h4>
+                                                    <h6><span id="item_occasion"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4>Created On </h4>
+                                                    <h6>
+                                                        <span id="item_addedd_on"> </span>
+                                                    </h6>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6 productdetails">
+                                            <h5><b>Item Image</b></h5>
+                                            <ul class="product-bar custom-size-img mb-2">
+                                                <li>
+                                                <a id="item_image_link" data-fancybox>
+                                                    <img id="item_image_img"  alt="">
+                                                </a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -184,33 +200,88 @@
     $('#item_id').text(id);
     $('#item_title').text(title);
     $('#item_category').text(cloth_category);
-    $('#weather_type').text(weather_type);
+   // $('#weather_type').text(weather_type);
     $('#item_color').text(color);
     $('#item_brand').text(brand);
     $('#item_occasion').text(occasion);
     $('#item_image_img').attr('src', image);
     $('#item_image_link').attr('href', image);
     $('#item_addedd_on').text(moment.utc(created_on).local().format("D MMMM YYYY, LT"));
+
+    const weatherTypeMapping = {
+        1: "Summer",
+        2: "Winter",
+        3: "Rainy Season",
+        4: "Spring Seasons",
+        5: "All Seasons"
+    };
+
+    let weatherVal = parseInt(weather_type);
+    let weatherText = weatherTypeMapping[weatherVal] || "Not Available";
+    document.getElementById("weather_type").innerText = weatherText;
 }
+
 </script>
+
 <style>
-    .scroll-row {
-        overflow-x: auto;
-        white-space: nowrap;
-        padding-bottom: 10px;
-    }
-    .scroll-row .card {
-        display: inline-block;
-        margin-right: 15px;
-        white-space: normal;
-    }
+.heart-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ffffff;
+    border-radius: 50%;     /* perfect circle */
+    padding: 6px 8px;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    /* Optional: hide scrollbar on Chrome/Edge */
-    .scroll-row::-webkit-scrollbar {
-        height: 6px;
-    }
+.heart-icon i {
+    font-size: 18px;
+    transition: 0.2s ease;
+}
 
-    .modal-lg, .modal-xl {
-        max-width: 1000px !important;
-    }
+/* When not favourite – outline heart */
+.heart-icon .not-favourite {
+    color: #ddcbcb !important;  /* neutral dark gray */
+}
+
+/* When favourite – filled heart */
+.heart-icon .fa-heart {
+    color: #d11a2a; /* red */
+}
+
+
 </style>
+<script>
+    var swiper = new Swiper(".mySwiper", {
+    slidesPerView: 5,
+    spaceBetween: 20,
+
+    breakpoints: {
+        0: {
+            slidesPerView: 1,
+            spaceBetween: 10,
+        },
+
+        576: {
+            slidesPerView: 2,
+            spaceBetween: 15,
+        },
+
+        768: {
+            slidesPerView: 3,
+            spaceBetween: 20,
+        },
+
+        1200: {
+            slidesPerView: 5,
+            spaceBetween: 20,
+        }
+    }
+});
+
+</script>

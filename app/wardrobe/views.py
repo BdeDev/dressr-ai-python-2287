@@ -528,12 +528,12 @@ class CalenderDataAjax(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
         data={'items_data':[]}
-        if request.GET.get('wardrobe_id','').strip():
-            wardrobe = Wardrobe.objects.get(id=request.GET.get('wardrobe_id'))
+        if request.GET.get('user_id','').strip():
+            user = User.objects.get(id=request.GET.get('user_id'))
 
         month = int(request.GET.get('month')) if request.GET.get('month') else datetime.now().month
         year = int(request.GET.get('year')) if request.GET.get('year') else datetime.now().year
-        wear_items = WearHistory.objects.filter(user=wardrobe.user,worn_on__month = month,worn_on__year = year,).order_by('created_on')
-        wear_items_data = list(wear_items.values('id', 'worn_on','item_id','user_id'))
+        wear_items = WearHistory.objects.filter(user=user,worn_on__month = month,worn_on__year = year,).order_by('created_on')
+        wear_items_data = list(wear_items.values('id', 'worn_on','item_id','user_id','item__image'))
         data['items_data'] = wear_items_data
         return JsonResponse(data)
