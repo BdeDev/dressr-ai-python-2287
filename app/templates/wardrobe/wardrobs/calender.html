@@ -36,5 +36,5 @@
 
 {% include "admin-includes/footer.html" %}
 <script src="{% static 'admin-assets/js/calendar/index.global.min.js' %}"></script>
-<script src="{% static 'admin-assets/js/customized-js/item-wear-calender.js' %}" data-user_id="{{wardrobe.user.id}}" data-calender_initial_date="{{calender_initial_date}}"></script>
+<script src="{% static 'admin-assets/js/customized-js/item-wear-calender.js' %}" data-calender_url="{% url "wardrobe:calender_data_ajax" %}" data-user_id="{{wardrobe.user.id}}" data-calender_initial_date="{{calender_initial_date}}"></script>
 

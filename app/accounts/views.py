@@ -152,14 +152,12 @@ class ResetPassword(View):
             token.delete()
 
             messages.success(request, 'Password reset successfully! Please log in.')
-            return redirect('accounts:login')
-
-        except Token.DoesNotExist:
+            return render(request,'frontend/password-reset-successful.html', {
+                    "user": user, 'protocol': 'https' if USE_HTTPS else 'http', 'domain': env('SITE_DOMAIN')})
+        except:
             messages.error(request, 'Sorry! Your reset link has expired or is invalid.')
-            return redirect('accounts:login')
-        except Exception as e:
-            messages.error(request, f'Error: {str(e)}')
-            return redirect('accounts:login')
+            return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
+      
 
 
 class ForgotPasswordEmail(View):
