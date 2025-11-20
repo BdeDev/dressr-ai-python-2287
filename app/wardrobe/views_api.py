@@ -403,8 +403,8 @@ class GetClothCategoriesAPI(APIView):
 
     @swagger_auto_schema(
         tags=["WarDrobe management"],
-        operation_id="Get All ClothCategories",
-        operation_description="Get All ClothCategories",
+        operation_id="Get All Cloth Categories",
+        operation_description="Get All Cloth Categories",
         manual_parameters=[
             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
         ],
@@ -414,7 +414,6 @@ class GetClothCategoriesAPI(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), occasions)
         data = ClothCategorySerializer(occasions[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-
 
 ####--------------------OutFit Management API's------------------######
 class CreateOutfitAPI(APIView):
@@ -1008,12 +1007,16 @@ class ItemSeachFilterAPI(APIView):
     parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(
-        tags=["Wardrobe Management"],
+        tags=["WarDrobe management"],
         operation_id="Search Items",
         operation_description="Search Items",
         manual_parameters=[
-            openapi.Parameter('search', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
-            openapi.Parameter('category_ids', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,description='List of category ids'),
+            openapi.Parameter('search', openapi.IN_QUERY, type=openapi.TYPE_STRING),
+            openapi.Parameter('category_ids', openapi.IN_QUERY, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING),description='List of category ids'),
+            openapi.Parameter('occasion_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='Occasion id'),
+            openapi.Parameter('weather_type', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,description='Weather Type'),
+            openapi.Parameter('color', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='Colour'),
+            openapi.Parameter('sort_by', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="date|alpha|category"),
             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
         ],
     )
@@ -1027,6 +1030,317 @@ class ItemSeachFilterAPI(APIView):
                         Q(cloth_category__title__icontains = request.query_params.get('search'))|
                         Q(occasion__title__icontains = request.query_params.get('search'))|
                         Q(accessory__title__icontains = request.query_params.get('search')))
+            
+            recent_search = RecentSearch.objects.create(
+                user=request.user,
+                keyword=request.query_params.get('search'),
+            )
+        if request.query_params.getlist('category_ids'):
+            category_ids = request.query_params.getlist("category_ids")
+            if len(category_ids) == 1 and "," in category_ids[0]:
+                category_ids = category_ids[0].split(",")
+
+            category_ids = [c.strip() for c in category_ids]
+            if category_ids:
+                categories = ClothCategory.objects.filter(id__in=category_ids)
+                if not categories.exists():
+                    return Response({"message": "Category not found!", "status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+                items = items.filter(cloth_category__in=categories)
+
+        if request.query_params.get('occasion_id'):
+            occasion  = Occasion.objects.get(id = request.query_params.get('occasion_id'))
+            if not occasion:
+                return Response({"message":"Occasion not found !","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            items = items.filter(occasion = occasion)
+
+        if request.query_params.get('weather_type'):
+            if not int(request.query_params.get('weather_type')) in [1,2,3,4,5]:
+                return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+            items = items.filter(weather_type = int(request.query_params.get('weather_type')))
+            
+        if request.query_params.get('color'):
+            items = items.filter(color__iexact=request.query_params.get('color'))
+
+        sort_by = request.query_params.get('sort_by')
+        if sort_by == "date":
+            items = items.order_by("-created_on")
+
+        elif sort_by == "alpha":
+            items = items.order_by("title")
+
+        elif sort_by == "category":
+            items = items.order_by("cloth_category__title")
+
+        else:
+            items = items.order_by("-created_on") 
+
+        if not items:
+            return Response({"data":[],"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), items)
         data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+
+class RecentSearchAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_description="Get recent searches of user",
+        operation_id="Get recent searches of user",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        searches = RecentSearch.objects.filter(user=request.user).order_by('-created_on')[:5]
+        data = RecentSearchSerializer(searches,many=True,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+
+class RemoveItemFromRecentSearchAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['WarDrobe management'],
+        operation_id="Delete Items From Recent Search",
+        operation_description="Delete Items From Recent Search",
+        manual_parameters=[
+            openapi.Parameter('search_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)
+        ],
+    )
+    def delete(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "search_id", "method": "get", "error_message": "Please enter search id"},
+        ])
+        recent_search = get_or_none(RecentSearch, "Invalid search id", id=request.query_params.get('search_id'),user=request.user)
+        recent_search.delete()
+        return Response({"message":"Recent Search Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+class RemoveAllItemFromRecentSearchAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['WarDrobe management'],
+        operation_id="Delete All Items From  Recent Search",
+        operation_description="Delete All Items From Recent Search",
+        manual_parameters=[],
+    )
+    def delete(self, request, *args, **kwargs):
+        recent_search = RecentSearch.objects.filter(user=request.user)
+        recent_search.delete()
+        return Response({"message":"Recent Search Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+
+###-----------------------User Tag Management-------------------------###
+
+class AddTagAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Tag Management'],
+        operation_id="Add Tag",
+        operation_description="Add Tag",
+        manual_parameters=[
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING,description="title"),
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "title", "method": "post", "error_message": "Please enter title"},
+        ])
+        tags,created = Tag.objects.get_or_create(title = request.data.get('title').strip())
+        if created:
+            return Response({"message":"Tag already exist !","status": status.HTTP_400_BAD_REQUEST}, status = status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"Tag created Successfully !","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+###---------------WearLog management----------------------######
+
+class WearLogAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=["Wear Calendar"],
+        operation_id="Item wear log",
+        operation_description="Item wear log",
+        manual_parameters=[
+            openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="Item Id"),
+            openapi.Parameter('date', openapi.IN_FORM, type=openapi.TYPE_STRING,description="YYYY-MM-DD"),
+            openapi.Parameter('notes', openapi.IN_FORM, type=openapi.TYPE_STRING,description="Notes"),
+        ],
+    )
+    def post(self, request):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "item_id", "method": "post", "error_message": "Please enter Item Id"},
+        ])
+        item = get_or_none(ClothingItem,"Item not found",id=request.data.get("item_id"),wardrobe__user=request.user)
+        try:
+            worn_date = datetime.strptime(request.data.get("date"), "%Y-%m-%d").date()
+        except:
+            return Response({"message": "Invalid date format (YYYY-MM-DD)", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+        wear_entry, created = WearHistory.objects.get_or_create(
+            user=request.user,
+            item=item,
+            worn_on=worn_date,
+            defaults={"notes": request.data.get("notes")}
+        )
+        if not created:
+            return Response({"message": "Already marked as worn on this date", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        item.wear_count += 1 
+        item.save()
+        return Response({"message": "Wear entry added successfully !","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+class WearCalendarAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser, FormParser]
+
+    @swagger_auto_schema(
+        tags=["Wear Calendar"],
+        operation_id="Get Item wear logs",
+        operation_description="Get Item wear logs",
+        manual_parameters=[
+            openapi.Parameter('wear_log',openapi.IN_QUERY,type=openapi.TYPE_STRING,description="date or month or year (date='YYYY-MM-DD', month='YYYY-MM', year='YYYY')",),
+            openapi.Parameter('date', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='YYYY-MM-DD'),
+            openapi.Parameter('year', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='YYYY'),
+            openapi.Parameter('month', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='YYYY-MM'),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        
+        entries = WearHistory.objects.filter(user=request.user)
+        wear_log = request.query_params.get("wear_log")
+        if wear_log:
+            if wear_log == "year":
+                year = request.query_params.get("year")
+                try:
+                    year = int(year)
+                    start = date(year, 1, 1)
+                    end = date(year + 1, 1, 1)
+                except:
+                    return Response({"message": "Invalid year format", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+                entries = WearHistory.objects.filter(user=request.user,worn_on__gte=start,worn_on__lt=end)
+                
+            elif wear_log == "month":
+                month = request.query_params.get("month")
+                try:
+                    year, month_num = map(int, month.split("-"))
+                    start = date(year, month_num, 1)
+                    end_month = month_num + 1 if month_num < 12 else 1
+                    end_year = year if month_num < 12 else year + 1
+                    end = date(end_year, end_month, 1)
+                except:
+                    return Response({"message": "Invalid month format", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+                entries = WearHistory.objects.filter(user=request.user,worn_on__gte=start,worn_on__lt=end)
+                
+            elif wear_log == "date":
+                wear_date = request.query_params.get("date")
+                try:
+                    target_date = datetime.strptime(wear_date, "%Y-%m-%d").date()
+                except:
+                    return Response({"message": "Invalid date format", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+                entries = WearHistory.objects.filter(user=request.user,worn_on=target_date)
+            else:
+                return Response({"message": "Invalid wear_log. Use date/month/year", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+        start, end, meta_data = get_pages_data(request.query_params.get('page', None), entries)
+        data = WearHistorySerializer(entries, many=True, context={"request": request}).data
+        return Response({"data": data,  "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+
+class GetWearLogsByItemAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Wear Calendar"],
+        operation_id="Get item wear log history",
+        operation_description="Get item wear log history",
+        manual_parameters=[
+            openapi.Parameter('item_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Item id"),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        item_id = get_or_none(ClothingItem,'Item does not exist !', id = request.query_params.get('item_id'))
+        wear_logs = WearHistory.objects.filter(item = item_id,user  = request.user).order_by('created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), wear_logs)
+        data = WearHistorySerializer(wear_logs[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+
+# class MostWearClothAnalyticsAPI(APIView):
+#     permission_classes = (permissions.IsAuthenticated,)
+#     parser_classes = [MultiPartParser]
+
+#     @swagger_auto_schema(
+#         tags=["Wear Calendar"],
+#         operation_id="Most Wear Items",
+#         operation_description="Most Wear Items",
+#         manual_parameters=[
+#             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+#         ],
+#     )
+#     def get(self, request, *args, **kwargs):
+
+#         wardrobe = get_or_none(Wardrobe, 'Wardrobe does not exist !', user=request.user)
+#         items = ClothingItem.objects.filter(wardrobe=wardrobe)
+#         total_items = items.count()
+#         favourite_items = request.user.favourite_item.all()
+        
+#         wear_data = (WearHistory.objects.filter(item__in=items).values('item').annotate(wear_count=Count('id')).order_by('-wear_count'))
+#         most_wear_items = []
+#         least_wear_items = []
+
+#         if wear_data:
+#             max_count = wear_data[0]['wear_count']
+#             min_count = wear_data.last()['wear_count']
+#             most_wear_items = items.filter(id__in=[w['item'] for w in wear_data if w['wear_count'] == max_count])
+#             least_wear_items = items.filter(id__in=[w['item'] for w in wear_data if w['wear_count'] == min_count])
+#         return Response({"max_count":max_count,"min_count":min_count,"total_items": total_items,"favourite_items": favourite_items.count(),"most_worn_items": ClothItemSerializer(most_wear_items, many=True).data,"least_worn_items": ClothItemSerializer(least_wear_items, many=True).data,})
+
+class MostWearClothAnalyticsAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Wardrobe Analytics"],
+        operation_id="Item Usage Frequency",
+        operation_description="Analyze usage frequency of wardrobe items.",
+       
+    )
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        items = ClothingItem.objects.filter(wardrobe__user=user)
+
+        # If no items
+        if not items.exists():
+            return Response({"message": "No wardrobe items found.","most_worn": [],"least_worn": [],"recommendations": []})
+
+        most_worn = items.order_by('-wear_count')[:5]
+        least_worn = items.order_by('wear_count')[:5]
+
+        under_used = items.filter(wear_count__lte=2)
+        recommendations = []
+
+        if under_used.exists():
+            recommendations.append("Consider wearing your less-used items more often to balance wardrobe usage.")
+
+        over_used_items = items.filter(wear_count__gte=10)
+        if over_used_items.exists():
+            recommendations.append("Some items are heavily used. Consider refreshing or replacing them.")
+
+        if not recommendations:
+            recommendations.append("Your wardrobe usage is well-balanced.")
+
+        response = {"stats": {"total_items": items.count(),"never_used": items.filter(wear_count=0).count(),"active_items": items.filter(wear_count__gte=1).count(),"most_used_item": most_worn[0].title if most_worn else None,},
+            "most_worn": ItemUsageFrequencySerializer(most_worn, many=True).data,
+            "least_worn": ItemUsageFrequencySerializer(least_worn, many=True).data,
+            "under_used_items": ItemUsageFrequencySerializer(under_used, many=True).data,
+            "recommendations": recommendations,
+        }
+
+        return Response(response, status=200)

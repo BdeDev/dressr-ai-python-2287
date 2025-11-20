@@ -49,6 +49,11 @@ urlpatterns = [
     re_path(r'^marked-favourite-item-api/$', MarkItemFavouriteAPI.as_view(), name='mark_favourite_item_api'),
     re_path(r'^get-cloth-item-by-category-api/$', GetItemByCategoryAPI.as_view(), name='get_cloth_item_by_category_api'),
     re_path(r'^add-multiple-item-api/$', AddMultipleItemInWardrobeAPI.as_view(), name='add_multiple_item_api'),
+    re_path(r'^item-search-api/$', ItemSeachFilterAPI.as_view(), name='item_search_api'),
+    re_path(r'^recent-search-api/$', RecentSearchAPI.as_view(), name='recent_search_api'),
+
+    re_path(r'^remove-item-from-recent-search-api/$', RemoveItemFromRecentSearchAPI.as_view(), name='remove_item_fron_recent_search_api'),
+    re_path(r'^remove-all-recent-search-api/$', RemoveAllItemFromRecentSearchAPI.as_view(), name='remove_all_recent_search_api'),
 
     ###--------------------------------Wardrobe essentials--------------------------####
     re_path(r'^accessories-api/$', GetAccessoriesAPI.as_view(), name='accessories_api'),
@@ -87,7 +92,16 @@ urlpatterns = [
     re_path(r'^wardrobe-list/$', WardrobeList.as_view(), name='wardrobe_list'),
     re_path(r'^view-wardrobe/(?P<id>[-\w]+)/$', WardrobeView.as_view(), name='view_wardrobe'),
     re_path(r'^view-item-details/(?P<id>[-\w]+)/$', ViewItemDetails.as_view(), name='view_item_detais'),
+    
+
+    ##-----------------------------------Item Wear Logs----------------------------########
+    re_path(r'^wear-log-api/$', WearLogAPI.as_view(), name='wear_log_api'),
+    re_path(r'^wear-calendar-api/$', WearCalendarAPI.as_view(), name='wear_calendar_api'),
+    re_path(r'^get-wear-log-history-api/$', GetWearLogsByItemAPI.as_view(), name='get_wear_log_history_api'),
+    re_path(r'^wardrobe-analytics-api/$', MostWearClothAnalyticsAPI.as_view(), name='wardrobe_analytics_api'),
+
 
     re_path(r'^view-item-wear-calender/(?P<id>[-\w]+)/$', ViewItemWearCalender.as_view(), name='view_item_wear_calender'),
+    re_path(r'^calendar-data-ajax/$', CalenderDataAjax.as_view(), name='calender_data_ajax'),
 
 ]

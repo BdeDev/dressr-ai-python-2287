@@ -76,3 +76,33 @@ class ActivityFlagSerializer(ModelSerializer):
     class Meta:
         model = ActivityFlag
         fields = ('__all__')
+
+class WearHistorySerializer(ModelSerializer):
+    item = SerializerMethodField(read_only=True)
+    class Meta:
+        model = WearHistory
+        fields = ('__all__')
+
+
+    def get_item(self, obj):
+
+        return {
+                "id": obj.item.id,
+                "title": obj.item.title,
+                "image": self.context.get('request').build_absolute_uri(obj.item.image.url) if USE_HTTPS else self.context.get('request').build_absolute_uri(obj.item.image.url),
+                "category_title": obj.item.cloth_category.title,
+                "brand":obj.item.brand
+            }
+           
+        
+
+class RecentSearchSerializer(ModelSerializer):
+    class Meta:
+        model = RecentSearch
+        fields = ('__all__')
+
+
+class ItemUsageFrequencySerializer(ModelSerializer):
+    class Meta:
+        model = ClothingItem
+        fields = ['id', 'title', 'image', 'wear_count']
