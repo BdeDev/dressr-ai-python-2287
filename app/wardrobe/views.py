@@ -200,10 +200,36 @@ class WardrobeView(View):
     def get(self,request,*args,**kwargs):
         wardrobe = Wardrobe.objects.get(id=self.kwargs['id'])
         cloth_items = ClothingItem.objects.filter(wardrobe = wardrobe).order_by('-created_on')
+        most_worn = cloth_items.order_by('-wear_count').first()
+        least_worn = cloth_items.order_by('wear_count','created_on').first()
+        under_used = cloth_items.filter(wear_count__lte=2)
+        recommendations = ""
+        if under_used.exists():
+            recommendations = "Consider wearing your less-used items more often to balance wardrobe usage."
+
+        over_used_items = cloth_items.filter(wear_count__gte=10)
+        if over_used_items.exists():
+            recommendations = "Some items are heavily used. Consider refreshing or replacing them."
+
+        if not recommendations:
+            recommendations = "Your wardrobe usage is well-balanced."
+
+        total_items = ClothingItem.objects.filter(wardrobe=wardrobe).count()
+        worn_item_ids = (WearHistory.objects.filter(item__wardrobe=wardrobe).values_list('item', flat=True).distinct())
+        used_items_count = worn_item_ids.count()
+        utilization = (used_items_count / total_items * 100) if total_items else 0
+
+        favourite_items = wardrobe.user.favourite_item.all().count()
         return render(request,'wardrobe/wardrobs/view-wardrobe.html',{
             "head_title":'Wardrobe Management',
             "wardrobe":wardrobe,
-            "cloth_items":cloth_items
+            "cloth_items":cloth_items,
+            "most_worn":most_worn,
+            "least_worn":least_worn,
+            "recommendations":recommendations,
+            "total_items":cloth_items.count(),
+            "favourite_items":favourite_items,
+            "utilization":utilization
         })
 
 class ViewItemDetails(View):

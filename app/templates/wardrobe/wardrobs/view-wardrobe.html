@@ -21,6 +21,7 @@
             <div class="col-md-12 col-lg-12 col-sm-12">
                 <div class="card my-4">
                     <div class="card-body">
+                        <p>** {{recommendations|safe}} </p>
                         <div class="row">
                         <div class=" col-md-6  productdetails">
                             <ul class="product-bar mb-2">
@@ -50,10 +51,6 @@
                                         </div>
                                     </h6>
                                 </li>
-                            </ul>
-                        </div>
-                        <div class=" col-md-6  productdetails">
-                            <ul class="product-bar mb-2">
                                 <li>
                                     <h4>Is Shared</h4>
                                     <h6>
@@ -75,12 +72,76 @@
                                 </li>
                             </ul>
                         </div>
+                        <div class=" col-md-6  productdetails">
+                            <ul class="product-bar mb-2">
+                                <li>
+                                    <h4>Total Items</h4>
+                                    <h6>
+                                        {{total_items}}
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Favourite Items Count</h4>
+                                    <h6>
+                                      {{favourite_items}}
+                                    </h6>
+                                </li>
+                                
+                                <li>
+                                    <h4> Most Wear </h4>
+                                    <h6>
+                                        {% if most_worn.wear_count > 0 %}
+                                        <div class="d-flex align-items-center display-images">
+                                            {% if most_worn.image %}
+                                                <a href="{{most_worn.image.url}}" data-fancybox>
+                                                    <img src="{{most_worn.image.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% else %}
+                                                <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                    class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% endif %}
+                                            <span>{{most_worn.title|capfirst}} {% if most_worn %}( {{most_worn.wear_count}} wears) {% endif %}</a></span>
+                                        </div>
+                                        {% else %}-{% endif %}
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4> Least Wear </h4>
+                                    <h6>
+                                        {% if least_worn %}
+                                        <div class="d-flex align-items-center display-images">
+                                            {% if least_worn.image %}
+                                                <a href="{{least_worn.image.url}}" data-fancybox>
+                                                    <img src="{{least_worn.image.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% else %}
+                                                <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                    class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            
+                                            {% endif %}
+                                            <span>{{least_worn.title|capfirst}} {% if least_worn %}  ( {{least_worn.wear_count|capfirst}} wears){% endif %} </a></span>
+                                        </div>
+                                        {% else %}- {% endif %}
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Utilization</h4>
+                                    <h6>
+                                        {{utilization}} %
+                                    </h6>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="row gap-3">
                 <div class="card-body" id="card_body_div">
-                      <div class="swiper mySwiper">
+                    <div class="swiper mySwiper">
                         <div class="swiper-wrapper">
                             {% for item in cloth_items %}
                                 {% is_favourite item.wardrobe.user item as item_is_favourite %}
@@ -91,7 +152,6 @@
                                             <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
                                         </a>
 
-                                        <!-- ❤️ Heart Icon -->
                                         <span class="heart-icon" onclick="toggleFavorite('{{ item.id }}')">
                                             {% if item_is_favourite %}
                                                 <i class="fa fa-heart text-danger"></i>
@@ -101,13 +161,16 @@
                                         </span>
 
                                         <a title="View" data-bs-toggle="modal"
-                                            onclick="GetValue('{{item.id}}','{{item.title}}','{{item.cloth_category.title}}','{{item.weather_type}}','{{item.color}}','{{item.brand}}','{{item.occasion.title}}','{{item.image.url}}','{{item.created_on|date:"Y-m-d"}}T{{item.created_on|date:"H:i"}}')"
+                                            onclick="GetValue('{{item.id}}','{{item.title}}','{{item.cloth_category.title}}','{{item.wear_count}}','{{item.weather_type}}','{{item.color}}','{{item.brand}}','{{item.occasion.title}}','{{item.image.url}}','{{item.created_on|date:"Y-m-d"}}T{{item.created_on|date:"H:i"}}')"
                                             data-bs-target="#view-details">
                                         {% endif %}
 
                                         <div class="card-body">
-                                            <h5 class="card-title">{{item.title|default:"-"}}</h5>
-                                            <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
+                                            <div class="d-flex justify-content-between">
+                                            <h5 class="card-title">{{item.title|default:"-"}} </h5>
+                                            <small>( Wears Times: {{item.wear_count}} )</small>
+                                            </div>
+                                            <p class="card-text">{{item.cloth_category.title|default:"-"}}  </p>
                                         </div>
                                         </a>
                                     </div>
@@ -147,6 +210,10 @@
                                                 <li>
                                                     <h4> Category </h4>
                                                     <h6><span id="item_category"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Wear Count </h4>
+                                                    <h6><span id="item_wear_count"></span></h6>
                                                 </li>
                                                 <li>
                                                     <h4> Weather Type </h4>
@@ -196,9 +263,10 @@
 {% include "admin-includes/footer.html" %}
 
 <script>
-	function GetValue(id, title,cloth_category,weather_type,color,brand,occasion,image,created_on){
+	function GetValue(id, title,cloth_category,wear_count,weather_type,color,brand,occasion,image,created_on){
     $('#item_id').text(id);
     $('#item_title').text(title);
+    $('#item_wear_count').text(wear_count);
     $('#item_category').text(cloth_category);
    // $('#weather_type').text(weather_type);
     $('#item_color').text(color);
@@ -224,37 +292,33 @@
 </script>
 
 <style>
-.heart-icon {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #ffffff;
-    border-radius: 50%;     /* perfect circle */
-    padding: 6px 8px;
-    cursor: pointer;
-    z-index: 10;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    .heart-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #ffffff;
+        border-radius: 50%;
+        padding: 6px 8px;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.heart-icon i {
-    font-size: 18px;
-    transition: 0.2s ease;
-}
+    .heart-icon i {
+        font-size: 18px;
+        transition: 0.2s ease;
+    }
 
-/* When not favourite – outline heart */
-.heart-icon .not-favourite {
-    color: #ddcbcb !important;  /* neutral dark gray */
-}
+    .heart-icon .not-favourite {
+        color: #ddcbcb !important;
+    }
 
-/* When favourite – filled heart */
-.heart-icon .fa-heart {
-    color: #d11a2a; /* red */
-}
-
-
+    .heart-icon .fa-heart {
+        color: #d11a2a;
+    }
 </style>
 <script>
     var swiper = new Swiper(".mySwiper", {

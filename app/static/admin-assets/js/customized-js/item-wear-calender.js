@@ -1,101 +1,218 @@
+/* ==============================================
+   GET SCRIPT TAG ATTRIBUTES
+============================================== */
 var scriptTag = document.currentScript;
 var calender_initial_date = scriptTag.dataset.calender_initial_date;
 var user_id = scriptTag.dataset.user_id;
 var calender_url = scriptTag.dataset.calender_url;
 
-Date.prototype.addDays = function(days) {
+/* ==============================================
+   DATE FUNCTION
+============================================== */
+Date.prototype.addDays = function (days) {
     var date = new Date(this.valueOf());
     date.setDate(date.getDate() + days);
     return date;
-}
+};
 
-var calendarEl = document.getElementById('calendar');
+/* ==============================================
+   FULLCALENDAR INITIALIZATION
+============================================== */
+var calendarEl = document.getElementById("calendar");
 var calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
+    initialView: "dayGridMonth",
     editable: false,
     droppable: false,
     selectable: true,
     navLinks: false,
     events: [],
-    eventOrder:'start',
+    eventOrder: "start",
     initialDate: calender_initial_date,
-    dayMaxEventRows: true, // for all non-TimeGrid views
+    dayMaxEventRows: true,
+
     views: {
         timeGrid: {
-            dayMaxEventRows: 6 // adjust to 6 only for timeGridWeek/timeGridDay
-        }
+            dayMaxEventRows: 6,
+        },
     },
+
     headerToolbar: {
-        right: 'prev,next today',
-        center: 'title',   // <-- Month/Year will appear here
-        left: ''
+        right: "prev,next today",
+        center: "title",
+        left: "",
     },
-    select:function( selectionInfo ){
-        let selected_date = selectionInfo.start
-        console.log(selected_date,'selected date')
 
-        
+    /* =============================
+       DATE SELECT
+    ============================== */
+    select: function (selectionInfo) {
+        let selected_date = selectionInfo.start;
+        console.log(selected_date, "selected date");
     },
-    eventContent: function(arg) {
-        // to convert title into html
+
+    /* =============================
+       FORMAT EVENT CONTENT
+    ============================== */
+    eventContent: function (arg) {
         return {
-        html:  arg.event.title
-        }
+            html: arg.event.title,
+        };
     },
-    datesSet:function( dateInfo ){
-        let current_date = dateInfo.start
-        current_date = current_date.addDays(10)
-        console.log(current_date,'dataset ')
 
-        // on month change load specific month followup and consultant data 
-        
+    /* =============================
+       LOAD DATA WHEN MONTH CHANGES
+    ============================== */
+    datesSet: function (dateInfo) {
+        let current_date = dateInfo.start;
+        current_date = current_date.addDays(10);
+
         $.ajax({
             url: calender_url,
             type: "GET",
-            data: { user_id:user_id,month:current_date.getMonth()+1,year:current_date.getFullYear()},
-            async:false,
+            data: {
+                user_id: user_id,
+                month: current_date.getMonth() + 1,
+                year: current_date.getFullYear(),
+            },
+            async: false,
             success: function (data) {
-                // clear all events
                 calendar.removeAllEvents();
-                // adding followup data 
-                items_data = data.items_data
-                if(items_data.length > 0){
-                    for(let i=0; i < items_data.length ; i++){
-                        let start_date =  items_data[i].worn_on
-                        start_date_time = moment.utc(start_date).local().format("YYYY-MM-DD");
 
-                        calendar.addEvent({
-                            "id": items_data[i].id,
-                            //"title":`Items : ${items_data[i].item__image}` ,
-                            "start": start_date_time,
-                            "end": start_date_time,
-                            "image": window.location.origin + "/media/"+items_data[i].item__image,
-                            "local_date_time": moment.utc(start_date).local().format("D MMMM YYYY, LT"),
-                        });
+                let items_data = data.items_data;
+                let mergedEvents = {};
 
+                // GROUP ITEMS BY DATE
+                items_data.forEach(function (item) {
+                    let date = moment.utc(item.worn_on).local().format("YYYY-MM-DD");
+
+                    if (!mergedEvents[date]) {
+                        mergedEvents[date] = [];
                     }
-                }
+
+                    mergedEvents[date].push({
+                        id: item.id,
+                        image: window.location.origin + "/media/" + item.item__image,
+                    });
+                });
+
+                // ADD EVENTS TO CALENDAR
+                Object.keys(mergedEvents).forEach(function (date) {
+                    calendar.addEvent({
+                        id: mergedEvents[date][0].id,
+                        start: date,
+                        extendedProps: {
+                            images: mergedEvents[date],
+                        },
+                    });
+                });
             },
         });
     },
-    eventDidMount: function(info) {
-    if (info.event.extendedProps.image) {
-        let imageUrl = info.event.extendedProps.image;
 
-        // Remove default event text
+    /* =============================
+       SHOW IMAGE + "+ MORE" IN CELL
+    ============================== */
+    eventDidMount: function (info) {
+        let images = info.event.extendedProps.images;
+
+        if (!images || images.length === 0) return;
+
         info.el.innerHTML = "";
 
+        let wrapper = document.createElement("div");
+        wrapper.style.display = "flex";
+        wrapper.style.flexDirection = "column";
+        wrapper.style.alignItems = "center";
+
+        // First image preview
         let img = document.createElement("img");
-        img.src = imageUrl;
-        img.style.width = "150px";
-        img.style.height = "120px";
+        img.src = images[0].image;
+        img.style.width = "140px";
+        img.style.height = "110px";
         img.style.objectFit = "cover";
         img.style.borderRadius = "6px";
+        wrapper.appendChild(img);
 
-        info.el.appendChild(img);
-    }
-}
+        // + More Text
+        if (images.length > 1) {
+            let moreText = document.createElement("div");
+            moreText.innerText = `+${images.length - 1} more`;
+            moreText.style.marginTop = "4px";
+            moreText.style.fontSize = "13px";
+            moreText.style.fontWeight = "600";
+            moreText.style.color = "#333";
+            moreText.style.cursor = "pointer";
 
+            // Attach click handler
+            moreText.classList.add("open-gallery");
+            moreText.dataset.images = JSON.stringify(images);
+
+            wrapper.appendChild(moreText);
+        }
+
+        info.el.appendChild(wrapper);
+    },
 });
+
 calendar.render();
 
+/* ============================================================
+   IMAGE GALLERY MODAL + SWIPER  (FULL WORKING)
+============================================================ */
+
+document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("open-gallery")) {
+        const images = JSON.parse(e.target.dataset.images);
+        openImageGallery(images);
+    }
+});
+
+/* --------------------------------------------------
+   OPEN GALLERY
+-------------------------------------------------- */
+function openImageGallery(images) {
+    const wrapper = document.getElementById("gallerySwiperWrapper");
+    wrapper.innerHTML = "";
+
+    images.forEach((img) => {
+        wrapper.innerHTML += `
+            <div class="swiper-slide">
+                <img src="${img.image}" class="img-fluid w-100" style="height:350px;object-fit:cover;">
+            </div>
+        `;
+    });
+
+    // Show modal
+    const modal = new bootstrap.Modal(
+        document.getElementById("imageGalleryModal")
+    );
+    modal.show();
+
+    setTimeout(() => initGallerySwiper(), 150);
+}
+
+/* --------------------------------------------------
+   INIT SWIPER (DESTROY IF ALREADY EXISTS)
+-------------------------------------------------- */
+let gallerySwiper = null;
+
+function initGallerySwiper() {
+    if (gallerySwiper) {
+        gallerySwiper.destroy(true, true);
+    }
+
+    gallerySwiper = new Swiper(".mySwiper", {
+        slidesPerView: 1,
+        centeredSlides: true,
+        spaceBetween: 10,
+        loop: true,
+        navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+        },
+        pagination: {
+            el: ".swiper-pagination",
+            clickable: true,
+        },
+    });
+}

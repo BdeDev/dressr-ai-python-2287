@@ -11,69 +11,115 @@ class UserGraph(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
 
-        data = {
-            "data": [],
-            'customers_count': [],
-            'active_customers_count': [],
-            'inactive_customers_count': [],
-            'deleted_customers_count': [],
-            'month_name': []
-        }
+        selected_year = int(request.GET.get("year") or datetime.now().year)
+        selected_month = request.GET.get("month")
 
-        selected_year = int(request.GET.get('year') or datetime.now().year)
-        selected_month = request.GET.get('month')
+        # Base Query
         base_qs = User.objects.filter(role_id=CUSTOMER, created_on__year=selected_year)
 
-        def get_counts(qs, annotate_field):
-            counts = {}
-            statuses = {
-                'customers_count': qs,
-                'active_customers_count': qs.filter(status=ACTIVE),
-                'inactive_customers_count': qs.filter(status=INACTIVE),
-                'deleted_customers_count': qs.filter(status=DELETED),
-            }
-            extract_func = ExtractDay if annotate_field == 'day' else ExtractMonth
+        # Graph structure
+        data = {
+            "data": [],
+            "customers_count": [],
+            "active_customers_count": [],
+            "inactive_customers_count": [],
+            "deleted_customers_count": [],
+            "month_name": ""
+        }
 
-            for key, qs_ in statuses.items():
-                annotated = qs_.annotate(**{annotate_field: extract_func('created_on')})
-                vals = annotated.values(annotate_field).annotate(count=Count('id')).order_by(annotate_field)
-                counts[key] = {item[annotate_field]: item['count'] for item in vals}
+        def get_counts(qs, extract_type):
+            extract = ExtractDay if extract_type == "day" else ExtractMonth
+
+            statuses = {
+                "customers_count": qs,
+                "active_customers_count": qs.filter(status=ACTIVE),
+                "inactive_customers_count": qs.filter(status=INACTIVE),
+                "deleted_customers_count": qs.filter(status=DELETED),
+            }
+
+            counts = {}
+
+            for key, s_qs in statuses.items():
+                rows = (
+                    s_qs.annotate(val=extract("created_on"))
+                    .values("val")
+                    .annotate(count=Count("id"))
+                    .order_by("val")
+                )
+                counts[key] = {row["val"]: row["count"] for row in rows}
+
             return counts
 
         if selected_month:
             selected_month = int(selected_month)
-            days = range(1, calendar.monthrange(selected_year, selected_month)[1] + 1)
-            data['data'] = list(days)
+
+            total_days = calendar.monthrange(selected_year, selected_month)[1]
+            days = range(1, total_days + 1)
+
+            data["data"] = list(days)
+            data["month_name"] = calendar.month_name[selected_month]
+
             qs = base_qs.filter(created_on__month=selected_month)
-            counts = get_counts(qs, 'day')
-            for key in ['customers_count', 'active_customers_count', 'inactive_customers_count', 'deleted_customers_count']:
-                data[key] = [counts[key].get(day, 0) for day in days]
-            data['month_name'] = calendar.month_name[selected_month]
+
+            counts = get_counts(qs, "day")
+
+            for key in data.keys():
+                if isinstance(data[key], list):
+                    data[key] = [counts[key].get(day, 0) for day in days]
+
         else:
             months = range(1, 13)
-            data['data'] = [calendar.month_abbr[m] for m in months]
-            counts = get_counts(base_qs, 'month')
-            for key in ['customers_count', 'active_customers_count', 'inactive_customers_count', 'deleted_customers_count']:
+            data["data"] = [calendar.month_abbr[m] for m in months]
+
+            counts = get_counts(base_qs, "month")
+
+            for key in ["customers_count", "active_customers_count", "inactive_customers_count", "deleted_customers_count"]:
                 data[key] = [counts[key].get(month, 0) for month in months]
 
-        max_count = max(data['customers_count'] or [0])
-        y_max = 5 if max_count <= 5 else max_count + 10
+        # Chart Y-Axis max
+        max_count = max(data["customers_count"] or [0])
+        y_max = max(max_count + 10, 5)
+
+        total_customers = User.objects.filter(role_id=CUSTOMER).count()
+
+        free_subscribers = UserPlanPurchased.objects.filter(
+            status=USER_PLAN_ACTIVE,
+            subscription_plan__is_free_plan=True
+        ).values_list("purchased_by", flat=True).distinct().count()
+
+        premium_subscribers = UserPlanPurchased.objects.filter(
+            status=USER_PLAN_ACTIVE,
+            subscription_plan__is_free_plan=False
+        ).values_list("purchased_by", flat=True).distinct().count()
+
+        total_subscribers = free_subscribers + premium_subscribers
+
+        pie_chart = {
+            "chart": {"type": "pie"},
+            "title": {"text": "Subscribers Overview"},
+            "colors": ["#0d6efd", "#198754", "#ffc107"],
+            "series": [
+                {
+                    "name": "Subscribers",
+                    "data": [
+                        {"name": f"Free Subscribers ({(free_subscribers/total_subscribers*100) if total_subscribers else 0:.1f}%)",
+                         "y": free_subscribers},
+                        {"name": f"Premium Subscribers ({(premium_subscribers/total_subscribers*100) if total_subscribers else 0:.1f}%)",
+                         "y": premium_subscribers},
+                        {"name": f"Total Customers ({(total_customers)})",
+                         "y": total_customers},
+                    ]
+                }
+            ],
+        }
 
         chart = {
             'title': {'text': ''},
-            'xAxis': {
-                'categories': data['data'],
-                'lineWidth': 0,
-            },
+            'xAxis': {'categories': data['data'], 'lineWidth': 0},
             'yAxis': {
-                'min': 0,
-                'max': y_max,
-                'allowDecimals': False,
-                'align': 'left',
-                'x': 10,
-                'lineWidth': 0,
-                'gridLineWidth': 1,
+                'min': 0, 'max': y_max, 'allowDecimals': False,
                 'title': {'enabled': False},
+                'lineWidth': 0, 'gridLineWidth': 1
             },
             'colors': ["#407BFF", "#229b09", "#ffc107", "#e80303"],
             'series': [
@@ -81,10 +127,11 @@ class UserGraph(View):
                 {'type': 'column', 'name': 'Active Customers', 'data': data['active_customers_count']},
                 {'type': 'column', 'name': 'Inactive Customers', 'data': data['inactive_customers_count']},
                 {'type': 'column', 'name': 'Deleted Customers', 'data': data['deleted_customers_count']},
-            ],
-            'accessibility': {'enabled': False},
+            ]
         }
 
-        data['users'] = chart
-        data['selected_year'] = selected_year
-        return JsonResponse(data)
+        return JsonResponse({
+            "users": chart,
+            "pie_chart": pie_chart,
+            "selected_year": selected_year
+        })
