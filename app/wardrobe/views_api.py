@@ -403,8 +403,8 @@ class GetClothCategoriesAPI(APIView):
 
     @swagger_auto_schema(
         tags=["WarDrobe management"],
-        operation_id="Get All Cloth Categories",
-        operation_description="Get All Cloth Categories",
+        operation_id="Cloth Categories",
+        operation_description="Get Cloth Categories",
         manual_parameters=[
             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
         ],
@@ -1270,37 +1270,7 @@ class GetWearLogsByItemAPI(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), wear_logs)
         data = WearHistorySerializer(wear_logs[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-    
 
-# class MostWearClothAnalyticsAPI(APIView):
-#     permission_classes = (permissions.IsAuthenticated,)
-#     parser_classes = [MultiPartParser]
-
-#     @swagger_auto_schema(
-#         tags=["Wear Calendar"],
-#         operation_id="Most Wear Items",
-#         operation_description="Most Wear Items",
-#         manual_parameters=[
-#             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
-#         ],
-#     )
-#     def get(self, request, *args, **kwargs):
-
-#         wardrobe = get_or_none(Wardrobe, 'Wardrobe does not exist !', user=request.user)
-#         items = ClothingItem.objects.filter(wardrobe=wardrobe)
-#         total_items = items.count()
-#         favourite_items = request.user.favourite_item.all()
-        
-#         wear_data = (WearHistory.objects.filter(item__in=items).values('item').annotate(wear_count=Count('id')).order_by('-wear_count'))
-#         most_wear_items = []
-#         least_wear_items = []
-
-#         if wear_data:
-#             max_count = wear_data[0]['wear_count']
-#             min_count = wear_data.last()['wear_count']
-#             most_wear_items = items.filter(id__in=[w['item'] for w in wear_data if w['wear_count'] == max_count])
-#             least_wear_items = items.filter(id__in=[w['item'] for w in wear_data if w['wear_count'] == min_count])
-#         return Response({"max_count":max_count,"min_count":min_count,"total_items": total_items,"favourite_items": favourite_items.count(),"most_worn_items": ClothItemSerializer(most_wear_items, many=True).data,"least_worn_items": ClothItemSerializer(least_wear_items, many=True).data,})
 
 class MostWearClothAnalyticsAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -1310,6 +1280,9 @@ class MostWearClothAnalyticsAPI(APIView):
         tags=["Wardrobe Analytics"],
         operation_id="Item Usage Frequency",
         operation_description="Analyze usage frequency of wardrobe items.",
+        manual_parameters=[
+            openapi.Parameter('category_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Category id"),
+        ],
        
     )
     def get(self, request, *args, **kwargs):
@@ -1321,7 +1294,14 @@ class MostWearClothAnalyticsAPI(APIView):
             return Response({"message": "No wardrobe items found.","most_worn": [],"least_worn": [],"recommendations": []})
 
         most_worn = items.order_by('-wear_count')[:5]
-        least_worn = items.order_by('wear_count')[:5]
+        least_worn = items.order_by('wear_count').first()
+        most_worn_count = items.order_by('-wear_count').first()
+        if request.query_params.get('category_id'):
+            category = ClothCategory.objects.get(id = request.query_params.get('category_id'))
+            if not category:
+                return Response({"message": "Invalid category id","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            items = items.filter(cloth_category = category)
+            most_worn = items.order_by('-wear_count')[:5]
 
         under_used = items.filter(wear_count__lte=2)
         recommendations = []
@@ -1336,11 +1316,29 @@ class MostWearClothAnalyticsAPI(APIView):
         if not recommendations:
             recommendations.append("Your wardrobe usage is well-balanced.")
 
-        response = {"stats": {"total_items": items.count(),"never_used": items.filter(wear_count=0).count(),"active_items": items.filter(wear_count__gte=1).count(),"most_used_item": most_worn[0].title if most_worn else None,},
+        wardrobe = get_or_none(Wardrobe, "Wardrobe does not exist!", user=request.user)
+        # All items in wardrobe
+        total_items = ClothingItem.objects.filter(wardrobe=wardrobe).count()
+
+        # Items worn at least once
+        worn_item_ids = (WearHistory.objects.filter(item__wardrobe=wardrobe).values_list('item', flat=True).distinct())
+
+        used_items_count = worn_item_ids.count()
+
+        # Utilization percentage
+        utilization = (used_items_count / total_items * 100) if total_items else 0
+
+        response = {"stats": {"total_items": ClothingItem.objects.filter(wardrobe__user=user).count(),
+                              "least_worn_count": least_worn.wear_count,
+                              "most_worn_count": most_worn_count.wear_count,
+                              "utilization": utilization,
+                              "most_used_item": most_worn[0].title if most_worn else None,
+                              "favourite_items":request.user.favourite_item.all().count()},
             "most_worn": ItemUsageFrequencySerializer(most_worn, many=True).data,
-            "least_worn": ItemUsageFrequencySerializer(least_worn, many=True).data,
+            "least_worn": ItemUsageFrequencySerializer(least_worn).data,
             "under_used_items": ItemUsageFrequencySerializer(under_used, many=True).data,
             "recommendations": recommendations,
+            
         }
 
         return Response(response, status=200)
