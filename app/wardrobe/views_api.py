@@ -430,6 +430,7 @@ class CreateOutfitAPI(APIView):
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
             openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
             openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='title'),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description='outfit image'),
         ],
     )
     def post(self, request):
@@ -460,6 +461,8 @@ class CreateOutfitAPI(APIView):
             color=request.data.get('color')
         )
         outfit.items.set(items)
+        outfit.image = request.FILES.get('image')
+        outfit.save()
         return Response({"message": "Outfit created successfully!","outfit_id": outfit.id,"total_items": items.count(),"status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
 
 class MyOutFitListAPI(APIView):
@@ -536,6 +539,7 @@ class EditOutfitAPI(APIView):
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
             openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
             openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Outfit'),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Outfit Image'),
         ],
     )
     def post(self, request, *args, **kwargs):
@@ -577,6 +581,7 @@ class EditOutfitAPI(APIView):
             outfit.weather_type = int(request.data.get('weather_type'))
         if items:
             outfit.items.set(items)
+            outfit.image = request.FILES.get('image')
         outfit.save()
         data = MyOutFitSerializer(outfit,context = {"request":request}).data
         return Response({"data":data,"message": "Outfit updated successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -616,7 +621,8 @@ class AddItemInOutfitAPI(APIView):
         operation_description="Add item from outfit",
         manual_parameters=[
             openapi.Parameter('outfit_id', openapi.IN_FORM, type=openapi.TYPE_STRING),
-            openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="Item id")
+            openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="Item id"),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE,description='Outfit Image'),
         ],
     )
     def post(self, request, *args, **kwargs):
@@ -628,6 +634,7 @@ class AddItemInOutfitAPI(APIView):
         if outfit.items.filter(id=request.data.get('item_id')).exists():
             return Response({"message": "Item already exists in this outfit.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
         outfit.items.add(request.data.get('item_id').strip())
+        outfit.image = request.FILES.get('image')
         outfit.save()
         return Response({"message":"Outfit addedd Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
@@ -700,7 +707,7 @@ class GetMyAllTripAPI(APIView):
         ],
     )
     def get(self, request, *args, **kwargs):
-        trips = Trips.objects.filter(created_by=request.user).order_by('-created_on')
+        trips = Trips.objects.filter(created_by = request.user).order_by('-created_on')
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), trips)
         data = TripsSerializer(trips[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -739,9 +746,9 @@ class DeleteTripAPI(APIView):
     )
     def delete(self, request, *args, **kwargs):
         response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "trip", "method": "get", "error_message": "Please enter outfit id"},
+            {"field_name": "trip", "method": "get", "error_message": "Please enter trip id"},
         ])
-        trip = get_or_none(Trips, "Invalid outfit id", id=request.query_params.get('outfit_id'))
+        trip = get_or_none(Trips, "Invalid trip id", id=request.query_params.get('trip'))
         trip.delete()
         return Response({"message":"Trip Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
     
@@ -874,7 +881,7 @@ class AddTripAPI(APIView):
             openapi.Parameter('longitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Longitude"),
             openapi.Parameter('start_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
             openapi.Parameter('end_date', openapi.IN_FORM, type=openapi.TYPE_STRING ,description="YYYY-MM-DD"),
-            openapi.Parameter('trip_length', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description="Duration in days"),
+            # openapi.Parameter('trip_length', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description="Duration in days"),
         ],
     )
     def post(self, request, *args, **kwargs):
@@ -892,6 +899,12 @@ class AddTripAPI(APIView):
         else:
             activities = activity_data
 
+        if Trips.objects.filter(title=request.data.get('title').strip(),created_by=request.user).exists():
+            return Response({"message": "Trip already exist for same title !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if Trips.objects.filter(start_date=request.data.get('start_date'),end_date=request.data.get('end_date'),created_by=request.user).exists():
+            return Response({"message": "Trip already exist for same date !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
         trip = Trips.objects.create(
             title=request.data.get('title').strip(),
             description=request.data.get('description').strip(),
@@ -900,9 +913,13 @@ class AddTripAPI(APIView):
             longitude=request.data.get('longitude'),
             start_date=request.data.get('start_date'),
             end_date=request.data.get('end_date'),
-            trip_length=int(request.data.get('trip_length')),
             created_by=request.user
         )
+        start = datetime.strptime(trip.start_date, "%Y-%m-%d")
+        end = datetime.strptime(trip.end_date, "%Y-%m-%d")
+        duration = end - start
+        trip.trip_length = duration.days
+        trip.save()
         
         for activity_value in activities:
             activity_id = activity_value['activity_flag_id']
@@ -1001,7 +1018,6 @@ class GetItemByCategoryAPI(APIView):
         data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
-
 class ItemSeachFilterAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
@@ -1079,7 +1095,7 @@ class ItemSeachFilterAPI(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), items)
         data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-    
+
 
 class RecentSearchAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)

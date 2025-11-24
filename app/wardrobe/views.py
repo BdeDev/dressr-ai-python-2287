@@ -259,6 +259,33 @@ class ActivityFlags(View):
             "total_objects":activity_flags.count()
         })
     
+    @method_decorator(admin_only)
+    def post(self, request,*args,**kwargs):
+        activity_id = request.POST.get('activity_id')
+        if activity_id:
+            activity_flag = get_or_none(ActivityFlag,'Activiy flag does not exist !',id=activity_id)
+            if ActivityFlag.objects.filter(name=request.POST.get('name')).exclude(id=activity_id).exists():
+                messages.error(request, "Activiy flag already exists!")
+                return redirect('wardrobe:activity_flags')
+            if request.POST.get('name'):
+                activity_flag.name = request.POST.get('name').strip()
+            if request.POST.get('description'):
+                activity_flag.description = request.POST.get('description').strip()
+            activity_flag.save()
+            messages.success(request, "Activiy flag updated successfully!")
+        else:
+            if ActivityFlag.objects.filter(name=request.POST.get('name')).exists():
+                messages.error(request, "Activiy flag already exists!")
+                return redirect('wardrobe:activity_flags')
+            if request.FILES.get('description'):
+                ActivityFlag.objects.create(
+                    name = request.POST.get('name').strip(),
+                    description = request.POST.get('description').strip(),
+                    created_by = request.user,
+                )
+                messages.success(request, "Activiy flag added successfully!")
+        return redirect('wardrobe:activity_flags')
+    
 class DeleteActivityFlag(View):
     @method_decorator(admin_only)
     def get(self,request,*args,**kwargs):

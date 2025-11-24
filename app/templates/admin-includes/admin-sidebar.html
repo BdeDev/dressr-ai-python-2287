@@ -218,11 +218,11 @@
                         <a href="javascript:void(0);"><i class="fad fa-shopping-cart"></i><span> E-Commerce</span>
                         <span class="menu-arrow"></span></a>
                         <ul>
-                            <li>
+                            {% comment %} <li>
                                 <a {% if head_title == 'Fashion Tip category Management' %} class="active" {% endif %} href="{% url 'ecommerce:fashion_category_list' %}">
                                     Fashion Tip category
                                 </a>
-                            </li>
+                            </li> {% endcomment %}
                             <li>
                                 <a {% if head_title == 'Fashion Tip Management' %} class="active" {% endif %} href="{% url 'ecommerce:fashion_tip_list' %}">
                                     Fashion Tip

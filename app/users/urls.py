@@ -11,6 +11,7 @@ urlpatterns = [
 
     ## Users
     re_path(r'^view-profile/(?P<id>[-\w]+)/$',ViewUser.as_view(), name='view_user'),
+    re_path(r'^delete-users/(?P<id>[-\w]+)/$',DeleteUsers.as_view(), name='delete_users'),
     re_path(r'^edit-admin/(?P<id>[-\w]+)/$',EditAdmin.as_view(), name='edit_admin'),
     re_path(r'^users-list/$', UsersList.as_view(), name='users_list'),
     re_path(r'^affiliate-list/$', AffiliateList.as_view(), name='affiliate_list'),

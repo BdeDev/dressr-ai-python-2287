@@ -53,7 +53,7 @@ class ViewUser(View):
                 "device":device,
                 "token":Token.objects.filter(user=user).last(),
                 'loginhistory':get_pagination1(request,login_history,1),
-                'wardrobe':Wardrobe.objects.get(user=user),
+                'wardrobe':Wardrobe.objects.filter(user=user).first(),
                 "outfits":get_pagination(request,outfits),
                 "item_count":ClothingItem.objects.filter(wardrobe__user=user).count(),
                 "favourite_items":get_pagination(request,user.favourite_item.all()),
@@ -287,4 +287,11 @@ class EmailNotificationOnOff(View):
             message="Email Notification Activated Successfully!"
         user.save()
         messages.success(request,message=message)
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+class DeleteUsers(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        user  = User.objects.get(id = self.kwargs.get('id'))
+        user.delete()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
