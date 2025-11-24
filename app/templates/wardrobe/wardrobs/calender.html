@@ -33,7 +33,27 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="imageGalleryModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;"> <!-- reduced width -->
+    <div class="modal-content" style="border-radius: 10px; overflow: hidden;">
 
+      <div class="d-flex justify-content-end p-2">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-0" style="max-height: 400px;"> <!-- reduced height -->
+        <div class="swiper mySwiper" style="height: 350px;"> <!-- fix swiper height -->
+          <div class="swiper-wrapper" id="gallerySwiperWrapper"></div>
+
+          <div class="swiper-button-next"></div>
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-pagination"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 {% include "admin-includes/footer.html" %}
 <script src="{% static 'admin-assets/js/calendar/index.global.min.js' %}"></script>
 <script src="{% static 'admin-assets/js/customized-js/item-wear-calender.js' %}" data-calender_url="{% url "wardrobe:calender_data_ajax" %}" data-user_id="{{wardrobe.user.id}}" data-calender_initial_date="{{calender_initial_date}}"></script>

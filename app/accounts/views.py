@@ -49,7 +49,6 @@ class LoginView(View):
         # Authenticate user
         user = authenticate(username=username, password=password)
         if not user:
-            # create_login_history(request, username, None, LOGIN_FAILURE, None)
             messages.error(request, 'Invalid login details.')
             return render(request, 'registration/login.html', {"email": username, "password": password})
 
@@ -57,10 +56,8 @@ class LoginView(View):
         if user.is_superuser and user.role_id == ADMIN:
             login(request, user)
             if remember_me:
-                request.session.set_expiry(1209600)  # 2 weeks
-            # create_login_history(request, username, None, LOGIN_SUCCESS, None)
+                request.session.set_expiry(1209600)
             messages.success(request, "Logged in successfully!")
-
             redirect_url = request.GET.get('next','admin:index') 
             return redirect(redirect_url)
 

@@ -83,14 +83,15 @@ class UserSignupView(APIView):
 
         if not re.fullmatch(r'^\+[1-9]\d{1,14}$', full_number):
             return Response({"message": "Invalid phone number. Must be in international E.164 format (e.g., +14151234567).","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-
+        
+        full_name = request.data.get('first_name')+' '+request.data.get('last_name'),
         username  = request.data.get('username')
         if not username:
-            suggestions = generate_mydressr_username(request.data.get('first_name'))
+            suggestions = generate_mydressr_username(full_name)
             username = suggestions[0]
 
         if User.objects.filter(username=username).exists():
-            suggestions = generate_mydressr_username(request.data.get('first_name'))
+            suggestions = generate_mydressr_username(full_name)
             return Response({"message": "Username already taken.","suggestions": suggestions,"status": 400}, status=400)
 
         user = User.objects.create(
@@ -853,8 +854,7 @@ class UpdateProfileDetails(APIView):
         profile_pic = request.FILES.get('profile_pic')
         user_image = request.FILES.get('image')
         others = data.get('others')
-        hieght_cm = data.get('hieght_cm')
-        
+        hieght_cm = data.get('height')
         # Update name
         if first_name: user.first_name = first_name
         if last_name: user.last_name = last_name
@@ -890,7 +890,7 @@ class UpdateProfileDetails(APIView):
             # Check if username exists
             if User.objects.filter(username=new_username).exclude(id=user.id).exists():
                 # Generate suggestions using the user's first name
-                suggestions = generate_mydressr_username(user.first_name)
+                suggestions = generate_mydressr_username(user.full_name)
                 return Response({"message": "Username already taken.",
                     "suggestions": suggestions,
                     "status": 400

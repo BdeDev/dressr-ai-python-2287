@@ -56,6 +56,7 @@ class ViewUser(View):
                 'wardrobe':Wardrobe.objects.get(user=user),
                 "outfits":get_pagination(request,outfits),
                 "item_count":ClothingItem.objects.filter(wardrobe__user=user).count(),
+                "favourite_items":get_pagination(request,user.favourite_item.all()),
             })
         else:
             logout(request)

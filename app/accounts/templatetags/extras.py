@@ -1,6 +1,8 @@
 from django import template
 from accounts.views import *
 from contact_us.models import *
+from wardrobe.models import Wardrobe
+from subscription.models import *
 import environ
 
 register = template.Library()
@@ -76,6 +78,14 @@ def users_count(key):
 	return count
 
 
+@register.filter(name='wardrobe_count')
+def wardrobe_count(key):
+	if key == 'total_count':
+		user_wardrobe = Wardrobe.objects.all().count()
+		return user_wardrobe
+	return 0
+
+
 @register.filter(name='contact_us_count')
 def contact_us_count(key):
 	contact_us_count = ContactUs.objects.all().count()	
@@ -142,10 +152,17 @@ def convert_to_list(numbers):
 
 @register.simple_tag
 def is_favourite(user, item):
-	
     if user.is_authenticated:
         return user.favourite_item.filter(id=item.id).exists()
     return False
 
-
-
+@register.filter(name='subscribers')
+def subscribers(key):
+    total_users = User.objects.filter(role_id=CUSTOMER,status=ACTIVE).count()
+    active_subscribers = UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE,subscription_plan__is_free_plan = False).values_list("purchased_by", flat=True).distinct().count()
+    free_users = total_users - active_subscribers
+    if key == "active_subscribers":
+        return active_subscribers
+    if key == "free_users":
+        return free_users
+    return 0

@@ -105,4 +105,4 @@ class RecentSearchSerializer(ModelSerializer):
 class ItemUsageFrequencySerializer(ModelSerializer):
     class Meta:
         model = ClothingItem
-        fields = ['id', 'title', 'image', 'wear_count']
+        fields = ('__all__')
