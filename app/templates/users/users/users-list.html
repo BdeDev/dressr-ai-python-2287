@@ -171,6 +171,7 @@
 											<td>
 												<div class="d-flex">
 													<a title="View Details" href="{% url 'users:view_user' user.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+													{% comment %} <a title="Delete" href="{% url 'users:delete_users' user.id %}" class="btn btn-danger shadow btn-xs sharp me-1"><i class="fa fa-trash"></i></a> {% endcomment %}
 												</div>
 											</td>
 										</tr>
