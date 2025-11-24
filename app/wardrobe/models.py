@@ -73,6 +73,7 @@ class Outfit(CommonInfo):
     color = models.CharField(max_length=30,blank=True, null=True)
     notes = models.TextField(blank=True, null=True)  # Style suggestions
     favourite = models.ManyToManyField(User, related_name='favourite_outfit')
+    image = models.FileField(upload_to="wardrobe/outfit_image/",blank=True, null=True)
 
     class Meta:
         db_table = 'outfit'
@@ -103,7 +104,7 @@ class Trips(CommonInfo):
     location = models.TextField(null=True,blank=True)
     latitude=models.FloatField(null=True,blank=True)
     longitude=models.FloatField(null=True,blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_trips")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,related_name="created_trips")
     activity_flag = models.ManyToManyField(ActivityFlag)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)

@@ -66,10 +66,40 @@ class MyOutFitSerializer(ModelSerializer):
             for item in items
         ]
 
+    def get_image(self,obj):
+        return  self.context.get('request').build_absolute_uri(obj.image.url) if USE_HTTPS else self.context.get('request').build_absolute_uri(obj.image.url),
+
+
 class TripsSerializer(ModelSerializer):
+    outfit = SerializerMethodField()
+    activity_flag = SerializerMethodField()
+
     class Meta:
         model = Trips
-        fields = ('__all__')
+        fields = '__all__'
+
+    def get_outfit(self, obj):
+        request = self.context.get("request")
+
+        return [
+            {
+                "id": trip_outfit.id,
+                "title": trip_outfit.title,
+                "image": request.build_absolute_uri(trip_outfit.image.url) if trip_outfit.image else None
+            }
+            for trip_outfit in obj.outfit.all()
+        ]
+
+    def get_activity_flag(self,obj):
+
+        return [
+            {
+                "id": flag.id,
+                "name": flag.name,
+                "description": flag.description,
+            }
+            for flag in obj.activity_flag.all()
+        ]
 
 
 class ActivityFlagSerializer(ModelSerializer):
@@ -85,11 +115,11 @@ class WearHistorySerializer(ModelSerializer):
 
 
     def get_item(self, obj):
-
+        request = self.context.get("request")
         return {
                 "id": obj.item.id,
                 "title": obj.item.title,
-                "image": self.context.get('request').build_absolute_uri(obj.item.image.url) if USE_HTTPS else self.context.get('request').build_absolute_uri(obj.item.image.url),
+                "image": request.build_absolute_uri(obj.item.image.url) if USE_HTTPS else request.build_absolute_uri(obj.item.image.url),
                 "category_title": obj.item.cloth_category.title,
                 "brand":obj.item.brand
             }

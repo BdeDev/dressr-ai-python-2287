@@ -33,7 +33,7 @@
 								<thead>
 									<tr>
                                         <th><strong>Title</strong></th>
-										<th><strong>Category</strong></th>
+										{% comment %} <th><strong>Category</strong></th> {% endcomment %}
 										<th><strong>Season</strong></th>
 										<th><strong>Style</strong></th>
 										<th><strong>Is Published</strong></th>
@@ -44,7 +44,7 @@
 								<thead>
 									<tr class="search-row">
                                         <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
-										<td><input type="text" value="{{search_filters.category.name}}" class="form-control" name="category" maxlength="20"></td>
+										{% comment %} <td><input type="text" value="{{search_filters.category.name}}" class="form-control" name="category" maxlength="20"></td> {% endcomment %}
 										<td>
 											<select class="form-control" name="season" onchange="this.form.submit()">
 												<option  value=""></option>
@@ -80,7 +80,7 @@
 										{% for tip in fashion_tips %}
 										<tr>
                                             <td class='clickable-row' data-href="{% url 'ecommerce:view_fashion_tip' tip.id %}"> {{tip.title|default:"-"}}</td>
-											<td class='clickable-row' data-href="{% url 'ecommerce:view_fashion_tip' tip.id %}"> {{tip.category.name|default:"-"}}</td>
+											{% comment %} <td class='clickable-row' data-href="{% url 'ecommerce:view_fashion_tip' tip.id %}"> {{tip.category.name|default:"-"}}</td> {% endcomment %}
 											<td class='clickable-row' data-href="{% url 'ecommerce:view_fashion_tip' tip.id %}"> 
 											{% if tip.season == 1 %}
 												<span class="badge bg-success">SUMMER</span>

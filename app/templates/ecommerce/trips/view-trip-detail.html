@@ -46,7 +46,7 @@
                                                     class="rounded-lg me-2" width="50" alt="">
                                                 </a>
                                             {% endif %}
-                                            <span><a class="w-100" href="{% url 'users:view_user'  trip.created_by.id %}">{{trip.created_by.full_name|capfirst}}</a></span>
+                                            {% comment %} <span><a class="w-100" href="{% url 'users:view_user'  trip.created_by.id %}">{{trip.created_by.full_name|capfirst}}</a></span> {% endcomment %}
                                         </div>
                                     </h6>
                                 </li>

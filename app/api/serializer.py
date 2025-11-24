@@ -6,7 +6,7 @@ from api.helper import *
 
 class UserSerializer(ModelSerializer):
     token = SerializerMethodField(read_only=True)
-    profile_pic =SerializerMethodField()
+    profile_pic =SerializerMethodField(read_only=True)
     skin_tone = SerializerMethodField()
     hair_color = SerializerMethodField()
     body_type = SerializerMethodField()
