@@ -166,12 +166,12 @@ class ForgotPasswordEmail(View):
             messages.success(request,'Please enter a registered email address.')
             return redirect('accounts:forgot_password_email')
         else:
-            user = User.objects.filter(Q(status=ACTIVE)|Q(status=INACTIVE),email=request.POST.get("email")).last()
-            token, _ = Token.objects.get_or_create(user=user)
+            user = User.objects.get(email=request.POST.get("email"))
+            token, _ = Token.objects.get_or_create(user_id=user.id)
             reset_path = reverse("accounts:reset_password_user", kwargs={"uid": user.id, "token": token})
             reset_link = request.build_absolute_uri(reset_path)
             # Send reset link via email
-            bulk_send_user_email(request,user,'EmailTemplates/reset_password_admin.html','Reset Password',request.POST.get("email"),reset_link,"","","",assign_to_celery=False)
+            bulk_send_user_email(request,user,'EmailTemplates/reset_password_admin.html','Reset Your Password',request.POST.get("email"),reset_link,"","","",assign_to_celery=False)
             messages.success(request,'A link has been sent on your email to reset your password.')
             return redirect('accounts:login')
 
