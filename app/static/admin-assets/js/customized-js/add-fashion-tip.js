@@ -75,6 +75,15 @@ $("#edit-fashion-tip").validate({
         gender: {
             required: true,
         },
+        season: {
+            required: true,
+        },
+        style: {
+            required: true,
+        },
+        gender: {
+            required: true,
+        },
         content: {
             required:true,
         },
@@ -87,6 +96,15 @@ $("#edit-fashion-tip").validate({
             // category: {
             //     required: "Please select category",
             // },
+            season: {
+                required: "Please select season",
+            },
+            style: {
+                required: "Please select style",
+            },
+            gender: {
+                required: "Please select gender",
+            },
             season: {
                 required: "Please select season",
             },
