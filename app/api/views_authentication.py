@@ -26,6 +26,7 @@ class UserSignupView(APIView):
         operation_id="User Signup",
         operation_description="User Signup",
         manual_parameters=[
+            openapi.Parameter('username', openapi.IN_FORM, type=openapi.TYPE_STRING ,description='Set Username'),
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING ,description='First Name'),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING ,description='Last Name'),
             openapi.Parameter('email', openapi.IN_FORM, type=openapi.TYPE_STRING ,description='Email Address'),
@@ -46,18 +47,13 @@ class UserSignupView(APIView):
                 {"field_name": "first_name", "method": "post", "error_message": "Please enter first name"},
                 {"field_name": "last_name", "method": "post", "error_message": "Please enter last name"},
                 {"field_name": "email", "method": "post", "error_message": "Please enter email"},
-                {"field_name": "mobile_no", "method": "post", "error_message": "Please enter mobile number"},
-                {"field_name": "country_code", "method": "post", "error_message": "Please enter country code"},
-                {"field_name": "country_iso_code", "method": "post", "error_message": "Please enter country iso code"},
                 {"field_name": "password", "method": "post", "error_message": "Please enter password"},
                 {"field_name": "confirm_password", "method": "post", "error_message": "Please enter confirm password"},
                 {"field_name": "device_type", "method": "post", "error_message": "Please enter device type"},
                 {"field_name": "device_name", "method": "post", "error_message": "Please enter device name"},
                 {"field_name": "device_token", "method": "post", "error_message": "Please enter device token"},
-               
             ]
         )
-
         match = str(re.search(r'^(?!.*@(jiweb\.com|ozvid\.com|toxsl\.com)$)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',request.data.get('email').strip()))    
         if match == "None":
             return Response({"message":"Sorry, registration with this email domain is currently restricted. Please use a different email address.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
@@ -65,30 +61,81 @@ class UserSignupView(APIView):
         if User.objects.filter(status__in=[ACTIVE,INACTIVE],email=request.data.get('email')).exists():
             return Response({"message":"There is already a registered user with this email.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
         
-        if User.objects.filter(status__in=[ACTIVE,INACTIVE],mobile_no=request.data.get('mobile_no')).exists():
-            return Response({"message":"There is already a registered user with this mobile no.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        if request.data.get('mobile_no'):
+            if User.objects.filter(status__in=[ACTIVE,INACTIVE],mobile_no=request.data.get('mobile_no')).exists():
+                return Response({"message":"There is already a registered user with this mobile no.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
 
         if not request.data.get('password') == request.data.get('confirm_password'):
             return Response({"message":"Password and Confirm password doesn't match!.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('password'):
+            check = re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',request.data.get('password'))
+            if not check:
+                return Response({"message":"Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        
+        country_code = request.data.get('country_code')
+        mobile_no = request.data.get('mobile_no')
+        country_iso_code = request.data.get('country_iso_code')
+        full_number = f"{country_code}{mobile_no}"
+
+        if request.data.get('mobile_no'):
+            if not re.fullmatch(r'^\+[1-9]\d{1,14}$', full_number):
+                return Response({"message": "Invalid phone number. Must be in international E.164 format (e.g., +14151234567).","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        
+        email_first = request.data.get('email').split('@')
+        email_first = email_first[0]
+        username  = request.data.get('username')
+        if not username:
+            suggestions = generate_mydressr_username(email_first)
+            username = suggestions[0]
+
+        if User.objects.filter(username=username).exists():
+            suggestions = generate_mydressr_username(email_first)
+            return Response({"message": "Username already taken.","suggestions": suggestions,"status": 400}, status=400)
 
         user = User.objects.create(
             role_id = CUSTOMER,
+            username=username,
             first_name = request.data.get('first_name'),
             last_name = request.data.get('last_name'),
             full_name = request.data.get('first_name')+' '+request.data.get('last_name'),
             email = request.data.get('email'),
-            mobile_no = request.data.get('mobile_no'),
-            country_code = request.data.get('country_code'),
-            country_iso_code = request.data.get('country_iso_code'),
+            mobile_no=mobile_no,
+            country_code=country_code,
+            country_iso_code=country_iso_code,
             password = make_password(request.data.get('password')),
             status = ACTIVE,
         )
+
+        if not user.is_plan_purchased:
+            try:
+                plan=SubscriptionPlans.objects.filter(is_free_plan=True).first()
+            except:
+                return Response({"message":"Subscription plan not found!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
+            is_valid_purchse = is_first_time_subscription_purchase(user)
+            if not is_valid_purchse['is_valid']:
+                return Response({"message":is_valid_purchse['message'],"status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
+            purchased_plan = UserPlanPurchased.objects.create(
+                plan_id=generate_plan_id(),
+                subscription_plan = plan,
+                purchased_by = user,
+                status = USER_PLAN_IN_QUEUE,
+                amount = plan.price,
+                final_amount = plan.final_price,
+                features = plan.features,
+                month_year = plan.month_year,
+                validity = plan.validity,
+            )
+            activate_subscription(user.id)
+            user.save()
         wardrobe,_ = Wardrobe.objects.get_or_create(user=user)
         try:
             device = Device.objects.get(user = user)
         except Device.DoesNotExist:
             device = Device.objects.create(user = user)
-        device.device_type = request.data.get('device_type',ANDROID)
+        device.device_type = request.data.get('device_type')
         device.device_name = request.data.get('device_name')
         device.device_token = request.data.get('device_token')
         device.save()
@@ -105,122 +152,6 @@ class UserSignupView(APIView):
         )
         bulk_send_user_email(request,user,'EmailTemplates/registration-success.html','Welcome To Dressr',request.POST.get("email"),"","","","",assign_to_celery=False)
         return Response({"message":f"User registered successfully!","data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-
-'''
-Verify Otp
-'''
-class VerifyOTP(APIView):
-    permission_classes = (permissions.AllowAny,)
-    parser_classes = [MultiPartParser,FormParser]
-
-    @swagger_auto_schema(
-        tags=["Authentication API's"],
-        operation_id="Verify OTP",
-        operation_description="Verify OTP",
-        manual_parameters=[
-            openapi.Parameter('email', openapi.IN_FORM, type=openapi.TYPE_STRING),
-            openapi.Parameter('otp', openapi.IN_FORM, type=openapi.TYPE_STRING),
-        ]
-    )
-    def post(self, request, *args, **kwargs):
-        ## validate all required fields 
-        response=CustomRequiredFieldsValidator.validate_api_field(self,request,
-            [
-                {"field_name": "email", "method": "post", "error_message": "Please enter email"},
-                {"field_name": "otp", "method": "post", "error_message": "Please enter otp"},
-               
-            ]
-        )
-        user = get_or_none(User, "User doesn't exist!", status=ACTIVE, email=request.data.get('email'))
-        
-        if user.temp_otp == request.data.get('otp'):
-            user.temp_otp = ''
-            user.is_verified = True
-            user.save()
-            Token.objects.filter(user=user).delete()
-            data = UserSerializer(user,context = {"request":request}).data
-            return Response({"message":"OTP Verified Successfully.","data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-        else:
-            return Response({"message":"Incorrect OTP","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-
-'''
-Resend Verification Link
-'''
-class ResendVerificationLink(APIView):
-    permission_classes = (permissions.AllowAny,)
-    parser_classes = [MultiPartParser,FormParser]
-
-    @swagger_auto_schema(
-        tags=["Authentication API's"],
-        operation_id="Resend Verification Link",
-        operation_description="Resend Verification Link",
-        manual_parameters=[
-            openapi.Parameter('email', openapi.IN_FORM, type=openapi.TYPE_STRING),
-        ]
-    )
-    def post(self, request, *args, **kwargs):
-        ## validate all required fields 
-        response=CustomRequiredFieldsValidator.validate_api_field(self,request,
-            [
-                {"field_name": "email", "method": "post", "error_message": "Please enter email"},
-            ]
-        )
-
-        user = get_or_none(User, "User doesn't exist!", status=ACTIVE, email=request.data.get('email'))
-        if user.is_verified:
-            return Response({"message":"User is already verified!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        token, created = Token.objects.get_or_create(user = user)
-        try:
-            OTP = generate_otp()
-            user.temp_otp =  OTP
-            user.save()
-            bulk_send_user_email(request,user,'EmailTemplates/VerifyOTP.html','Account Verification',request.POST.get("email"),token,"",user.temp_otp,"",assign_to_celery=False)
-            message=f"An verification link has been sent on your email to verify your account."
-        except Exception as e:
-            db_logger.exception(e)
-            message="Something went wrong!"
-        return Response({"message":message,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-
-'''
-Resend Otp
-'''
-class ResendOTP(APIView):
-    permission_classes = (permissions.AllowAny,)
-    parser_classes = [MultiPartParser,FormParser]
-
-    @swagger_auto_schema(
-        tags=["Authentication API's"],
-        operation_id="Resend OTP",
-        operation_description="Resend OTP",
-        manual_parameters=[
-            openapi.Parameter('email', openapi.IN_FORM, type=openapi.TYPE_STRING),
-        ]
-    )
-    def post(self, request, *args, **kwargs):
-        ## validate all required fields 
-        response=CustomRequiredFieldsValidator.validate_api_field(self,request,
-            [
-                {"field_name": "email", "method": "post", "error_message": "Please enter email"},
-            ]
-        )
-
-        temp_otp = ''
-        message = ''
-        user = get_or_none(User, "User doesn't exist!", status=ACTIVE, email=request.data.get('email'))
-        try:
-            OTP = generate_otp()
-            user.temp_otp =  OTP
-            user.save()
-            temp_otp = OTP
-            # send_text_message(f"Enter {OTP} on Dressr AI to verify your account.", to_num )
-            if user.email:
-                bulk_send_user_email(request,user,'EmailTemplates/OTP_Verification.html','Account Verification',request.POST.get("email"),"","",user.temp_otp,"",assign_to_celery=False)
-            message=f"An OTP {user.temp_otp} has been sent on your email to verify your account."
-        except Exception as e:
-            db_logger.exception(e)
-            return Response({"message":"Something went wrong!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response({"message":message,"temp_otp":temp_otp,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
 """
 Check User Email
@@ -256,6 +187,7 @@ class UserLoginView(APIView):
         operation_id="User Login",
         operation_description="User Login",
         manual_parameters=[
+            openapi.Parameter('username', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Username'),
             openapi.Parameter('email', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Email Address'),
             openapi.Parameter('password', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Password'),
             openapi.Parameter('device_type', openapi.IN_FORM, type=openapi.TYPE_NUMBER, description=('1 for Android and 2 for IOS')),
@@ -267,22 +199,22 @@ class UserLoginView(APIView):
         ## Validate Required Fields
         response=CustomRequiredFieldsValidator.validate_api_field(self,request,
             [
-                {"field_name": "email", "method": "post", "error_message": "Please enter email"},
                 {"field_name": "password", "method": "post", "error_message": "Please enter password"},
                 {"field_name": "device_type", "method": "post", "error_message": "Please enter device type"},
                 {"field_name": "device_name", "method": "post", "error_message": "Please enter device name"},
                 {"field_name": "device_token", "method": "post", "error_message": "Please enter token"},
             ]
         )
+        identifier = request.data.get("username", "").strip() or request.data.get("email", "").strip()
+        if not identifier:
+            return Response({"message": "Please provide either username or email.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
         try:
-            user = user_authenticate(email=request.data.get("email").strip(), password=request.data.get("password").strip())
-        except:
-            create_login_history(request, request.data.get('email'), None, LOGIN_FAILURE, None)
-            return Response({"message":"Invalid Login Credentials.", "status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        if not user:
-            create_login_history(request,request.data.get('email'),None,LOGIN_FAILURE,None)
-            return Response({"message":"Invalid Login Credentials.", "status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        
+            user = user_authenticate(identifier, request.data.get("password", "").strip())
+            if not user:
+                return Response({"message": "Invalid login credentials.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        except :
+            return Response({"message": "Invalid login credentials.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
         if user.status == INACTIVE:
             return Response({"message":"Your account has been inactivated. Please contact admin.","status":status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -306,7 +238,6 @@ class UserLoginView(APIView):
             create_login_history(request,request.data.get('email'),None,LOGIN_SUCCESS,None)
         data = UserSerializer(user,context = {"request":request}).data
         return Response({"message":"Logged in successfully","data":data,"status":status.HTTP_200_OK}, status=status.HTTP_200_OK)
-
 
 class SocialLogin(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -470,6 +401,11 @@ class ForgotPassword(APIView):
         ],
     )
     def post(self, request, *args, **kwargs):
+        response=CustomRequiredFieldsValidator.validate_api_field(self,request,
+            [
+                {"field_name": "email", "method": "post", "error_message": "Please enter email"},
+            ]
+        )
         email = request.data.get("email").strip()
         if not email:
             return Response({"error": "Please enter email"}, status=status.HTTP_400_BAD_REQUEST)
@@ -481,10 +417,24 @@ class ForgotPassword(APIView):
         reset_path = reverse("accounts:reset_password_user", kwargs={"uid": user.id, "token": token})
         reset_link = request.build_absolute_uri(reset_path)
         # Send reset link via email
-        bulk_send_user_email(request,user,'EmailTemplates/ResetPassword.html','Reset Password',email,"","","",reset_link,assign_to_celery=False)
+        bulk_send_user_email(
+            request,
+            user,
+            'EmailTemplates/ResetPassword.html',
+            'Reset Your Password',
+            email,
+            reset_link,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            assign_to_celery=False
+        )
+        bulk_send_user_email(request,user,'EmailTemplates/ResetPassword.html','Reset Password',email,reset_link,"","","",assign_to_celery=False)
         message = f"A password reset link has been sent to {email}."
-        return Response({"message": message,"reset_link":reset_link, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
-
+        return Response({"message": message,"status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
 class ForgotPasswordResendLink(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -504,15 +454,18 @@ class ForgotPasswordResendLink(APIView):
                 {"field_name": "email", "method": "post", "error_message": "Please enter email"},
             ]
         )
-        email = request.data.get('email')
-        user = get_or_none(User, "User doesn't exist!",status=ACTIVE,email = email)
+        email = request.data.get("email").strip()
+        if not email:
+            return Response({"error": "Please enter email"}, status=status.HTTP_400_BAD_REQUEST)
+        user = get_or_none(User, "Please enter a registered email address", status=ACTIVE, email=email)
+        if not user:
+            return Response({"error": "Email not found"}, status=status.HTTP_404_NOT_FOUND)
         token,_ = Token.objects.get_or_create(user=user)
-        # Build reset link
-        reset_path = reverse("api:reset_password_api")
-        reset_link = f"{request.build_absolute_uri(reset_path)}?uid={user.id}&token={token}"
-        bulk_send_user_email(request,user,'EmailTemplates/ResetPassword.html','Reset Your Password',email,reset_link,"","","",assign_to_celery=False)
+        reset_path = reverse("accounts:reset_password_user", kwargs={"uid": user.id, "token": token})
+        reset_link = request.build_absolute_uri(reset_path)
+        bulk_send_user_email(request,user,'EmailTemplates/ResetPassword.html','Reset Your Password',email,reset_link,"","","","","","",assign_to_celery=False)
         message = f"A password reset link has been sent to {email}."
-        return Response({"message":message,"temp_otp":user.temp_otp,"reset_link":reset_link,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+        return Response({"message": message,"status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
 class ResetPasswordView(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -547,11 +500,17 @@ class ResetPasswordView(APIView):
         if not Token.objects.get(key=token):
             return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
         
+        if request.data.get('new_password'):
+            check = re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',request.data.get('new_password'))
+            if not check:
+                return Response({"message":"Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
         if not (request.data.get("new_password") == request.data.get("confirm_password")):
             return Response({"message": "Passwords do not match!","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST) 
         
         if user.check_password(request.data.get("new_password")):
             return Response({"message": "New password should be different from current password.","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        
         
         # Set new password
         user.password = make_password(new_password)
@@ -587,6 +546,11 @@ class ChangePassword(APIView):
             return Response({"message": "Sorry, you entered incorrect current password", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST) 
         
         new_password = request.data.get("new_password")
+        if new_password:
+            check = re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',new_password)
+            if not check:
+                return Response({"message":"Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            
         if new_password == request.data.get("current_password"):
             return Response({"message": "New password should be different from current password.", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST) 
         
@@ -598,7 +562,6 @@ class ChangePassword(APIView):
         Token.objects.filter(user=user).delete()
         logout(request)
         return Response({"message": "Password updated successfully!", "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
-
 
 class DeactivateAccount(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -630,7 +593,7 @@ class StaticPages(APIView):
         operation_id="Flat Pages Data",
         operation_description="Flat Pages Data",
         manual_parameters=[
-            openapi.Parameter('type_id', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description='1 : Terms&Conditions, 2 : PrivacyPolicy, 3 : AboutUs, 4: How it works, 5: Cookie Policy'),
+            openapi.Parameter('type_id', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description='1 : Terms&Conditions, 2 : PrivacyPolicy, 3 : AboutUs, 4: How it works'),
         ],
     )
     def post(self, request, *args, **kwargs):
@@ -639,7 +602,7 @@ class StaticPages(APIView):
         try:
             page = Pages.objects.get(type_id=request.data.get('type_id'),is_active=True)
         except:
-            return Response({"data":None, "status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+            return Response({"data":[], "status":status.HTTP_200_OK},status=status.HTTP_200_OK)
         data = PagesSerializer(page,context = {"request":request}).data
         return Response({"data":data, "status":status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
@@ -698,6 +661,13 @@ class ContactUsView(APIView):
         full_name = request.data.get('full_name')
         email = request.data.get('email')
         message = request.data.get('message')
+        country_code = request.data.get('country_code')
+        mobile_no = request.data.get('mobile_no')
+        country_iso_code = request.data.get('country_iso_code')
+        full_number = f"{country_code}{mobile_no}"
+
+        if not re.fullmatch(r'^\+[1-9]\d{1,14}$', full_number):
+            return Response({"message": "Invalid phone number. Must be in international E.164 format (e.g., +14151234567).","status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
 
         try:
             contact_us = ContactUs.objects.get(
@@ -710,12 +680,14 @@ class ContactUsView(APIView):
                 {"message": "You have already raised the same query before!", "data": data, "status": status.HTTP_200_OK},
                 status=status.HTTP_200_OK)
         except:
+
+
             contact_us = ContactUs.objects.create(
                 full_name=full_name,
                 email=email,
-                mobile_no=request.data.get('mobile_no'),
-                country_code=request.data.get('country_code'),
-                country_iso_code=request.data.get('country_iso_code'),
+                mobile_no=mobile_no,
+                country_code=country_code,
+                country_iso_code=country_iso_code,
                 message=message,
             )
             data = ContactUsSerializer(contact_us,context={"request":request}).data
@@ -787,7 +759,6 @@ class DeleteNotification(APIView):
         notification.delete()
         return Response({"message":"Notification Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
-
 class MarkReadNotificationAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
     parser_classes = [MultiPartParser,FormParser]
@@ -805,7 +776,6 @@ class MarkReadNotificationAPI(APIView):
         notification.is_read = True
         notification.save()
         return Response({"message":"Notification Marked As Read Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
-
 
 class UpdateNotificationSettings(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -830,7 +800,6 @@ class UpdateNotificationSettings(APIView):
         data = UserSerializer(user,context = {"request":request}).data
         return Response({"message":message,"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
-
 class UpdateEmailNotificationSettings(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser,FormParser]
@@ -854,12 +823,13 @@ class UpdateEmailNotificationSettings(APIView):
         data = UserSerializer(user,context = {"request":request}).data
         return Response({"message":message,"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
+
 class UserProfileDetails(APIView):
     """
     Profile Management
     """
     permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = [MultiPartParser,FormParser]
+    parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(
         tags=["Profile Management"],
@@ -867,15 +837,27 @@ class UserProfileDetails(APIView):
         operation_description="Customer Profile",
         manual_parameters=[
             openapi.Parameter('user_id', openapi.IN_QUERY, type=openapi.TYPE_STRING),
+            openapi.Parameter('username', openapi.IN_QUERY, type=openapi.TYPE_STRING),
         ]
     )
     def get(self, request):
-        if request.query_params.get('user_id'):
-            user = get_or_none(User, "User doesn't exist!", id=request.query_params.get('user_id'))
+
+        user_id = request.query_params.get("user_id")
+        username = request.query_params.get("username")
+        if user_id or username:
+            query = Q()
+            if user_id:
+                query |= Q(id=user_id)
+            if username:
+                query |= Q(username=username)
+            user = User.objects.filter(query).first()
+            if not user:
+                return Response({"message": "User does not exist!", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
         else:
             user = request.user
-        data = UserSerializer(user,context = {"request":request}).data
-        return Response({"data":data,"status":status.HTTP_200_OK}, status=status.HTTP_200_OK)
+        data = UserSerializer(user, context={"request": request}).data
+        return Response({"data": data, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+
 
 class UpdateProfileDetails(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -886,6 +868,7 @@ class UpdateProfileDetails(APIView):
         operation_id="Update Profile ( Customer )",
         operation_description="Update Profile ( Customer )",
         manual_parameters=[
+            openapi.Parameter('username', openapi.IN_FORM, type=openapi.TYPE_STRING,description='username'),
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='first name'),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='last name'),
             openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='body type id'),
@@ -907,8 +890,7 @@ class UpdateProfileDetails(APIView):
         profile_pic = request.FILES.get('profile_pic')
         user_image = request.FILES.get('image')
         others = data.get('others')
-        hieght_cm = data.get('hieght_cm')
-        
+        hieght_cm = data.get('height')
         # Update name
         if first_name: user.first_name = first_name
         if last_name: user.last_name = last_name
@@ -938,6 +920,24 @@ class UpdateProfileDetails(APIView):
             else:
                 return Response({"message": "Hair colour not found!", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
             
+        if request.data.get('username'):
+            new_username = request.data.get('username').strip()
+
+            # Check if username exists
+            if User.objects.filter(username=new_username).exclude(id=user.id).exists():
+                # Generate suggestions using the user's first name
+                suggestions = generate_mydressr_username(user.full_name)
+                return Response({"message": "Username already taken.",
+                    "suggestions": suggestions,
+                    "status": 400
+                }, status=400)
+
+            # If username does NOT exist, apply formatting rule
+            formatted_suggestions = generate_mydressr_username(new_username)
+            final_username = formatted_suggestions[0]  # Select first recommended formatted username
+
+            user.username = final_username
+            
         user.others = others
         user.hieght_cm = hieght_cm
         if request.FILES.get('image'):
@@ -945,7 +945,6 @@ class UpdateProfileDetails(APIView):
 
         if request.FILES.get('profile_pic'):
             user.profile_pic = profile_pic
-        # Profile setup status
         message = "Profile updated successfully!"
         if not user.is_profile_setup:
             user.is_profile_setup = True
@@ -954,7 +953,6 @@ class UpdateProfileDetails(APIView):
         user.save()
         serialized_data = UserSerializer(user, context={"request": request}).data
         return Response({"message": message, "data": serialized_data, "status": status.HTTP_200_OK }, status=status.HTTP_200_OK)
-
 
 """
 App Expiration Date Check
@@ -972,7 +970,7 @@ class CheckDate(APIView):
     def get(self, request):
         data={}
         data['datecheck']=RELEASE_DATE
-        data['copyrights']="Toxsl Technologies"
+        data['copyrights']="My Dressr"
         return Response(data)
 
 class SkinToneListView(APIView):
@@ -993,7 +991,6 @@ class SkinToneListView(APIView):
         data = SkinToneSerializer(skin_tone[start : end],many=True,context={"request":request}).data
         return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
-
 class HairColorListView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser,FormParser]
@@ -1011,7 +1008,6 @@ class HairColorListView(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None),hair_color)
         data = SkinToneSerializer(hair_color[start : end],many=True,context={"request":request}).data
         return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
-    
 
 class BodyTypeListView(APIView):
     permission_classes = (permissions.IsAuthenticated,)

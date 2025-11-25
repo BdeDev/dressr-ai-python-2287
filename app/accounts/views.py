@@ -16,7 +16,6 @@ from accounts.utils import *
 from rest_framework.authtoken.models import Token
 
 
-
 db_logger = logging.getLogger('db')
 env = environ.Env()
 environ.Env.read_env()
@@ -26,12 +25,10 @@ class AdminLoginView(TemplateView):
     def get(self, request, *args, **kwargs):
         return redirect('accounts:login')
 
-
 class LogOutView(View):
     def get(self,request,*args,**kwargs):
         logout(request)
         return redirect('accounts:login')
-
 
 class LoginView(View):
     def get(self, request, *args, **kwargs):
@@ -52,7 +49,6 @@ class LoginView(View):
         # Authenticate user
         user = authenticate(username=username, password=password)
         if not user:
-            # create_login_history(request, username, None, LOGIN_FAILURE, None)
             messages.error(request, 'Invalid login details.')
             return render(request, 'registration/login.html', {"email": username, "password": password})
 
@@ -60,10 +56,8 @@ class LoginView(View):
         if user.is_superuser and user.role_id == ADMIN:
             login(request, user)
             if remember_me:
-                request.session.set_expiry(1209600)  # 2 weeks
-            # create_login_history(request, username, None, LOGIN_SUCCESS, None)
+                request.session.set_expiry(1209600)
             messages.success(request, "Logged in successfully!")
-
             redirect_url = request.GET.get('next','admin:index') 
             return redirect(redirect_url)
 
@@ -129,8 +123,6 @@ def Validations(request):
 Password Management
 """
 
-  # or wherever your token model is
-
 class ResetPassword(View):
     def get(self, request, *args, **kwargs):
         uid = kwargs.get('uid')
@@ -157,14 +149,12 @@ class ResetPassword(View):
             token.delete()
 
             messages.success(request, 'Password reset successfully! Please log in.')
-            return redirect('accounts:login')
-
-        except Token.DoesNotExist:
+            return render(request,'frontend/password-reset-successful.html', {
+                    "user": user, 'protocol': 'https' if USE_HTTPS else 'http', 'domain': env('SITE_DOMAIN')})
+        except:
             messages.error(request, 'Sorry! Your reset link has expired or is invalid.')
-            return redirect('accounts:login')
-        except Exception as e:
-            messages.error(request, f'Error: {str(e)}')
-            return redirect('accounts:login')
+            return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
+      
 
 
 class ForgotPasswordEmail(View):
@@ -176,12 +166,12 @@ class ForgotPasswordEmail(View):
             messages.success(request,'Please enter a registered email address.')
             return redirect('accounts:forgot_password_email')
         else:
-            user = User.objects.filter(Q(status=ACTIVE)|Q(status=INACTIVE),email=request.POST.get("email")).last()
-            token, _ = Token.objects.get_or_create(user=user)
+            user = User.objects.get(email=request.POST.get("email"))
+            token, _ = Token.objects.get_or_create(user_id=user.id)
             reset_path = reverse("accounts:reset_password_user", kwargs={"uid": user.id, "token": token})
             reset_link = request.build_absolute_uri(reset_path)
             # Send reset link via email
-            bulk_send_user_email(request,user,'EmailTemplates/reset_password_admin.html','Reset Password',request.POST.get("email"),reset_link,"","","",assign_to_celery=False)
+            bulk_send_user_email(request,user,'EmailTemplates/reset_password_admin.html','Reset Your Password',request.POST.get("email"),reset_link,"","","",assign_to_celery=False)
             messages.success(request,'A link has been sent on your email to reset your password.')
             return redirect('accounts:login')
 
@@ -434,15 +424,31 @@ class BannersList(View):
     
     @method_decorator(admin_only)
     def post(self, request,*args,**kwargs):
-        if request.FILES.get('image'):
-            Banners.objects.create(
-                title = request.POST.get('title'),
-                image = request.FILES.get('image',None),
-                is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
-            )
-            messages.success(request, 'Banner Added Successfully!')
+        banner_id = request.POST.get('banner_id')
+        if banner_id:
+            banner = get_or_none(Banners,'Banner does not exist !',id=banner_id)
+            if Banners.objects.filter(title=request.POST.get('title')).exclude(id=banner_id).exists():
+                messages.error(request, "Banner already exists!")
+                return redirect('accounts:banners_list')
+            if request.POST.get('title'):
+                banner.title = request.POST.get('title').strip()
+            if request.FILES.get('image'):
+                banner.image = request.FILES.get('image').strip()
+            banner.save()
+            messages.success(request, "Banner updated successfully!")
+        else:
+            if Banners.objects.filter(title=request.POST.get('title')).exists():
+                messages.error(request, "Banner already exists!")
+                return redirect('accounts:banners_list')
+            if request.FILES.get('image'):
+                Banners.objects.create(
+                    title = request.POST.get('title'),
+                    image = request.FILES.get('image',None),
+                    is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
+                )
+                messages.success(request, "Banner added successfully!")
         return redirect('accounts:banners_list')
-
+    
 
 class ChangeBannerStatus(View):
     @method_decorator(admin_only)
@@ -468,23 +474,3 @@ class DeleteBanner(View):
         Banners.objects.get(id=self.kwargs['id']).delete()
         messages.success(request,'Banner Deleted Successfully!')
         return redirect('accounts:banners_list')
-
-
-
-# class AddBanner(View):
-#     @method_decorator(admin_only)
-#     def get(self, request, *args, **kwargs):
-#         return render(request,'ecommerce/banners/add-banner.html',{
-#             "head_title":"Banners Management",
-            
-#         })
-#     @method_decorator(admin_only)
-#     def post(self, request,*args,**kwargs):
-#         if request.FILES.get('image'):
-#             Banners.objects.create(
-#                 title = request.POST.get('title'),
-#                 image = request.FILES.get('image',None),
-#                 is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
-#             )
-#             messages.success(request, 'Banner Added Successfully!')
-#         return redirect('services:banners_list')

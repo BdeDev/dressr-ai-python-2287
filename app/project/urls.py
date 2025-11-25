@@ -23,12 +23,12 @@ class SchemaGenerator(OpenAPISchemaGenerator):
 
 schema_view = get_schema_view(
     openapi.Info(
-        title = "Dressr AI API's",
-        description = "API documentation for Dressr AI Project",
+        title = "My Dressr API's",
+        description = "API documentation for My Dressr Project",
         default_version = "1.0.0",
         terms_of_service = env('BASE_URL')+"/terms-and-conditions/",
         contact = openapi.Contact(email=""),
-        license = openapi.License(name="Dressr AI"),
+        license = openapi.License(name="My Dressr"),
     ),
     public = True,
     permission_classes = (permissions.AllowAny,),

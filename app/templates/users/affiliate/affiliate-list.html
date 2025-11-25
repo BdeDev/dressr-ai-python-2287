@@ -79,7 +79,7 @@
 													</a>
 													{% endif %}
 													{% if user.full_name %}
-													<span class="w-space-no">{{ user.full_name }}</span>
+													<span class="w-space-no">{{ user.full_name|capfirst }}</span>
 													{% else %}
 													<span class="w-space-no">-</span>
 													{% endif %}

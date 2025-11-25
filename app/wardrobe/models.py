@@ -30,6 +30,12 @@ class Accessory(CommonInfo):
     class Meta:
         db_table = 'accessories'
 
+class Tag(CommonInfo):
+    title = models.CharField(max_length=50,blank=True, null=True)
+
+    class Meta:
+        db_table = 'tag'
+
 class ClothingItem(CommonInfo):
     title = models.CharField(max_length=200,blank=True, null=True)
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="items",blank=True, null=True)
@@ -41,11 +47,14 @@ class ClothingItem(CommonInfo):
     # manual_category = models.CharField(max_length=50,blank=True, null=True)
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
     color = models.CharField(max_length=30,blank=True, null=True)
+    price = models.FloatField(default=0.0, null=True, blank=True)
     brand = models.CharField(max_length=50, blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     last_worn = models.DateTimeField(blank=True, null=True)
     wear_count = models.PositiveIntegerField(default=0)
     favourite = models.ManyToManyField(User, related_name='favourite_item')
+    item_url = models.URLField(blank=True, null=True)
+    tags = models.ManyToManyField(Tag, related_name="items")
 
     class Meta:
         db_table = 'clothing_item'
@@ -64,17 +73,21 @@ class Outfit(CommonInfo):
     color = models.CharField(max_length=30,blank=True, null=True)
     notes = models.TextField(blank=True, null=True)  # Style suggestions
     favourite = models.ManyToManyField(User, related_name='favourite_outfit')
+    image = models.FileField(upload_to="wardrobe/outfit_image/",blank=True, null=True)
 
     class Meta:
         db_table = 'outfit'
 
-class WearLog(CommonInfo):
-    clothing_item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name="wear_logs",blank=True, null=True)
-    date_worn = models.DateField()
-    occasion = models.CharField(max_length=20, blank=True, null=True)
+class WearHistory(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    outfit = models.ForeignKey(Outfit, on_delete=models.SET_NULL, null=True, blank=True)
+    item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, null=True, blank=True)
+    worn_on = models.DateField()
+    notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        db_table = 'wearLog'
+        db_table = 'wear_history'
+        unique_together = ('user', 'item', 'worn_on')
 
 class ActivityFlag(CommonInfo):
     name = models.CharField(max_length=100, blank=True, null=True)
@@ -91,7 +104,7 @@ class Trips(CommonInfo):
     location = models.TextField(null=True,blank=True)
     latitude=models.FloatField(null=True,blank=True)
     longitude=models.FloatField(null=True,blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_trips")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,related_name="created_trips")
     activity_flag = models.ManyToManyField(ActivityFlag)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
@@ -113,6 +126,15 @@ class Recommendation(CommonInfo):
     recommended_item = models.CharField(max_length=255,blank=True, null=True)
     category = models.PositiveIntegerField(choices=PACKING_CATEGORY,blank=True, null=True)
     purchase_link = models.URLField(blank=True, null=True)
+    reason = models.TextField()
 
     class Meta:
         db_table = 'recomendation'
+
+
+class RecentSearch(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recent_searches")
+    keyword = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = 'recent_search'

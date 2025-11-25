@@ -7,9 +7,9 @@ $("#add-fashion-tip").validate({
                 return $.trim(value);
             }
         },
-        category: {
-            required: true,
-        },
+        // category: {
+        //     required: true,
+        // },
         season: {
             required: true,
         },
@@ -31,9 +31,9 @@ $("#add-fashion-tip").validate({
             title: {
                 required: "Please enter title",
             },
-            category: {
-                required: "Please select category",
-            },
+            // category: {
+            //     required: "Please select category",
+            // },
             season: {
                 required: "Please select season",
             },
@@ -63,7 +63,16 @@ $("#edit-fashion-tip").validate({
                 return $.trim(value);
             }
         },
-        category: {
+        // category: {
+        //     required: true,
+        // },
+        season: {
+            required: true,
+        },
+        style: {
+            required: true,
+        },
+        gender: {
             required: true,
         },
         season: {
@@ -84,8 +93,17 @@ $("#edit-fashion-tip").validate({
             title: {
                 required: "Please enter title",
             },
-            category: {
-                required: "Please select category",
+            // category: {
+            //     required: "Please select category",
+            // },
+            season: {
+                required: "Please select season",
+            },
+            style: {
+                required: "Please select style",
+            },
+            gender: {
+                required: "Please select gender",
             },
             season: {
                 required: "Please select season",

@@ -60,7 +60,7 @@
 </div>
 {% include "admin-includes/footer.html" %}
 <script src="https://cdn.ckeditor.com/4.17.2/standard/ckeditor.js"></script>
-<script src="{% static 'admin-assets/js/customized-js/email-campaigns.js' %}" data-domain="{{domain}}" data-protocol="{{protocol}}" data-logo_url="{% static 'admin-assets/images/230x0w.webp' %}" {% if draft %}data-description="true" data-query_param="?draft_id={{draft.id}}"{% endif %}></script>
+<script src="{% static 'admin-assets/js/customized-js/email-campaigns.js' %}" data-domain="{{domain}}" data-protocol="{{protocol}}" data-logo_url="{% static 'admin-assets/images/logo-wht.svg' %}" {% if draft %}data-description="true" data-query_param="?draft_id={{draft.id}}"{% endif %}></script>
 <script>
     {% if draft %}
         PreviewEmail()

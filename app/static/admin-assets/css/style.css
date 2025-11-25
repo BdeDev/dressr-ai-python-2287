@@ -4106,7 +4106,7 @@ div#cke_notifications_area_content {
     display: none;
 }
 
-/* Dressr AI TV Listing Icon css start*/
+/* My Dressr TV Listing Icon css start*/
 .gallery div {
 	display: inline-block;
 	height: 40px;
@@ -4138,7 +4138,7 @@ div#cke_notifications_area_content {
 .gallery a:hover .overlay {
 	opacity: 0;
 }
-/* Dressr AI TV Listing Icon css end*/
+/* My Dressr TV Listing Icon css end*/
 
 /* Google Translate Start */
 
@@ -4374,4 +4374,31 @@ body {
     height: 40px !important;
     line-height: 0 !important;
     padding: 6px 12px !important;
+}
+
+
+
+.card-img-top {
+	border-bottom: 1px solid #eee;
+}
+
+/* Optional: hide scrollbar on Chrome/Edge */
+.scroll-row::-webkit-scrollbar {
+	height: 6px;
+}
+
+.modal-lg, .modal-xl {
+	max-width: 1000px !important;
+}
+
+.product-bar.custom-size-img {
+	max-height: 340px;
+	overflow: hidden;
+	border: 1px solid #dbdbdb;
+}
+
+.product-bar.custom-size-img img {
+	height: 100%;
+	width: 100%;
+	object-fit: cover;
 }

@@ -182,7 +182,7 @@ class WardrobeList(View):
         wardrobs = Wardrobe.objects.all().order_by('-created_on')
         wardrobs = query_filter_constructer(request,wardrobs,{
             "name__icontains":"name",
-            "user__full_name__icontains":"user__full_name",
+            "user__full_name__icontains":"user",
             "is_shared":"is_shared",
         })
 
@@ -191,9 +191,8 @@ class WardrobeList(View):
         return render(request,'wardrobe/wardrobs/wardrobe-list.html',{
             "head_title":'Wardrobe Management',
             "wardrobs" : get_pagination(request, wardrobs),
+            "total_objects":wardrobs.count(),
             "search_filters":request.GET.copy(),
-            "scroll_required":True if request.GET else False,
-            "total_objects":wardrobs.count()
         })
     
 class WardrobeView(View):
@@ -201,10 +200,45 @@ class WardrobeView(View):
     def get(self,request,*args,**kwargs):
         wardrobe = Wardrobe.objects.get(id=self.kwargs['id'])
         cloth_items = ClothingItem.objects.filter(wardrobe = wardrobe).order_by('-created_on')
+        most_worn = cloth_items.order_by('-wear_count').first()
+        least_worn = cloth_items.order_by('wear_count','created_on').first()
+        under_used = cloth_items.filter(wear_count__lte=2)
+        recommendations = ""
+        if under_used.exists():
+            recommendations = "Consider wearing your less-used items more often to balance wardrobe usage."
+
+        over_used_items = cloth_items.filter(wear_count__gte=10)
+        if over_used_items.exists():
+            recommendations = "Some items are heavily used. Consider refreshing or replacing them."
+
+        if not recommendations:
+            recommendations = "Your wardrobe usage is well-balanced."
+
+        total_items = ClothingItem.objects.filter(wardrobe=wardrobe).count()
+        worn_item_ids = (WearHistory.objects.filter(item__wardrobe=wardrobe).values_list('item', flat=True).distinct())
+        used_items_count = worn_item_ids.count()
+        utilization = (used_items_count / total_items * 100) if total_items else 0
+
+        favourite_items = wardrobe.user.favourite_item.all().count()
         return render(request,'wardrobe/wardrobs/view-wardrobe.html',{
             "head_title":'Wardrobe Management',
             "wardrobe":wardrobe,
-            "cloth_items":cloth_items
+            "cloth_items":cloth_items,
+            "most_worn":most_worn,
+            "least_worn":least_worn,
+            "recommendations":recommendations,
+            "total_items":cloth_items.count(),
+            "favourite_items":favourite_items,
+            "utilization":utilization
+        })
+
+class ViewItemDetails(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        cloth_item = ClothingItem.objects.get(id = self.kwargs['id'])
+        return render(request,'wardrobe/wardrobs/view-wardrobe.html',{
+            "head_title":'Wardrobe Management',
+            "cloth_item":cloth_item
         })
 
 class ActivityFlags(View):
@@ -224,6 +258,32 @@ class ActivityFlags(View):
             "search_filters":request.GET.copy(),
             "total_objects":activity_flags.count()
         })
+    
+    @method_decorator(admin_only)
+    def post(self, request,*args,**kwargs):
+        activity_id = request.POST.get('activity_id')
+        if activity_id:
+            activity_flag = get_or_none(ActivityFlag,'Activiy flag does not exist !',id=activity_id)
+            if ActivityFlag.objects.filter(name=request.POST.get('name').strip()).exclude(id=activity_id).exists():
+                messages.error(request, "Activiy flag already exists!")
+                return redirect('wardrobe:activity_flags')
+            if request.POST.get('name'):
+                activity_flag.name = request.POST.get('name').strip()
+            if request.POST.get('description'):
+                activity_flag.description = request.POST.get('description').strip()
+            activity_flag.save()
+            messages.success(request, "Activiy flag updated successfully!")
+        else:
+            if ActivityFlag.objects.filter(name=request.POST.get('name').strip()).exists():
+                messages.error(request, "Activiy flag already exists!")
+                return redirect('wardrobe:activity_flags')
+            ActivityFlag.objects.create(
+                name = request.POST.get('name').strip(),
+                description = request.POST.get('description').strip(),
+                create_by = request.user,
+            )
+            messages.success(request, "Activiy flag added successfully!")
+        return redirect('wardrobe:activity_flags')
     
 class DeleteActivityFlag(View):
     @method_decorator(admin_only)
@@ -273,7 +333,15 @@ class ViewTripDetails(View):
     @method_decorator(admin_only)
     def get(self,request,*args,**kwargs):
         trip = Trips.objects.get(id=self.kwargs.get('id'))
-        return render(request,'ecommerce/trips/view-trip-detail.html',{"trip":trip,"head_title":"Trips Management"})
+        activities = list(trip.activity_flag.all())
+        outfits = list(trip.outfit.all())
+        paired_items = zip(activities, outfits)
+        context = {
+            "head_title":"Trips Management",
+            "trip": trip,
+            "paired_items": paired_items,
+        }
+        return render(request,'ecommerce/trips/view-trip-detail.html',context)
     
 
 class UserOutfit(View):
@@ -311,7 +379,7 @@ class HairColorList(View):
         hair_colors  = HairColor.objects.filter(is_active=True).order_by('-created_on')
         hair_colors = query_filter_constructer(request,hair_colors,{
             "title__icontains":"title",
-            "color_code":"color_code",
+            "color_code__icontains":"color_code",
             "created_on__date":"created_on"
         })
         if request.GET and not hair_colors:
@@ -363,7 +431,7 @@ class SkinToneList(View):
         skin_tones  = SkinTone.objects.filter(is_active=True).order_by('-created_on')
         skin_tones = query_filter_constructer(request,skin_tones,{
             "title__icontains":"title",
-            "color_code":"color_code",
+            "color_code__icontains":"color_code",
             "created_on__date":"created_on"
         })
         if request.GET and not skin_tones:
@@ -500,3 +568,32 @@ class DeleteBodyType(View):
         body_type.delete()
         messages.success(request, "Body type deleted successfully !")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+"""
+Item Wear Calender
+"""
+class ViewItemWearCalender(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        wardrobe = Wardrobe.objects.get(id=self.kwargs['id'])
+        calender_initial_date = str(datetime.now().date())
+        return render(request, 'wardrobe/wardrobs/calender.html',{
+            "head_title":'Wardrobe Management',
+            "calender_initial_date":calender_initial_date,
+            "wardrobe":wardrobe
+        })
+    
+class CalenderDataAjax(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        data={'items_data':[]}
+        if request.GET.get('user_id','').strip():
+            user = User.objects.get(id=request.GET.get('user_id'))
+
+        month = int(request.GET.get('month')) if request.GET.get('month') else datetime.now().month
+        year = int(request.GET.get('year')) if request.GET.get('year') else datetime.now().year
+        wear_items = WearHistory.objects.filter(user=user,worn_on__month = month,worn_on__year = year,).order_by('created_on')
+        wear_items_data = list(wear_items.values('id', 'worn_on','item_id','user_id','item__image'))
+        data['items_data'] = wear_items_data
+        return JsonResponse(data)

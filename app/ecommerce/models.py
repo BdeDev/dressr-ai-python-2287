@@ -5,11 +5,36 @@ from accounts.constants import *
 from subscription.models import *
 
 
+class AffiliateNetwork(CommonInfo):
+    name = models.CharField(max_length=100, null=True, blank=True)   # AWIN, CJ, Rakuten, Impact
+    api_key = models.CharField(max_length=255, null=True, blank=True)
+    publisher_id = models.CharField(max_length=100, null=True, blank=True)
+    website_id = models.CharField(max_length=100, null=True, blank=True)
+    token = models.CharField(max_length=255, null=True, blank=True)
+    base_url = models.URLField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'affiliate_network'
+
+class AffiliateAdvertiser(CommonInfo):
+    network = models.ForeignKey(AffiliateNetwork, on_delete=models.CASCADE,null=True, blank=True)
+    advertiser_id = models.CharField(max_length=100, null=True, blank=True)   # Provided by AWIN/CJ
+    name = models.CharField(max_length=200, null=True, blank=True)            # Zara, H&M, Nike
+    logo = models.URLField(null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'affiliate_advertiser'
+
+
 class ProductCategory(CommonInfo):
     """
     Categories like Shirts, Jeans, Dresses, Accessories
     """
     name = models.CharField(max_length=100, unique=True)
+    parent = models.ForeignKey('self', on_delete=models.SET_NULL,null=True, blank=True)
     description = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
@@ -21,7 +46,9 @@ class Product(CommonInfo):
     """
     Products managed by admin for virtual try-ons
     """
-    category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True, related_name="products")
+    advertiser = models.ForeignKey(AffiliateAdvertiser, on_delete=models.CASCADE,blank=True, null=True)
+    category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name="products")
+    product_id = models.CharField(max_length=200, null=True, blank=True)
     name = models.CharField(max_length=150,blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     brand = models.CharField(max_length=100, blank=True, null=True)
@@ -29,15 +56,68 @@ class Product(CommonInfo):
     size = models.CharField(max_length=50, blank=True, null=True)
     gender = models.PositiveIntegerField(choices=GENDER,default=UNISEX, blank=True, null=True)
     price = models.FloatField(default=0.0, null=True, blank=True)
-    currency = models.CharField(max_length=10, default="USD")
+    currency = models.CharField(max_length=10, null=True, blank=True)
+    last_synced = models.DateTimeField(auto_now=True)
+    product_id = models.CharField(max_length=200, null=True, blank=True)      # ID from affiliate network
+    image_url = models.URLField(null=True, blank=True)
+    product_url = models.URLField()                    # Original URL
+    affiliate_url = models.URLField()                  # Tracking URL
     # Assets for try-on
     image = models.FileField(upload_to="products/images/", blank=True, null=True)  # 2D preview
     # model_3d = models.FileField(upload_to="products/models/", blank=True, null=True)  # e.g., .glb / .fbx for 3D try-on
     is_active = models.BooleanField(default=True)
 
-
     class Meta:
         db_table = 'product'
+
+
+class AffiliateLink(CommonInfo):
+    advertiser = models.ForeignKey(AffiliateAdvertiser, on_delete=models.CASCADE, null=True, blank=True)
+    category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    deeplink = models.URLField()
+    enabled = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'affiliate_link'
+
+
+class AffiliateClick(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
+    advertiser = models.ForeignKey(AffiliateAdvertiser, on_delete=models.CASCADE, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    device = models.CharField(max_length=50, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'affiliate_click'
+
+class AffiliateConversion(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    advertiser = models.ForeignKey(AffiliateAdvertiser, on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+
+    order_id = models.CharField(max_length=200, null=True, blank=True)
+    commission = models.FloatField(default=0.0)
+    order_value = models.FloatField(default=0.0)
+    currency = models.CharField(max_length=5, null=True, blank=True)
+
+    transaction_time = models.DateTimeField()
+    fetched_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'affiliate_conversion'
+
+
+class AffiliateReport(CommonInfo):
+    advertiser = models.ForeignKey(AffiliateAdvertiser, on_delete=models.CASCADE)
+    clicks = models.IntegerField(default=0)
+    conversions = models.IntegerField(default=0)
+    revenue = models.FloatField(default=0.0)
+    date = models.DateField()
+
+    class Meta:
+        db_table = 'affiliate_report'
 
 class FashionTipCategory(CommonInfo):
     """
@@ -59,7 +139,7 @@ class FashionTip(CommonInfo):
     content = models.TextField()  # full text of the tip
     category = models.ForeignKey(FashionTipCategory, on_delete=models.SET_NULL, null=True,blank=True, related_name="tips")
     season = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True,default=ALL_SEASONS)
-    style = models.PositiveIntegerField(choices=STYLE,default=CASUAL,blank=True, null=True)
+    style = models.PositiveIntegerField(choices=STYLE,default=CASUAL,blank=True, null=True) # Casual,Formal,party,street style,slassic
     gender = models.PositiveIntegerField(choices=GENDER,default=OTHER,blank=True, null=True)
     is_published = models.BooleanField(default=False)
     published_at = models.DateTimeField(blank=True, null=True)

@@ -75,7 +75,7 @@
 										{% for plan in plans %}
 										<tr>
 											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">{{plan.plan_id}}</td>
-											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">&euro; {{plan.final_amount|floatformat:'2g'}}</td>
+											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">$ {{plan.final_amount|floatformat:'2g'}}</td>
 											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">
 												{% if plan.status == 1 %}
 													<span class="badge bg-primary">ACTIVE</span>
@@ -104,7 +104,7 @@
 														class="rounded-lg me-2" width="24" alt="">
 													</a>
 													{% endif %}
-													{{plan.purchased_by.full_name|default:"-"}}
+													{{plan.purchased_by.full_name|capfirst|default:"-"}}
 												</div>
 												
 											</td>

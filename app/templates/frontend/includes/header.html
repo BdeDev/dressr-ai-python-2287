@@ -7,7 +7,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dresser AI - Your Personal Fashion Assistant</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/static/logo-wht.svg" />
 
     <link
       rel="stylesheet"
@@ -26,9 +26,12 @@
       href="{% static 'admin-assets/css/bootstrap.min.css' %}"
     />
     <link rel="stylesheet" href="{% static 'admin-assets/css/landing.css' %}" />
-   <link rel="stylesheet" href="{% static 'admin-assets/css/landing-responsive.css' %}" />
+    <link rel="stylesheet" href="{% static 'admin-assets/css/landing-responsive.css' %}" />
+    <link rel="stylesheet" href="{% static 'admin-assets/css/flash.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   </head>
   <body>
+    
    <div class="cursor"></div>
     <!-- Header section start  -->
     <header>
@@ -116,7 +119,7 @@
       </div>
     </header>
     <!-- Header section end  -->
-
+    
     <!-- Mobile Sidebar Menu Start -->
     <div
       class="offcanvas nav-mobile offcanvas-start"
@@ -167,4 +170,24 @@
           </div>
       </div>
     </div>
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == "error" %}
+                <div class="flash flash_error animate--drop-in-fade-out">
+                    <div class="flash__icon flash__icon__error">
+                        <i class="icon fas fa-times-circle"></i>
+                    </div>
+                    <span class="flash__body">{{ message }}</span>
+                </div>
+            {% else %}
+                <div class="flash animate--drop-in-fade-out">
+                    <div class="flash__icon">
+                        <i class="icon far fa-check-circle"></i>
+                    </div>
+                    <span class="flash__body">{{ message }}</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+  </body>
   <!-- Mobile Sidebar Menu End -->

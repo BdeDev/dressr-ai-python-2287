@@ -25,13 +25,22 @@
                         <div class="col-lg-6 col-md-6 col-12">
                             <div class="form-group required-field">
                                 <label class="form-label">Title </label>
-                                <input type="text" placeholder="Enter Title" name="title" class="form-control" maxlength="10">
+                                <input type="text" placeholder="Enter Title" name="title" class="form-control">
                             </div>
                         </div>
-                        <div class="col-lg-6 col-md-6 col-12">
+                        <div class="col-lg-3 col-md-3 col-12">
                             <div class="form-group required-field">
                                 <label class="form-label">Price / Month </label>
-                                <input type="number" placeholder="Enter Price" name="price" class="form-control number_field" maxlength="10">
+                                <input type="number" placeholder="Enter Price" name="price" class="form-control number_field">
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Free Plan</label>
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="freePlanToggle" name="is_free_plan">
+                                </div>
                             </div>
                         </div>
                         <div class="col-lg-6 col-md-6 col-12">
@@ -99,3 +108,16 @@
 </div>
 {% include 'admin-includes/footer.html' %}
 <script src="{% static 'admin-assets/js/customized-js/add-subscription.js' %}"></script>
+<script>
+    document.getElementById("freePlanToggle").addEventListener("change", function() {
+        let priceInput = document.querySelector("input[name='price']");
+
+        if (this.checked) {
+            priceInput.value = "0.00";
+            priceInput.setAttribute("disabled", true);
+        } else {
+            priceInput.removeAttribute("disabled");
+            priceInput.value = ""; // optional: you can keep or remove
+        }
+    });
+</script>

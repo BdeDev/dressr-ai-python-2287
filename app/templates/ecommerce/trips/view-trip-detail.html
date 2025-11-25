@@ -35,6 +35,7 @@
                                 <li>
                                     <h4>Created By</h4>
                                     <h6>
+                                        {% if trip.created_by %}
                                         <div class="d-flex align-items-center display-images">
                                             {% if trip.created_by.profile_pic %}
                                                 <a href="{{trip.created_by.profile_pic.url}}" data-fancybox>
@@ -46,25 +47,47 @@
                                                     class="rounded-lg me-2" width="50" alt="">
                                                 </a>
                                             {% endif %}
-                                            <span><a class="w-100" href="{% url 'users:view_user'  trip.created_by.id %}">{{trip.created_by.full_name|capfirst}}</a></span>
+                                            <span><a class="w-100" href="{% url 'users:view_user' trip.created_by.id %}">{{trip.created_by.full_name|capfirst}}</a></span>
                                         </div>
+                                        {% else %}-{% endif %}
                                     </h6>
                                 </li>
                                 <li>
                                     <h4> Description </h4>
                                     <h6>{{trip.description|safe|default:"-"}}</h6>
                                 </li>
-                                {% if trip.activity_flag.all.exists %}
+                                {% if paired_items %}
                                 <li>
-                                    <h4> Activity Flag </h4>
+                                    <h4> Activity & Outfit </h4>
                                     <h6>
-                                    {% for activity in trip.activity_flag.all %}
-                                        {{forloop.counter}}. <a href="{% url 'wardrobe:activity_flags' %}"> {{activity.name|default:"-"}}</a>{% if not forloop.last %}<br>{% endif %}
-                                    {% endfor %}
+                                        {% for activity, outfit in paired_items %}
+                                            {{ forloop.counter }}.
+
+                                            {% if activity %}
+                                                <a href="{% url 'wardrobe:activity_flags' %}">
+                                                    {{ activity.name|default:"-" }}
+                                                </a>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+
+                                            →
+                                            
+                                            {% if outfit %}
+                                                <a href="{% url 'wardrobe:view_outfit_detail' outfit.id %}">
+                                                    {{ outfit.title|default:"-" }}
+                                                </a>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+
+                                            {% if not forloop.last %}<br>{% endif %}
+                                        {% endfor %}
                                     </h6>
                                 </li>
+                                {% else %}
+                                    -
                                 {% endif %}
-                                
                             </ul>
                         </div>
                         <div class=" col-md-6  productdetails">
@@ -103,16 +126,6 @@
                                        {{trip.longitude|default:"-"}}
                                     </h6>
                                 </li>
-                                {% if trip.outfit.all.exists %}
-                                <li>
-                                    <h4> Outfit </h4>
-                                    <h6>
-                                    {% for outfit in trip.outfit.all %}
-                                        {{forloop.counter}}. <a href="{% url 'wardrobe:view_outfit_detail' outfit.id %}"> {{outfit.title|default:"-"}}</a>{% if not forloop.last %}<br>{% endif %}
-                                    {% endfor %}
-                                    </h6>
-                                </li>
-                                {% endif %}
                             </ul>
                         </div>
                     </div>

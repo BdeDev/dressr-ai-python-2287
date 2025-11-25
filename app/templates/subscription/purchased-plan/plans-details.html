@@ -38,13 +38,13 @@
                                 <li>
                                     <h4>Price / Month </h4>
                                     <h6>
-                                        {{plan.amount|floatformat:'2g'}}
+                                        $ {{plan.amount|floatformat:'2g'}}
                                     </h6>
                                 </li>
                                 <li>
                                     <h4>Final Price </h4>
                                     <h6>
-                                        {{plan.final_amount|floatformat:'2g'}}
+                                        $ {{plan.final_amount|floatformat:'2g'}}
                                     </h6>
                                 </li>
                                 <li>
@@ -81,7 +81,7 @@
                                 <li>
                                     <h4>User</h4>
                                     <h6>
-                                        <a href="{% url "users:view_user" plan.purchased_by.id %}">{{plan.purchased_by.full_name|default:"-"}}</a>
+                                        <a href="{% url "users:view_user" plan.purchased_by.id %}">{{plan.purchased_by.full_name|capfirst|default:"-"}}</a>
                                     </h6>
                                 </li>
                                 <li>

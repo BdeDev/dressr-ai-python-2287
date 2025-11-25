@@ -35,7 +35,7 @@ $(document).ready(function () {
                 <tr>
                     <td class="content-td" style="padding:0 35px;">
                         <h1 id="mail_title" name="mail_title" style="color: #000; font-weight: 500; margin: 0; font-size: 22px; font-family: 'Rubik',sans-serif; text-align:left;">
-                            <b>Welcome to dressr ai</b>
+                            <b>Welcome to My Dressr</b>
                         </h1>
                         <p style="font-size:15px; color:#000; margin:0; line-height:24px; padding: 20px 0 20px 0; text-align:left;">
                             Dear <span style="text-decoration-line: underline;" id="email_user_name">User</span>,
@@ -50,7 +50,7 @@ $(document).ready(function () {
                     <td align="center" style="padding: 20px 0; border-top: 2px solid #cbcbcb4a; background-color: #14285a; border-radius:0 0 0 0;">
                         <p style="font-size:14px; color:#fff; line-height:18px; margin:0;">
                             Copyright  © <span id="full_year">2025</span>
-                            <a style="color: #fff; text-decoration: none; font-weight: 600;" target="_blank" href="${protocol}://${domain}"> Dressr AI </a> | All Rights Reserved. Developed by
+                            <a style="color: #fff; text-decoration: none; font-weight: 600;" target="_blank" href="${protocol}://${domain}"> My Dressr </a> | All Rights Reserved. Developed by
                             <a style="color: #fff; text-decoration: none; font-weight: 600;" href="https://toxsl.com/" target="_blank">TOXSL Technologies</a>
                         </p>
                     </td>

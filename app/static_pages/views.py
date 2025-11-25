@@ -48,7 +48,7 @@ class AddPageView(View):
             {"key": 2, "value": "Privacy Policy"},
             {"key": 3, "value": "About Us"},
             {"key": 4, "value": "How It Works"},
-            {"key": 5, "value": "Cookie Policy"}
+            # {"key": 5, "value": "Cookie Policy"}
         ]
         # Filter the pages list to remove items with keys that exist in existing_types
         pages = [page for page in pages if page["key"] not in existing_types]

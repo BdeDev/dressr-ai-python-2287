@@ -22,7 +22,7 @@
                 <label for="password" class="form-label text-white">Password <span class="text-danger">*</span></label>
                <div class="position-relative pass-group">                                            
                   <input type="password" class="form-control" id="password" name="password" autocomplete="on" placeholder="Enter your password" maxlength="30">
-                  <span onclick="changetype(this)" class="fas fa-eye-slash toggle-password"></span>
+                  <span onclick="changetype()" class="fas toggle-password fa-eye-slash"></span>
               </div>
             </div>
           
@@ -58,18 +58,3 @@
 </section>
 
 {% include 'registration/includes/footer.html' %}
-<script> 
-  function changetype(icon) {
-    const passwordInput = document.getElementById("password");
-
-    if (passwordInput.type === "password") {
-      passwordInput.type = "text";
-      icon.classList.remove("fa-eye-slash");
-      icon.classList.add("fa-eye");
-    } else {
-      passwordInput.type = "password";
-      icon.classList.remove("fa-eye");
-      icon.classList.add("fa-eye-slash");
-    }
-  }
-</script>

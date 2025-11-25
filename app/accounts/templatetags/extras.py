@@ -1,6 +1,8 @@
 from django import template
 from accounts.views import *
 from contact_us.models import *
+from wardrobe.models import Wardrobe
+from subscription.models import *
 import environ
 
 register = template.Library()
@@ -20,7 +22,7 @@ def url_replace(request, field, value):
 	
 @register.filter(name='total_customers')
 def total_customers(key):
-	return User.objects.filter(role_id__in=[SUB_ADMIN,CUSTOMER] ).count()
+	return User.objects.filter(role_id__in=[CUSTOMER] ).count()
 
 @register.filter(name='notifications_list')
 def notifications_list(key):
@@ -76,6 +78,14 @@ def users_count(key):
 	return count
 
 
+@register.filter(name='wardrobe_count')
+def wardrobe_count(key):
+	if key == 'total_count':
+		user_wardrobe = Wardrobe.objects.all().count()
+		return user_wardrobe
+	return 0
+
+
 @register.filter(name='contact_us_count')
 def contact_us_count(key):
 	contact_us_count = ContactUs.objects.all().count()	
@@ -124,14 +134,7 @@ def get_extension(file):
 @register.filter(name='filename')
 def filename(file):
 	return file.name.split("/")[1]
-#User Wallet 
-@register.simple_tag
-def user_wallet(user):
-	try:
-		wallet= get_user_wallet(user)
-		return wallet
-	except:
-		return None
+
 
 @register.simple_tag(name='convert_into_local_time')
 def convert_into_local_time(timezone, created_on, time_format):
@@ -147,25 +150,19 @@ def convert_to_list(numbers):
 	data = [int(i) for i in numbers]
 	return data 
 
-@register.filter(name='check_loan_overdue')
-def check_loan_overdue(installment_plan=None,loan_application=None):
-	is_over_due = False
-	try:
-		today_date = datetime.now().date()
-		if installment_plan and installment_plan.due_date:
-			if( not installment_plan.paid ) and (today_date > installment_plan.due_date):
-				is_over_due = True
-		elif loan_application:
-			if loan_application.status in [LOAN_ACTIVE] and (today_date > loan_application.loan_due_date):
-				is_over_due = True
-	except:
-		pass
-	return is_over_due
+@register.simple_tag
+def is_favourite(user, item):
+    if user.is_authenticated:
+        return user.favourite_item.filter(id=item.id).exists()
+    return False
 
-@register.filter(name='check_for_future_date')
-def check_for_future_date(date):
-	is_future_date = True
-	if date and date < datetime.now().date():
-		is_future_date = False
-	return is_future_date
-
+@register.filter(name='subscribers')
+def subscribers(key):
+    total_users = User.objects.filter(role_id=CUSTOMER,status=ACTIVE).count()
+    active_subscribers = UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE,subscription_plan__is_free_plan = False).values_list("purchased_by", flat=True).distinct().count()
+    free_users = total_users - active_subscribers
+    if key == "active_subscribers":
+        return active_subscribers
+    if key == "free_users":
+        return free_users
+    return 0

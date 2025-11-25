@@ -54,7 +54,7 @@
                                     {% else %}
                                     <li>
                                         <h4>Full Name </h4>
-                                        <h6>{% if user.full_name %}{{user.full_name}}{% else %} {{user.username}} {% endif %}</h6>
+                                        <h6>{% if user.full_name %}{{user.full_name|capfirst}}{% else %} - {% endif %}</h6>
                                     </li>
                                     {% endif %}
                                     

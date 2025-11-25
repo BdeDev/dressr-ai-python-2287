@@ -136,7 +136,7 @@
 													</a>
 													{% endif %}
 													{% if user.full_name %}
-													<span class="w-space-no">{{ user.full_name }}</span>
+													<span class="w-space-no">{{ user.full_name|capfirst }}</span>
 													{% else %}
 													<span class="w-space-no">-</span>
 													{% endif %}
@@ -146,7 +146,7 @@
 												{% if user.email %}{{ user.email }}{% else %}-{% endif %}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
-												{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %}{{ user.mobile_no }}{% else %}-{% endif %}
+												{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %} {{ user.mobile_no }}{% else %}-{% endif %}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
 												<span class="w-space-no">
@@ -171,6 +171,7 @@
 											<td>
 												<div class="d-flex">
 													<a title="View Details" href="{% url 'users:view_user' user.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+													{% comment %} <a title="Delete" href="{% url 'users:delete_users' user.id %}" class="btn btn-danger shadow btn-xs sharp me-1"><i class="fa fa-trash"></i></a> {% endcomment %}
 												</div>
 											</td>
 										</tr>

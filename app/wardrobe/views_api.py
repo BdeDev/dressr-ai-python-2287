@@ -62,6 +62,7 @@ class AddItemInWardrobeAPI(APIView):
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
             openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Accessory ID (e.g., Watch, Bag, Earrings)'),
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1: Summer, 2: Winter, 3: Rainy, 4: Spring, 5: All Season'),
+            openapi.Parameter('item_url', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Provide the website link if the item is not available'),
             openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
             openapi.Parameter('brand', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Brand'),
             openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description='Image file'),
@@ -96,7 +97,7 @@ class AddItemInWardrobeAPI(APIView):
 
         if not int(request.data.get('weather_type')) in [1,2,3,4,5]:
             return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         cloth_item = ClothingItem.objects.create(
             title = request.data.get('title'),
             wardrobe=wardrobe,
@@ -109,8 +110,114 @@ class AddItemInWardrobeAPI(APIView):
             date_added=datetime.now(),
             image=request.FILES.get('image')
         )
+        if request.data.get('item_url'):
+            cloth_item.item_url  = request.data.get('item_url')
+        cloth_item.save()
+
         return Response({"message": "Item added successfully!","status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
     
+
+class AddMultipleItemInWardrobeAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="Add Multiple Item in Wardrobe",
+        operation_description="Add Multiple Item in Wardrobe",
+        manual_parameters=[
+            openapi.Parameter(
+                'items',
+                openapi.IN_FORM,
+                type=openapi.TYPE_STRING,
+                description='Example: '
+                            '[{"title":"White Shirt","category_id":"...","image_key":0},'
+                            '{"title":"Black Jeans","category_id":"...","image_key":1}]'
+            ),
+            openapi.Parameter('images',openapi.IN_FORM,type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_FILE),description="Upload images in array order: image[0], image[1], ..."),
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        wardrobe = get_or_none(Wardrobe, "User wardrobe does not exist !", user=user)
+        raw_items = request.data.get("items")
+        if not raw_items:
+            return Response({"message": "Items list missing!", "status": 400}, status=400)
+
+        try:
+            items = json.loads(raw_items)
+        except:
+            return Response({"message": "Invalid JSON format for items.", "status": 400}, status=400)
+
+        if not isinstance(items, list) or not items:
+            return Response({"message": "Items must be a non-empty list.", "status": 400}, status=400)
+
+        incoming_count = len(items)
+        wardrobe_item_count = ClothingItem.objects.filter(wardrobe=wardrobe).count()
+
+        # Free plan validation
+        purchased_plan = UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE,purchased_by=request.user).first()
+        if purchased_plan.expire_on <= datetime.now():
+            return Response({"message": "Your free plan has expired.", "status": 400}, status=400)
+
+        max_uploads = purchased_plan.subscription_plan.max_uploads
+        remaining = max_uploads - wardrobe_item_count
+
+        if remaining <= 0:
+            return Response({"message": "Upload limit reached.", "status": 400}, status=400)
+
+        if incoming_count > remaining:
+            return Response({"message": f"You can upload only {remaining} items.", "status": 400}, status=400)
+      
+        created_items = []
+        images = request.FILES.getlist("images")
+
+        for idx, item in enumerate(items):
+            category = ClothCategory.objects.filter(id=item.get("category_id")).first()
+            if not category:
+                return Response({"message": "Invalid category ID", "status": 400}, status=400)
+            occasion = None
+            if item.get("occasion_id"):
+                occasion = Occasion.objects.filter(id=item.get("occasion_id")).first()
+                if not occasion:
+                    return Response({"message": "Invalid occasion ID", "status": 400}, status=400)
+                
+            accessory = None
+            if item.get("accessory_id"):
+                accessory = Accessory.objects.filter(id=item.get("accessory_id")).first()
+                if not accessory:
+                    return Response({"message": "Invalid accessory ID", "status": 400}, status=400)
+
+            if int(item.get("weather_type")) not in [1, 2, 3, 4, 5]:
+                return Response({"message": "Invalid weather type", "status": 400}, status=400)
+
+            image_file = None
+            image_index = item.get("image_key")
+            if image_index is not None:
+                try:
+                    image_file = images[int(image_index)]
+                except:
+                    image_file = None
+            cloth_item = ClothingItem.objects.create(
+                title=item.get("title"),
+                wardrobe=wardrobe,
+                cloth_category=category,
+                occasion=occasion,
+                accessory=accessory,
+                weather_type=int(item.get("weather_type")),
+                color=item.get("color"),
+                brand=item.get("brand"),
+                image=image_file,
+                date_added=datetime.now()
+            )
+
+            if item.get("item_url"):
+                cloth_item.item_url = item.get("item_url")
+            cloth_item.save()
+            created_items.append(cloth_item.id)
+
+        return Response({"message": "Items added successfully!","created_item_ids": created_items,"status": 201}, status=201)
+
 class RemoveItemFromWardrobeAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
     parser_classes = [MultiPartParser,FormParser]
@@ -130,6 +237,22 @@ class RemoveItemFromWardrobeAPI(APIView):
         cloth_item = get_or_none(ClothingItem, "Invalid cloth item id", id=request.query_params.get('cloth_item_id'))
         cloth_item.delete()
         return Response({"message":"Coth Item Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+class RemoveAllItemFromWardrobeAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['WarDrobe management'],
+        operation_id="Delete All Items From wardrobe",
+        operation_description="Delete All Items From wardrobe",
+        manual_parameters=[],
+    )
+    def delete(self, request, *args, **kwargs):
+        wardrobe  = get_or_none(Wardrobe,'Wardrobe does not exist !',user=request.user)
+        cloth_item = ClothingItem.objects.filter(wardrobe=wardrobe)
+        cloth_item.delete()
+        return Response({"message":"Coth Items Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
 class GetItemAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -174,12 +297,12 @@ class EditWardrobeItemAPI(APIView):
 
     @swagger_auto_schema(
         tags=["WarDrobe management"],
-        operation_id="Edit Wardrobe",
-        operation_description="Edit Wardrobe",
+        operation_id="Edit Wardrobe Item api",
+        operation_description="Edit Wardrobe Item api",
         manual_parameters=[
             openapi.Parameter('cloth_item_id', openapi.IN_FORM, type=openapi.TYPE_STRING),
-            openapi.Parameter('wardrobe_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Wardrobe Id'),
-            openapi.Parameter('category_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Cloth category Id'),
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING,description='title'),
+            openapi.Parameter('category_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='category id'),
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Occasion Id'),
             openapi.Parameter('accessory_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Accessory Id'),
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='1:Summer , 2:Winter , 3:Rainy , 4:Spring , 5:All Season'),
@@ -193,35 +316,47 @@ class EditWardrobeItemAPI(APIView):
         ## Validate Required Fields
         response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
             {"field_name": "cloth_item_id", "method": "post", "error_message": "Please enter cloth item id"},
-            {"field_name": "image", "method": "post", "error_message": "Please enter wardrobe name"},
         ])
-        user = request.user 
-        cloth_item = get_or_none(ClothingItem, "Invalid cloth item id", id=request.data.get('cloth_item_id'))
-        wardrobe = Wardrobe.objects.get(id=request.data.get('wardrobe_id'))
-        category = ClothCategory.objects.get(id = request.data.get('category_id'))
-        occasion = Occasion.objects.get(id = request.data.get('occasion_id'))
-        accessory = Accessory.objects.get(id = request.data.get('accessory_id'))
-
-        if not wardrobe:
-            return Response({"message": "Wardrobe does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not category:
-            return Response({"message": "Category does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not occasion:
-            return Response({"message": "Occasion does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not accessory:
-            return Response({"message": "Accessory does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
-        if not int(request.data.get('weather_type')) in [1,2,3,4,5]:
-            return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        wardrobe = Wardrobe.objects.get(user=request.user)
+        cloth_item = get_or_none(ClothingItem, "Invalid cloth item id", id=request.data.get('cloth_item_id'),wardrobe=wardrobe)
         
-        cloth_item.wardrobe = wardrobe
-        cloth_item.cloth_category = category
-        cloth_item.accessory = accessory
-        cloth_item.occasion = occasion
-        cloth_item.weather_type = int(request.data.get('weather_type'))
-        cloth_item.color = request.data.get('color')
-        cloth_item.brand = request.data.get('brand')
-        cloth_item.price = request.data.get('price')
-        cloth_item.image = request.FILES.get('image')
+        if request.data.get('category_id'):
+            category = ClothCategory.objects.get(id = request.data.get('category_id'))
+            if not category:
+                return Response({"message": "Category does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        if  request.data.get('occasion_id'):
+            occasion = Occasion.objects.get(id = request.data.get('occasion_id'))
+            if not occasion:
+                return Response({"message": "Occasion does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('accessory_id'):
+            accessory = Accessory.objects.get(id = request.data.get('accessory_id'))
+            if not accessory:
+                return Response({"message": "Accessory does not exist!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('weather_type'):
+            weather_type = int(request.data.get('weather_type'))
+            if not int(request.data.get('weather_type')) in [1,2,3,4,5]:
+                return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('title'):
+            cloth_item.title = request.data.get('title').strip()
+        if request.data.get('weather_type'):
+            cloth_item.weather_type = weather_type
+        if request.data.get('category_id'):
+            cloth_item.cloth_category = category
+        if request.data.get('accessory_id'):
+            cloth_item.accessory = accessory
+        if request.data.get('occasion_id'):
+            cloth_item.occasion = occasion
+        if request.data.get('color'):
+            cloth_item.color = request.data.get('color')
+        if request.data.get('brand'):
+            cloth_item.brand = request.data.get('brand')
+        if request.data.get('price'):
+            cloth_item.price = request.data.get('price')
+        if request.FILES.get('image'):
+            cloth_item.image = request.FILES.get('image')
         cloth_item.save()
         data = ClothItemSerializer(cloth_item,context = {"request":request}).data
         return Response({"data":data,"message": "Wardrobe updated successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -243,7 +378,6 @@ class GetAccessoriesAPI(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), accessories)
         data = AccessorySerializer(accessories[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-    
 
 class GetOccasionsAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -269,8 +403,8 @@ class GetClothCategoriesAPI(APIView):
 
     @swagger_auto_schema(
         tags=["WarDrobe management"],
-        operation_id="Get All ClothCategories",
-        operation_description="Get All ClothCategories",
+        operation_id="Cloth Categories",
+        operation_description="Get Cloth Categories",
         manual_parameters=[
             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
         ],
@@ -281,6 +415,7 @@ class GetClothCategoriesAPI(APIView):
         data = ClothCategorySerializer(occasions[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
+####--------------------OutFit Management API's------------------######
 class CreateOutfitAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser]
@@ -290,11 +425,12 @@ class CreateOutfitAPI(APIView):
         operation_id="Create Outfit",
         operation_description="Create Outfit",
         manual_parameters=[
-            openapi.Parameter('item_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Category IDs'),
+            openapi.Parameter('item_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='List of Item IDs'),
             openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
             openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
             openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='title'),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description='outfit image'),
         ],
     )
     def post(self, request):
@@ -306,7 +442,6 @@ class CreateOutfitAPI(APIView):
         if int(request.data.get('weather_type')) not in [1, 2, 3, 4, 5]:
             return Response({"message": "Invalid weather type","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Build the clothing item query
         items = ClothingItem.objects.filter(id__in=request.data.getlist('item_ids'),wardrobe__user=user)
 
         if request.data.get('color'):
@@ -326,6 +461,8 @@ class CreateOutfitAPI(APIView):
             color=request.data.get('color')
         )
         outfit.items.set(items)
+        outfit.image = request.FILES.get('image')
+        outfit.save()
         return Response({"message": "Outfit created successfully!","outfit_id": outfit.id,"total_items": items.count(),"status": status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
 
 class MyOutFitListAPI(APIView):
@@ -402,6 +539,7 @@ class EditOutfitAPI(APIView):
             openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
             openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
             openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Outfit'),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Outfit Image'),
         ],
     )
     def post(self, request, *args, **kwargs):
@@ -443,6 +581,7 @@ class EditOutfitAPI(APIView):
             outfit.weather_type = int(request.data.get('weather_type'))
         if items:
             outfit.items.set(items)
+            outfit.image = request.FILES.get('image')
         outfit.save()
         data = MyOutFitSerializer(outfit,context = {"request":request}).data
         return Response({"data":data,"message": "Outfit updated successfully!","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -482,7 +621,8 @@ class AddItemInOutfitAPI(APIView):
         operation_description="Add item from outfit",
         manual_parameters=[
             openapi.Parameter('outfit_id', openapi.IN_FORM, type=openapi.TYPE_STRING),
-            openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="Item id")
+            openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="Item id"),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE,description='Outfit Image'),
         ],
     )
     def post(self, request, *args, **kwargs):
@@ -494,10 +634,11 @@ class AddItemInOutfitAPI(APIView):
         if outfit.items.filter(id=request.data.get('item_id')).exists():
             return Response({"message": "Item already exists in this outfit.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
         outfit.items.add(request.data.get('item_id').strip())
+        outfit.image = request.FILES.get('image')
         outfit.save()
         return Response({"message":"Outfit addedd Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
-
+#####----------------------Trip Management API's--------------------------###
 # class AddTripAPI(APIView):
 #     permission_classes = [permissions.IsAuthenticated]
 #     parser_classes = [MultiPartParser, FormParser]
@@ -566,7 +707,7 @@ class GetMyAllTripAPI(APIView):
         ],
     )
     def get(self, request, *args, **kwargs):
-        trips = Trips.objects.filter(created_by=request.user).order_by('-created_on')
+        trips = Trips.objects.filter(created_by = request.user).order_by('-created_on')
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), trips)
         data = TripsSerializer(trips[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -605,9 +746,9 @@ class DeleteTripAPI(APIView):
     )
     def delete(self, request, *args, **kwargs):
         response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "trip", "method": "get", "error_message": "Please enter outfit id"},
+            {"field_name": "trip", "method": "get", "error_message": "Please enter trip id"},
         ])
-        trip = get_or_none(Trips, "Invalid outfit id", id=request.query_params.get('outfit_id'))
+        trip = get_or_none(Trips, "Invalid trip id", id=request.query_params.get('trip'))
         trip.delete()
         return Response({"message":"Trip Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
     
@@ -740,7 +881,7 @@ class AddTripAPI(APIView):
             openapi.Parameter('longitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Longitude"),
             openapi.Parameter('start_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
             openapi.Parameter('end_date', openapi.IN_FORM, type=openapi.TYPE_STRING ,description="YYYY-MM-DD"),
-            openapi.Parameter('trip_length', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description="Duration in days"),
+            # openapi.Parameter('trip_length', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description="Duration in days"),
         ],
     )
     def post(self, request, *args, **kwargs):
@@ -758,6 +899,12 @@ class AddTripAPI(APIView):
         else:
             activities = activity_data
 
+        if Trips.objects.filter(title=request.data.get('title').strip(),created_by=request.user).exists():
+            return Response({"message": "Trip already exist for same title !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if Trips.objects.filter(start_date=request.data.get('start_date'),end_date=request.data.get('end_date'),created_by=request.user).exists():
+            return Response({"message": "Trip already exist for same date !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
         trip = Trips.objects.create(
             title=request.data.get('title').strip(),
             description=request.data.get('description').strip(),
@@ -766,9 +913,13 @@ class AddTripAPI(APIView):
             longitude=request.data.get('longitude'),
             start_date=request.data.get('start_date'),
             end_date=request.data.get('end_date'),
-            trip_length=int(request.data.get('trip_length')),
             created_by=request.user
         )
+        start = datetime.strptime(trip.start_date, "%Y-%m-%d")
+        end = datetime.strptime(trip.end_date, "%Y-%m-%d")
+        duration = end - start
+        trip.trip_length = duration.days
+        trip.save()
         
         for activity_value in activities:
             activity_id = activity_value['activity_flag_id']
@@ -816,7 +967,21 @@ class MarkItemFavouriteAPI(APIView):
             message = "Item marked as favourite !"
         item.save()
         return Response({"message":message,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
-    
+
+class FavouriteItemListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_description="Favourite Item List API",
+        operation_id="Favourite Item List API",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        favourite_items = request.user.favourite_item.all()
+        data = ClothItemSerializer(favourite_items,many=True,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)    
 
 class MarkOutfitFavouriteAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
@@ -847,6 +1012,21 @@ class MarkOutfitFavouriteAPI(APIView):
         return Response({"message":message,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
 
+class FavouriteOutfitListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Outfit Management"],
+        operation_description="Favourite Outfit List API",
+        operation_id="Favourite Outfit List API",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        favourite_outfits = request.user.favourite_outfit.all()
+        data = MyOutFitSerializer(favourite_outfits,many=True,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)   
+    
 class GetItemByCategoryAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
@@ -866,3 +1046,344 @@ class GetItemByCategoryAPI(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), items)
         data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+class ItemSeachFilterAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="Search Items",
+        operation_description="Search Items",
+        manual_parameters=[
+            openapi.Parameter('search', openapi.IN_QUERY, type=openapi.TYPE_STRING),
+            openapi.Parameter('category_ids', openapi.IN_QUERY, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING),description='List of category ids'),
+            openapi.Parameter('occasion_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='Occasion id'),
+            openapi.Parameter('weather_type', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,description='Weather Type'),
+            openapi.Parameter('color', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='Colour'),
+            openapi.Parameter('sort_by', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="date|alpha|category"),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        wardrobe = get_or_none(Wardrobe,"wardrobe does not exist !",user=request.user)
+        items = ClothingItem.objects.filter(wardrobe=wardrobe).order_by("-created_on")
+        if request.query_params.get('search'):
+            items = items.filter(Q(brand__icontains = request.query_params.get('search'))|
+                        Q(color__icontains=request.query_params.get('search'))|
+                        Q(title__icontains=request.query_params.get('search'))|
+                        Q(cloth_category__title__icontains = request.query_params.get('search'))|
+                        Q(occasion__title__icontains = request.query_params.get('search'))|
+                        Q(accessory__title__icontains = request.query_params.get('search')))
+            
+            recent_search = RecentSearch.objects.create(
+                user=request.user,
+                keyword=request.query_params.get('search'),
+            )
+        if request.query_params.getlist('category_ids'):
+            category_ids = request.query_params.getlist("category_ids")
+            if len(category_ids) == 1 and "," in category_ids[0]:
+                category_ids = category_ids[0].split(",")
+
+            category_ids = [c.strip() for c in category_ids]
+            if category_ids:
+                categories = ClothCategory.objects.filter(id__in=category_ids)
+                if not categories.exists():
+                    return Response({"message": "Category not found!", "status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+                items = items.filter(cloth_category__in=categories)
+
+        if request.query_params.get('occasion_id'):
+            occasion  = Occasion.objects.get(id = request.query_params.get('occasion_id'))
+            if not occasion:
+                return Response({"message":"Occasion not found !","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            items = items.filter(occasion = occasion)
+
+        if request.query_params.get('weather_type'):
+            if not int(request.query_params.get('weather_type')) in [1,2,3,4,5]:
+                return Response({"message":"Weather type does not matched!", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+            items = items.filter(weather_type = int(request.query_params.get('weather_type')))
+            
+        if request.query_params.get('color'):
+            items = items.filter(color__iexact=request.query_params.get('color'))
+
+        sort_by = request.query_params.get('sort_by')
+        if sort_by == "date":
+            items = items.order_by("-created_on")
+
+        elif sort_by == "alpha":
+            items = items.order_by("title")
+
+        elif sort_by == "category":
+            items = items.order_by("cloth_category__title")
+
+        else:
+            items = items.order_by("-created_on") 
+
+        if not items:
+            return Response({"data":[],"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), items)
+        data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+
+class RecentSearchAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_description="Get recent searches of user",
+        operation_id="Get recent searches of user",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        searches = RecentSearch.objects.filter(user=request.user).order_by('-created_on')[:5]
+        data = RecentSearchSerializer(searches,many=True,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+
+class RemoveItemFromRecentSearchAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['WarDrobe management'],
+        operation_id="Delete Items From Recent Search",
+        operation_description="Delete Items From Recent Search",
+        manual_parameters=[
+            openapi.Parameter('search_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)
+        ],
+    )
+    def delete(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "search_id", "method": "get", "error_message": "Please enter search id"},
+        ])
+        recent_search = get_or_none(RecentSearch, "Invalid search id", id=request.query_params.get('search_id'),user=request.user)
+        recent_search.delete()
+        return Response({"message":"Recent Search Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+class RemoveAllItemFromRecentSearchAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['WarDrobe management'],
+        operation_id="Delete All Items From  Recent Search",
+        operation_description="Delete All Items From Recent Search",
+        manual_parameters=[],
+    )
+    def delete(self, request, *args, **kwargs):
+        recent_search = RecentSearch.objects.filter(user=request.user)
+        recent_search.delete()
+        return Response({"message":"Recent Search Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+
+###-----------------------User Tag Management-------------------------###
+
+class AddTagAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Tag Management'],
+        operation_id="Add Tag",
+        operation_description="Add Tag",
+        manual_parameters=[
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING,description="title"),
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "title", "method": "post", "error_message": "Please enter title"},
+        ])
+        tags,created = Tag.objects.get_or_create(title = request.data.get('title').strip())
+        if created:
+            return Response({"message":"Tag already exist !","status": status.HTTP_400_BAD_REQUEST}, status = status.HTTP_400_BAD_REQUEST)
+        return Response({"message":"Tag created Successfully !","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+###---------------WearLog management----------------------######
+
+class WearLogAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=["Wear Calendar"],
+        operation_id="Item wear log",
+        operation_description="Item wear log",
+        manual_parameters=[
+            openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="Item Id"),
+            openapi.Parameter('date', openapi.IN_FORM, type=openapi.TYPE_STRING,description="YYYY-MM-DD"),
+            openapi.Parameter('notes', openapi.IN_FORM, type=openapi.TYPE_STRING,description="Notes"),
+        ],
+    )
+    def post(self, request):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "item_id", "method": "post", "error_message": "Please enter Item Id"},
+        ])
+        item = get_or_none(ClothingItem,"Item not found",id=request.data.get("item_id"),wardrobe__user=request.user)
+        try:
+            worn_date = datetime.strptime(request.data.get("date"), "%Y-%m-%d").date()
+        except:
+            return Response({"message": "Invalid date format (YYYY-MM-DD)", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+        wear_entry, created = WearHistory.objects.get_or_create(
+            user=request.user,
+            item=item,
+            worn_on=worn_date,
+            defaults={"notes": request.data.get("notes")}
+        )
+        if not created:
+            return Response({"message": "Already marked as worn on this date", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        item.wear_count += 1 
+        item.save()
+        return Response({"message": "Wear entry added successfully !","status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+class WearCalendarAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser, FormParser]
+
+    @swagger_auto_schema(
+        tags=["Wear Calendar"],
+        operation_id="Get Item wear logs",
+        operation_description="Get Item wear logs",
+        manual_parameters=[
+            openapi.Parameter('wear_log',openapi.IN_QUERY,type=openapi.TYPE_STRING,description="date or month or year (date='YYYY-MM-DD', month='YYYY-MM', year='YYYY')",),
+            openapi.Parameter('date', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='YYYY-MM-DD'),
+            openapi.Parameter('year', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='YYYY'),
+            openapi.Parameter('month', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='YYYY-MM'),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        
+        entries = WearHistory.objects.filter(user=request.user)
+        wear_log = request.query_params.get("wear_log")
+        if wear_log:
+            if wear_log == "year":
+                year = request.query_params.get("year")
+                try:
+                    year = int(year)
+                    start = date(year, 1, 1)
+                    end = date(year + 1, 1, 1)
+                except:
+                    return Response({"message": "Invalid year format", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+                entries = WearHistory.objects.filter(user=request.user,worn_on__gte=start,worn_on__lt=end)
+                
+            elif wear_log == "month":
+                month = request.query_params.get("month")
+                try:
+                    year, month_num = map(int, month.split("-"))
+                    start = date(year, month_num, 1)
+                    end_month = month_num + 1 if month_num < 12 else 1
+                    end_year = year if month_num < 12 else year + 1
+                    end = date(end_year, end_month, 1)
+                except:
+                    return Response({"message": "Invalid month format", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+                entries = WearHistory.objects.filter(user=request.user,worn_on__gte=start,worn_on__lt=end)
+                
+            elif wear_log == "date":
+                wear_date = request.query_params.get("date")
+                try:
+                    target_date = datetime.strptime(wear_date, "%Y-%m-%d").date()
+                except:
+                    return Response({"message": "Invalid date format", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+                entries = WearHistory.objects.filter(user=request.user,worn_on=target_date)
+            else:
+                return Response({"message": "Invalid wear_log. Use date/month/year", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+        start, end, meta_data = get_pages_data(request.query_params.get('page', None), entries)
+        data = WearHistorySerializer(entries, many=True, context={"request": request}).data
+        return Response({"data": data,  "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
+
+class GetWearLogsByItemAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Wear Calendar"],
+        operation_id="Get item wear log history",
+        operation_description="Get item wear log history",
+        manual_parameters=[
+            openapi.Parameter('item_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Item id"),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        item_id = get_or_none(ClothingItem,'Item does not exist !', id = request.query_params.get('item_id'))
+        wear_logs = WearHistory.objects.filter(item = item_id,user  = request.user).order_by('created_on')
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), wear_logs)
+        data = WearHistorySerializer(wear_logs[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+
+class MostWearClothAnalyticsAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Wardrobe Analytics"],
+        operation_id="Item Usage Frequency",
+        operation_description="Analyze usage frequency of wardrobe items.",
+        manual_parameters=[
+            openapi.Parameter('category_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Category id"),
+        ],
+       
+    )
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        items = ClothingItem.objects.filter(wardrobe__user=user)
+
+        # If no items
+        if not items.exists():
+            return Response({"message": "No wardrobe items found.","most_worn": [],"least_worn": [],"recommendations": []})
+
+        most_worn = items.order_by('-wear_count')[:5]
+        least_worn = items.order_by('wear_count').first()
+        most_worn_count = items.order_by('-wear_count').first()
+        if request.query_params.get('category_id'):
+            category = ClothCategory.objects.get(id = request.query_params.get('category_id'))
+            if not category:
+                return Response({"message": "Invalid category id","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            items = items.filter(cloth_category = category)
+            most_worn = items.order_by('-wear_count')[:5]
+
+        under_used = items.filter(wear_count__lte=2)
+        recommendations = []
+
+        if under_used.exists():
+            recommendations.append("Consider wearing your less-used items more often to balance wardrobe usage.")
+
+        over_used_items = items.filter(wear_count__gte=10)
+        if over_used_items.exists():
+            recommendations.append("Some items are heavily used. Consider refreshing or replacing them.")
+
+        if not recommendations:
+            recommendations.append("Your wardrobe usage is well-balanced.")
+
+        wardrobe = get_or_none(Wardrobe, "Wardrobe does not exist!", user=request.user)
+        # All items in wardrobe
+        total_items = ClothingItem.objects.filter(wardrobe=wardrobe).count()
+
+        # Items worn at least once
+        worn_item_ids = (WearHistory.objects.filter(item__wardrobe=wardrobe).values_list('item', flat=True).distinct())
+
+        used_items_count = worn_item_ids.count()
+
+        # Utilization percentage
+        utilization = (used_items_count / total_items * 100) if total_items else 0
+
+        response = {"stats": {"total_items": ClothingItem.objects.filter(wardrobe__user=user).count(),
+                              "least_worn_count": least_worn.wear_count,
+                              "most_worn_count": most_worn_count.wear_count,
+                              "utilization": utilization,
+                              "most_used_item": most_worn[0].title if most_worn else None,
+                              "favourite_items":request.user.favourite_item.all().count()},
+            "most_worn": ItemUsageFrequencySerializer(most_worn, many=True,context = {"request":request}).data,
+            "least_worn": ItemUsageFrequencySerializer(least_worn,context = {"request":request}).data,
+            "under_used_items": ItemUsageFrequencySerializer(under_used, many=True,context = {"request":request}).data,
+            "recommendations": recommendations,
+            
+        }
+
+        return Response(response, status=200)

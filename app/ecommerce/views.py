@@ -130,19 +130,18 @@ class AddFashionTip(View):
         })
     
     def post(self,request,*args,**kwargs):
-        if not request.POST.get('category'):
-            messages.error(request, "Please select a category.")
-            return redirect('ecommerce:add_fashion_tip')
+        # if not request.POST.get('category'):
+        #     messages.error(request, "Please select a category.")
+        #     return redirect('ecommerce:add_fashion_tip')
 
-        category = get_object_or_404(FashionTipCategory, id=request.POST.get('category'))
-        if FashionTip.objects.filter(title=request.POST.get('title').strip(),category = category,season = request.POST.get('season'),style = request.POST.get('style')).exists():
+        # category = get_object_or_404(FashionTipCategory, id=request.POST.get('category'))
+        if FashionTip.objects.filter(title=request.POST.get('title').strip(),season = request.POST.get('season'),style = request.POST.get('style')).exists():
             messages.success(request, "Fashion tip already exists!")
             return redirect('ecommerce:add_fashion_tip')
         
         fashion_tip = FashionTip.objects.create(
             title = request.POST.get('title').strip(),
             content = request.POST.get('content'),
-            category = category,
             season = request.POST.get('season'),
             style = request.POST.get('style'),
             cover_image = request.FILES.get('cover_image'),
@@ -165,8 +164,8 @@ class EditFashionTip(View):
     @method_decorator(admin_only)
     def post(self,request,*args,**kwargs):
         fashion_tip = FashionTip.objects.get(id=self.kwargs['id'])
-        category = FashionTipCategory.objects.get(id = request.POST.get('category'))
-        if FashionTip.objects.filter(title=request.POST.get('title').strip(),category = request.POST.get('category'),season = request.POST.get('season'),style = request.POST.get('style')).exclude(id=fashion_tip.id):
+        # category = FashionTipCategory.objects.get(id = request.POST.get('category'))
+        if FashionTip.objects.filter(title=request.POST.get('title').strip(),season = request.POST.get('season'),style = request.POST.get('style')).exclude(id=fashion_tip.id):
             messages.error(request,"Fashion tip already exists!")
             return redirect('ecommerce:edit_fashion_tip',id=fashion_tip.id)
         
@@ -176,8 +175,8 @@ class EditFashionTip(View):
             fashion_tip.title = request.POST.get('title').strip()
         if request.POST.get('content'):
             fashion_tip.content = request.POST.get('content')
-        if request.POST.get('category'):
-            fashion_tip.category = category
+        # if request.POST.get('category'):
+        #     fashion_tip.category = category
         if request.POST.get('season'):
             fashion_tip.season = request.POST.get('season')
         if request.POST.get('style'):

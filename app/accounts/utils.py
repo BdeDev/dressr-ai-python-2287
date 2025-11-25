@@ -38,11 +38,24 @@ import random
 import string
 from accounts.tasks import *
 from wardrobe.models import *
+from django.utils.text import slugify
 
 
 db_logger = logging.getLogger('db')
 env = environ.Env()
 environ.Env.read_env()
+
+
+def generate_mydressr_username(name):
+    base = slugify(name) or "user"
+    suggestions = set()
+
+    while len(suggestions) < 3:
+        username = f"mdr-{base}-{random.randint(1000, 9999)}"
+        if not User.objects.filter(username=username).exists():
+            suggestions.add(username)
+
+    return list(suggestions)
 
 
 def get_admin():
@@ -186,19 +199,27 @@ def convert_to_utc(data:datetime, user_timezone:str):
     UTC_tz = pytz.timezone("UTC")
     return datetime.strptime(str(UTC_tz.normalize(local_tz.localize(data).astimezone(UTC_tz))).split("+")[0], "%Y-%m-%d %H:%M:%S")
 
-def user_authenticate(email:str, password:str):
-    '''
-        Authenticates User using his email/mobile_no and password
-        Args:
-            email (str): `str` object, accepts email and mobile number both
-            country_code (str): `str` object, accepts country code in case of mobile number authentication else `None`
-            password (str): `str` object, accepts password for the user authentication
-    '''
-    user = User.objects.filter(Q(email=email)|Q(username=email)|Q(mobile_no=email)).order_by('created_on').last()
+def user_authenticate(identifier: str, password: str):
+    """
+    Authenticate user by username, email, or mobile number.
+    `identifier` can be username or email or mobile_no.
+    """
+    identifier = identifier.strip()
+
+    user = User.objects.filter(
+        Q(username=identifier) |
+        Q(email=identifier) |
+        Q(mobile_no=identifier)
+    ).order_by('created_on').last()
+
+    if not user:
+        return None
+
     if user.check_password(password):
         return user
-    else:
-        return None
+
+    return None
+
 
 def convert_to_local_timezone(time_zone:str, date_time:str):
     '''
@@ -331,15 +352,15 @@ def update_object(self,request, model, fields: list):
         return True
 
 def activate_subscription(user,activate_purchased_plan:SubscriptionPlans=None):
+    user = User.objects.get(id=user)
     ## Warning : This function is also used on cronjob to renew plan
     if not activate_purchased_plan:
         upcomming_plan =  UserPlanPurchased.objects.filter(purchased_by=user,status = USER_PLAN_IN_QUEUE).order_by('created_on').first()
     else:
         upcomming_plan = activate_purchased_plan ## if specify which plan have to activate  
-        
     ## check use have any active plan or not 
-    if not UserPlanPurchased.objects.filter(purchased_by=user,status = USER_PLAN_IN_QUEUE).exists() and upcomming_plan:
-        upcomming_plan.status = USER_PLAN_IN_QUEUE
+    if not UserPlanPurchased.objects.filter(purchased_by=user,status = USER_PLAN_IN_QUEUE).exists() or upcomming_plan:
+        upcomming_plan.status = USER_PLAN_ACTIVE
         upcomming_plan.activated_on = datetime.now()
         ## set plan expiry
         if upcomming_plan.validity == MONTHLY_PLAN:

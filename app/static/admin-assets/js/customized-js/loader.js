@@ -12,7 +12,7 @@ function Loader(formID) {
             <div class="loadericon">
                 <div class="outerCircle"></div>
                     <div class="icon logoname">
-                        <img alt="" width="10" src="/static/admin-assets/images/favicon.ico" />
+                        <img alt="" width="10" src="/static/admin-assets/images/logo-wht.svg" />
                     </div>
                 </div>
             </div>

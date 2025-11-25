@@ -78,12 +78,12 @@
                                             {% else %}-{% endif %}
                                         </h6>
                                     </li>
-                                     <li>
+                                     {% comment %} <li>
                                         <h4>Activity Logs</h4>
                                         <h6>
                                             {% if activities %}<a href="{% url 'accounts:activity_logs' user.id %}" >View [ {{activities}} ]</a>{% else %} [ {{activities}} ] {% endif %}
                                         </h6>
-                                    </li>
+                                    </li> {% endcomment %}
                                 </ul>
                             </div>
                             

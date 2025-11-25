@@ -218,11 +218,11 @@
                         <a href="javascript:void(0);"><i class="fad fa-shopping-cart"></i><span> E-Commerce</span>
                         <span class="menu-arrow"></span></a>
                         <ul>
-                            <li>
+                            {% comment %} <li>
                                 <a {% if head_title == 'Fashion Tip category Management' %} class="active" {% endif %} href="{% url 'ecommerce:fashion_category_list' %}">
                                     Fashion Tip category
                                 </a>
-                            </li>
+                            </li> {% endcomment %}
                             <li>
                                 <a {% if head_title == 'Fashion Tip Management' %} class="active" {% endif %} href="{% url 'ecommerce:fashion_tip_list' %}">
                                     Fashion Tip
@@ -332,11 +332,11 @@
                                     Domain Setting
                                 </a>
                             </li>
-                            <li>
+                            {% comment %} <li>
                                 <a {% if head_title == 'Social Links Management' %} class="active" {% endif %} href="{% url 'contact_us:social_links' %}">
                                     Social Links
                                 </a>
-                            </li>
+                            </li> {% endcomment %}
                         </ul>
                     </li>
                     <li class="submenu {% if head_title == 'Login History' or head_title == 'Notifications Management' or head_title == 'Pages Management' or head_title == 'Backup Management' %}active {% endif %}">

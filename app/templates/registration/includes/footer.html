@@ -11,11 +11,19 @@
     </div>
 </div>
 
+<script src="{% static 'admin-assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/script.js' %}"></script>
+<script src="{% static 'admin-assets/js/validate.js' %}"></script>
+<script src="{% static 'admin-assets/js/intlTelInput-jquery.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/common.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/show-more.js' %}"></script>
+
 <!-- Jquery JS -->
-<script src="{% static 'admin-assets/js/jquery.min.js' %}"></script>
+{% comment %} <script src="{% static 'admin-assets/js/jquery.min.js' %}"></script>
 <!-- Bootstrap JS -->
 <script src="{% static 'admin-assets/js/bootstrap.bundle.min.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/jquery.validation/1.19.5/jquery.validate.min.js"></script>
+<script src="{% static 'admin-assets/js/jquery-3.6.0.min.js' %}"></script> {% endcomment %}
 
 
 <script>
@@ -24,22 +32,19 @@
         easing: 'ease-in-out'
     });
 
-    // Password visibility toggle function
-    function togglePasswordVisibility() {
-        const passwordInput = document.getElementById('password');
-        const toggleIcon = document.getElementById('togglePassword');
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            toggleIcon.classList.remove('fa-eye-slash');
-            toggleIcon.classList.add('fa-eye');
-        } else {
-            passwordInput.type = 'password';
-            toggleIcon.classList.remove('fa-eye');
-            toggleIcon.classList.add('fa-eye-slash');
-        }
-    }
+    function changetype(icon) {
+        const passwordInput = document.getElementById("password");
 
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        } else {
+            passwordInput.type = "password";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        }
+    } 
     document.addEventListener("DOMContentLoaded", () => {
         feather.replace();
     });

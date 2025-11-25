@@ -28,7 +28,7 @@
                     <tr>
                         <td class="logo-td" align="center" style="padding: 20px;background: #1e3d9d;">
                             <a>
-                                <img width="100" src="{{ protocol }}://{{ domain }}/static/admin-assets/images/230x0w.webp" title="logo" alt="logo" style="display:block; margin:auto;">
+                                <img width="100" src="{{ protocol }}://{{ domain }}/static/admin-assets/images/logo-wht.svg" title="logo" alt="logo" style="display:block; margin:auto;">
                             </a>
                         </td>
                     </tr>
@@ -42,8 +42,8 @@
                             </h1>
                             <span style="display:inline-block; vertical-align:middle; width:100px;"></span>
                             <p style="font-size:15px; color:#455056; margin:8px 0 0; line-height:24px;">
-                                Hello {{user.full_name}},<br>
-                                Thank you for joining Dressr AI.<br>
+                                Hello {{user.full_name|capfirst}},<br>
+                                Thank you for joining My Dressr.<br>
                                 Use this OTP to verify your account.
                             </p>
                             <div style="text-align:center;">
@@ -60,7 +60,7 @@
                         <td align="center" style="padding: 20px 0;border-top: 2px solid #cbcbcb4a; background-color: #1e3d9d;">
                             <p style="font-size:14px; color:#fff; line-height:18px; margin:0 0 0;">
                                 Copyright  © <span id="full_year">{% now "Y" as current_year %}{{current_year}}</span>
-                                <a style="color: #fff;text-decoration: none; font-weight: 600;" target="_blank" href="{% url 'frontend:index' %}"> Dressr AI </a> | All Rights Reserved. Developed by <a style="color: #fff; text-decoration: none; font-weight: 600;" href="https://toxsl.com/" target="_blank">TOXSL Technologies</a>
+                                <a style="color: #fff;text-decoration: none; font-weight: 600;" target="_blank" href="{% url 'frontend:index' %}"> My Dressr </a> | All Rights Reserved. Developed by <a style="color: #fff; text-decoration: none; font-weight: 600;" href="https://toxsl.com/" target="_blank">TOXSL Technologies</a>
                             </p>
                         </td>
                     </tr>
