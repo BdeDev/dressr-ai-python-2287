@@ -967,7 +967,21 @@ class MarkItemFavouriteAPI(APIView):
             message = "Item marked as favourite !"
         item.save()
         return Response({"message":message,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
-    
+
+class FavouriteItemListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_description="Favourite Item List API",
+        operation_id="Favourite Item List API",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        favourite_items = request.user.favourite_item.all()
+        data = ClothItemSerializer(favourite_items,many=True,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)    
 
 class MarkOutfitFavouriteAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
@@ -998,6 +1012,21 @@ class MarkOutfitFavouriteAPI(APIView):
         return Response({"message":message,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
 
+class FavouriteOutfitListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Outfit Management"],
+        operation_description="Favourite Outfit List API",
+        operation_id="Favourite Outfit List API",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        favourite_outfits = request.user.favourite_outfit.all()
+        data = MyOutFitSerializer(favourite_outfits,many=True,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)   
+    
 class GetItemByCategoryAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
@@ -1350,9 +1379,9 @@ class MostWearClothAnalyticsAPI(APIView):
                               "utilization": utilization,
                               "most_used_item": most_worn[0].title if most_worn else None,
                               "favourite_items":request.user.favourite_item.all().count()},
-            "most_worn": ItemUsageFrequencySerializer(most_worn, many=True).data,
-            "least_worn": ItemUsageFrequencySerializer(least_worn).data,
-            "under_used_items": ItemUsageFrequencySerializer(under_used, many=True).data,
+            "most_worn": ItemUsageFrequencySerializer(most_worn, many=True,context = {"request":request}).data,
+            "least_worn": ItemUsageFrequencySerializer(least_worn,context = {"request":request}).data,
+            "under_used_items": ItemUsageFrequencySerializer(under_used, many=True,context = {"request":request}).data,
             "recommendations": recommendations,
             
         }

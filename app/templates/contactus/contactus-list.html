@@ -94,7 +94,7 @@
                                     {% if contacts %}
                                     {% for contact in contacts %}
                                     <tr>
-                                        <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">{{ contact.full_name }}</td>
+                                        <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">{{ contact.full_name|capfirst }}</td>
                                         <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">{{ contact.email }}</td>
                                         <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">{{ contact.message|truncatechars:25 }}</td>
                                         <td class='clickable-row' data-href="{% url 'contact_us:view_contact' contact.id %}">

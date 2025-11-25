@@ -104,7 +104,7 @@
 														class="rounded-lg me-2" width="24" alt="">
 													</a>
 													{% endif %}
-													{{plan.purchased_by.full_name|default:"-"}}
+													{{plan.purchased_by.full_name|capfirst|default:"-"}}
 												</div>
 												
 											</td>

@@ -49,8 +49,8 @@
 									{% if activity_flags %}
 										{% for activity in activity_flags %}
 										<tr>
-                                            <td> {{activity.name|default:"-"}}</td>
-											<td> {{activity.description|safe|default:"-"}}</td>
+                                            <td> {{activity.name|capfirst|default:"-"}}</td>
+											<td class="wrap-text">{{activity.description|default:"-"|safe}}</td>
 											<td>
 												<script>
 													var date = ConvertDateTime("{{ activity.created_on|date:'Y-m-d' }}", "{{ activity.created_on|time:'H:i' }}");
@@ -105,7 +105,7 @@
                             <div class="col-lg-12">
                                 <div class="form-group">
                                     <label class="form-label">Description</label>
-                                    <textarea type="text" name="description" id="description" class="form-control"></textarea>
+                                    <textarea type="text" name="description" id="description" class="form-control" maxlength="200"></textarea>
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -164,3 +164,12 @@
 		$('#activity_description').val(description);
 	}
 </script>
+
+<style>
+  .wrap-text {
+    white-space: normal !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+</style>

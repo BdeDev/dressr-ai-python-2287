@@ -49,9 +49,11 @@ urlpatterns = [
     re_path(r'^marked-favourite-item-api/$', MarkItemFavouriteAPI.as_view(), name='mark_favourite_item_api'),
     re_path(r'^get-cloth-item-by-category-api/$', GetItemByCategoryAPI.as_view(), name='get_cloth_item_by_category_api'),
     re_path(r'^add-multiple-item-api/$', AddMultipleItemInWardrobeAPI.as_view(), name='add_multiple_item_api'),
+    re_path(r'^favourite-item-list-api/$', FavouriteItemListAPI.as_view(), name='favourite_item_list_api'),
+
+
     re_path(r'^item-search-api/$', ItemSeachFilterAPI.as_view(), name='item_search_api'),
     re_path(r'^recent-search-api/$', RecentSearchAPI.as_view(), name='recent_search_api'),
-
     re_path(r'^remove-item-from-recent-search-api/$', RemoveItemFromRecentSearchAPI.as_view(), name='remove_item_fron_recent_search_api'),
     re_path(r'^remove-all-recent-search-api/$', RemoveAllItemFromRecentSearchAPI.as_view(), name='remove_all_recent_search_api'),
 
@@ -68,6 +70,7 @@ urlpatterns = [
     re_path(r'^delete-item-from-my-outfit-api/$', RemoveItemsFromOutfitAPI.as_view(), name='delete_item_drom_my_outfit_api'),
     re_path(r'^add-item-in-my-outfit-api/$', AddItemInOutfitAPI.as_view(), name='add_item_in_outfit_api'),
     re_path(r'^marked-favourite-outfit-api/$', MarkOutfitFavouriteAPI.as_view(), name='mark_favourite_outfit_api'),
+    re_path(r'^favourite-outfit-list-api/$', FavouriteOutfitListAPI.as_view(), name='favourite_outfit_list_api'),
 
     ##--------------------------------Trip Management-------------------------------##
     re_path(r'^add-activity-flag-api/$', AddAcivityFlagsAPI.as_view(), name='add_activity_flag_api'),

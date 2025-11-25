@@ -5,13 +5,19 @@ from api.serializer import *
 
 class ClothItemSerializer(ModelSerializer):
     cloth_category = SerializerMethodField()
+    is_favourite = SerializerMethodField()
     
     class Meta:
         model = ClothingItem
-        fields = ('__all__')
+        fields = ['id','title','wardrobe','image','cloth_category','occasion',
+                  'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','tags','is_favourite']
 
     def get_cloth_category(self,obj):
         return obj.cloth_category.id,obj.cloth_category.title
+    
+    def get_is_favourite(self, obj):
+        user = self.context.get("request").user
+        return 1 if obj.favourite.filter(id=user.id).exists() else 0
 
 
 class WardrobeSerializer(ModelSerializer):
@@ -49,10 +55,11 @@ class ClothCategorySerializer(ModelSerializer):
 
 class MyOutFitSerializer(ModelSerializer):
     items = SerializerMethodField(read_only=True)
+    is_favourite = SerializerMethodField()
 
     class Meta:
         model = Outfit
-        fields = ('__all__')
+        fields = ['id','title','items','occasion','weather_type','created_by','color','notes','image','is_favourite']
 
     def get_items(self, obj):
         items = obj.items.all()
@@ -69,6 +76,9 @@ class MyOutFitSerializer(ModelSerializer):
     def get_image(self,obj):
         return  self.context.get('request').build_absolute_uri(obj.image.url) if USE_HTTPS else self.context.get('request').build_absolute_uri(obj.image.url),
 
+    def get_is_favourite(self, obj):
+        user = self.context.get("request").user
+        return 1 if obj.favourite.filter(id=user.id).exists() else 0
 
 class TripsSerializer(ModelSerializer):
     outfit = SerializerMethodField()
@@ -113,7 +123,6 @@ class WearHistorySerializer(ModelSerializer):
         model = WearHistory
         fields = ('__all__')
 
-
     def get_item(self, obj):
         request = self.context.get("request")
         return {
@@ -123,8 +132,7 @@ class WearHistorySerializer(ModelSerializer):
                 "category_title": obj.item.cloth_category.title,
                 "brand":obj.item.brand
             }
-           
-        
+
 
 class RecentSearchSerializer(ModelSerializer):
     class Meta:
@@ -133,6 +141,17 @@ class RecentSearchSerializer(ModelSerializer):
 
 
 class ItemUsageFrequencySerializer(ModelSerializer):
+    is_favourite = SerializerMethodField()
+
     class Meta:
         model = ClothingItem
-        fields = ('__all__')
+        fields = ['id','title','wardrobe','image','cloth_category','occasion',
+                  'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','tags','is_favourite']
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.image.url) if USE_HTTPS else request.build_absolute_uri(obj.image.url),
+
+    def get_is_favourite(self, obj):
+        user = self.context.get("request").user
+        return 1 if obj.favourite.filter(id=user.id).exists() else 0

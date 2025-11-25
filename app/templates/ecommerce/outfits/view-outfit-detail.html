@@ -21,7 +21,7 @@
                 <div class="card my-4">
                     <div class="card-body">
                         <div class="row">
-                        <div class=" col-md-12 productdetails">
+                        <div class=" col-md-6  productdetails">
                             <ul class="product-bar mb-2">
                                 <li>
                                     <h4>Id </h4>
@@ -53,7 +53,7 @@
                                 </li>
                                 <li>
                                     <h4>Created By</h4>
-                                    <h6>
+                                    <h6>{% if outfit.created_by %}
                                         <div class="d-flex align-items-center display-images">
                                             {% if outfit.created_by.profile_pic %}
                                                 <a href="{{outfit.created_by.profile_pic.url}}" data-fancybox>
@@ -65,8 +65,9 @@
                                                     class="rounded-lg me-2" width="50" alt="">
                                                 </a>
                                             {% endif %}
-                                            <span>{{outfit.created_by.full_name|capfirst}}</span>
+                                            <span><a class="w-100" href="{% url 'users:view_user' outfit.created_by.id %}">{{outfit.created_by.full_name|capfirst}}</a></span>
                                         </div>
+                                        {% else %}-{% endif %}
                                     </h6>
                                 </li>
                                 <li>
@@ -83,6 +84,20 @@
                                 </li>
                             </ul>
                         </div>
+                        <div class=" col-md-6 productdetails">
+                            <h5><b>Outfit Image</b></h5>
+                            <ul class="product-bar outfit-custom-size-img d-flex justify-content-center mb-2">
+                                {% if outfit.image %}
+                                    <a href="{{outfit.image.url}}" data-fancybox>
+                                        <img src="{{outfit.image.url}}" alt="">
+                                    </a>
+                                {% else %}
+                                    <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                        <img src="{% static 'admin-assets/images/dp.png' %}" alt="">
+                                    </a>
+                                {% endif %}
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -90,3 +105,11 @@
     </div>
 </div>
 {% include "admin-includes/footer.html" %}
+<style>
+    .product-bar.outfit-custom-size-img {
+    max-height: 281px;
+    max-width: 364px;
+    overflow: hidden;
+    border: 1px solid #dbdbdb;
+}
+</style>
