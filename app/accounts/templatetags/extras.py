@@ -3,12 +3,22 @@ from accounts.views import *
 from contact_us.models import *
 from wardrobe.models import Wardrobe
 from subscription.models import *
+from django.http.request import HttpRequest
+from django.contrib.sites.shortcuts import get_current_site
 import environ
 
 register = template.Library()
 env = environ.Env()
 environ.Env.read_env()
 
+@register.simple_tag
+def protocol_domain(request:HttpRequest):
+	current_site = get_current_site(request)
+	context = {
+            'domain':current_site.domain,
+            'protocol': 'https' if USE_HTTPS else 'http',
+        }
+	return context 
 
 @register.simple_tag
 def split_email(email:str):
@@ -62,6 +72,10 @@ def convert_local_timezone_date(data,timezone):
 
 	except Exception as e:
 		return None
+
+@register.filter(name='today_customers')
+def today_customers(key):
+	return User.objects.filter(created_on__date=datetime.now().date(),role_id=CUSTOMER).order_by("-created_on")[0:5]
 
 #Dashboard template tags start
 @register.filter(name='users_count')

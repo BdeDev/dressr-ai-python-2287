@@ -5,6 +5,83 @@ from accounts.constants import *
 from subscription.models import *
 
 
+class AffiliateSettings(CommonInfo):
+    Commission_percentage = models.FloatField(default=20)
+    number_of_transactions = models.IntegerField(default=2,null=True,blank=True)
+    minimum_payment_threshold = models.IntegerField(default=100,null=True,blank=True)
+    affiliate=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+    clicks_count = models.IntegerField(default=0,null=True,blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'affiliate_settings'
+
+class AffiliateClicks(CommonInfo):
+    affiliate=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'affiliate_clicks'
+
+    
+class CommissionHistory(CommonInfo):
+    status = models.PositiveIntegerField(default=COMMISSION_STATUS_PENDING,choices=COMMISSION_HISTORY_STATUS,null=True, blank=True)
+    transaction = models.ForeignKey(Transactions,on_delete=models.CASCADE,null=True,blank=True)
+    affiliate = models.ForeignKey(User,on_delete=models.CASCADE,related_name='affiliate_commissions',null=True,blank=True)
+    referred_user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='referred_commissions',null=True,blank=True)
+    commission_amount = models.FloatField(default=0.0,null=True,blank=True)
+    
+    referral_code = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'affiliate_commssion_history'
+
+    def approve(self):
+        self.status = self.COMMISSION_STATUS_APPROVED
+        self.save()
+
+    def mark_as_paid(self):
+        self.status = self.COMMISSION_STATUS_PAID
+        self.save()
+
+
+class AffiliateProductLinks(CommonInfo):
+    affiliate = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+    link = models.TextField(null=True,blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'affiliate_product_link'
+
+
+class MarketingToolsCategories(CommonInfo):
+    title = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'marketing_tools_categories'
+
+class MarketingCategoryMedia(CommonInfo):
+    category = models.ForeignKey(MarketingToolsCategories, on_delete=models.CASCADE, null=True, blank=True,related_name='category_media')
+    name = models.CharField(max_length=255, null=True, blank=True)
+    media_file = models.FileField(upload_to='marketing_media/', null=True, blank=True)
+    link = models.URLField(max_length=500, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'marketing_category_media'
+
+class AffiliateGuide(CommonInfo):
+    description = models.TextField(null=True, blank=True)
+    image = models.FileField(upload_to='affiliate_guide/', null=True, blank=True)
+
+    class Meta:
+        managed = True
+        db_table = 'affiliate_guide'
+
 class AffiliateNetwork(CommonInfo):
     name = models.CharField(max_length=100, null=True, blank=True)   # AWIN, CJ, Rakuten, Impact
     api_key = models.CharField(max_length=255, null=True, blank=True)
@@ -69,55 +146,6 @@ class Product(CommonInfo):
 
     class Meta:
         db_table = 'product'
-
-
-class AffiliateLink(CommonInfo):
-    advertiser = models.ForeignKey(AffiliateAdvertiser, on_delete=models.CASCADE, null=True, blank=True)
-    category = models.ForeignKey(ProductCategory, on_delete=models.SET_NULL, null=True, blank=True)
-    deeplink = models.URLField()
-    enabled = models.BooleanField(default=True)
-
-    class Meta:
-        db_table = 'affiliate_link'
-
-
-class AffiliateClick(CommonInfo):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
-    advertiser = models.ForeignKey(AffiliateAdvertiser, on_delete=models.CASCADE, null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    device = models.CharField(max_length=50, null=True, blank=True)
-    ip_address = models.GenericIPAddressField(null=True, blank=True)
-
-    class Meta:
-        db_table = 'affiliate_click'
-
-class AffiliateConversion(CommonInfo):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    advertiser = models.ForeignKey(AffiliateAdvertiser, on_delete=models.CASCADE, null=True, blank=True)
-    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
-
-    order_id = models.CharField(max_length=200, null=True, blank=True)
-    commission = models.FloatField(default=0.0)
-    order_value = models.FloatField(default=0.0)
-    currency = models.CharField(max_length=5, null=True, blank=True)
-
-    transaction_time = models.DateTimeField()
-    fetched_on = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'affiliate_conversion'
-
-
-class AffiliateReport(CommonInfo):
-    advertiser = models.ForeignKey(AffiliateAdvertiser, on_delete=models.CASCADE)
-    clicks = models.IntegerField(default=0)
-    conversions = models.IntegerField(default=0)
-    revenue = models.FloatField(default=0.0)
-    date = models.DateField()
-
-    class Meta:
-        db_table = 'affiliate_report'
 
 class FashionTipCategory(CommonInfo):
     """

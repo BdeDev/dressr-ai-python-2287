@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.sites.models import Site
 from django.db.models.functions import Concat
 from django.contrib.auth import logout
+from ecommerce.models import AffiliateSettings
 from wardrobe.models import *
 from accounts.stripe_views import *
 
@@ -57,6 +58,14 @@ class ViewUser(View):
                 "outfits":get_pagination(request,outfits),
                 "item_count":ClothingItem.objects.filter(wardrobe__user=user).count(),
                 "favourite_items":get_pagination(request,user.favourite_item.all()),
+            })
+        
+        elif user.role_id == AFFILIATE:
+            return render(request, 'users/affiliate/affiliate-profile.html', {
+                "head_title":"Affiliate Management",
+                "isCustomer":False,
+                "user":user,
+                'loginhistory':get_pagination1(request,login_history,1),
             })
         else:
             logout(request)
@@ -136,22 +145,41 @@ class UsersList(View):
             "total_objects":users.count()
         })
 
+
+## ---------------------Affiliate Management------------------------
+
 class AffiliateList(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
-        affiliate = User.objects.filter(role_id=AFFILIATE).order_by('-created_on')
+        affiliates = User.objects.filter(role_id=AFFILIATE).order_by('-created_on')
+        affiliates = query_filter_constructer(request,affiliates,
+                {
+                    "username__icontains":"username",
+                    "full_name__icontains":"full_name",
+                    "email__icontains":"email",
+                    "created_on__date":"created_on",
+                    "status":"status"
+                }
+            )
+     
         if request.GET.get('mobile_no'):
-            affiliate = affiliate.annotate(full_mobile=Concat('country_code', 'mobile_no')).filter(full_mobile__icontains=request.GET.get('mobile_no'))
+            affiliates = affiliates.annotate(full_mobile=Concat('country_code', 'mobile_no')).filter(full_mobile__icontains=request.GET.get('mobile_no'))
+        
+        if request.GET and not affiliates:
+            messages.error(request, 'No Data Found')
+
         return render(request,'users/affiliate/affiliate-list.html',{
             "head_title":'Affiliate Management',
-            "affiliate" : affiliate,
+            "affiliates" : get_pagination(request, affiliates),
+            "scroll_required":True if request.GET else False,
+            "total_objects":affiliates.count()
         })
 
-class AddUser(View):
+class AddAffiliate(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
-        return render(request, 'users/users/add-user.html', {
-            'head_title': "User Management",
+        return render(request, 'users/affiliate/add-affiliate.html', {
+            'head_title': "Affiliate Management",
         })
     @method_decorator(admin_only)
     def post(self, request, *args, **kwargs):
@@ -159,107 +187,129 @@ class AddUser(View):
         mobile_no = request.POST.get("mobile_no").strip()
 
         # Check for existing user
-        if User.objects.filter(email=email, role_id =CUSTOMER, status__in=[ACTIVE, INACTIVE]).exists():
-            messages.error(request, 'User already exists with this email id.')
-            return redirect('users:add_user')
+        if User.objects.filter(email=email, role_id =AFFILIATE, status__in=[ACTIVE, INACTIVE]).exists():
+            messages.error(request, 'Affiliate already exists with this email id.')
+            return redirect('users:add_affiliate')
 
-        if User.objects.filter(mobile_no=mobile_no, role_id=CUSTOMER, status__in=[ACTIVE, INACTIVE]).exists():
+        if User.objects.filter(mobile_no=mobile_no, role_id=AFFILIATE, status__in=[ACTIVE, INACTIVE]).exists():
             messages.error(request, 'User already exists with this mobile number')
-            return redirect('users:add_user')
+            return redirect('users:add_affiliate')
 
+
+        if request.POST.get('password'):
+            check = re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',request.POST.get('password'))
+            if not check:
+                messages.error(request, 'Password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters')
+                return redirect('users:add_affiliate')
+                    
+        email_first = request.POST.get('email').split('@')
+        email_first = email_first[0]
+        suggestions = generate_mydressr_username(email_first)
+        username = suggestions[0]
         try:
             user = User.objects.create(
-                first_name=request.POST.get('first_name'),
-                last_name=request.POST.get('last_name'),
+                first_name=request.POST.get('first_name').strip(),
+                last_name=request.POST.get('last_name').strip(),
+                username = username,
                 email=email,
-                address=request.POST.get('address'),
-                role_id=CUSTOMER,
+                role_id=AFFILIATE,
                 gender=request.POST.get('gender'),
-                latitude=request.POST.get('latitude', None),
-                longitude=request.POST.get('longitude', None),
                 country_code=request.POST.get('country_code'),
                 country_iso_code=request.POST.get('country_iso_code'),
                 mobile_no=mobile_no,
                 profile_pic=request.FILES.get('profile_pic'),
                 password=make_password(request.POST.get('password')),
-                status=ACTIVE
+                status=ACTIVE,
+                referral_code = GenerateReferal(),
             )
             user.full_name = user.first_name + " " + user.last_name
             user.save()
-            messages.success(request, 'User created successfully !')
-            bulk_send_user_email(request, user, "EmailTemplates/login-crenditials.html", 'Login credentials', user.email, request.POST.get("password"), '', '', '',assign_to_celery=False)
-            return redirect('users:users_list')
+            messages.success(request, 'Affiliate created successfully !')
+            # bulk_send_user_email(request, user, "EmailTemplates/login-crenditials.html", 'Login credentials', user.email, request.POST.get("password"), '', '', '',assign_to_celery=False)
+            return redirect('users:affiliate_list')
         except Exception as e:
             messages.error(request, 'Failed to create user.')
-            return redirect('users:add_user')
+            return redirect('users:add_affiliate')
 
 
-class EditUser(View):
+class EditAffiliate(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
-        user = User.objects.get(id=self.kwargs['id'])
-        return render(request, 'users/users/edit-user.html', {
-            "head_title": "User Management",
-            "user": user,
+        affiliate = User.objects.get(id=self.kwargs['id'])
+        return render(request, 'users/affiliate/edit-affiliate.html', {
+            "head_title": "Affiliate Management",
+            "affiliate": affiliate,
             'GOOGLE_PLACES_KEY': env('GOOGLE_PLACES_KEY')
         })
     @method_decorator(admin_only)
     def post(self, request, *args, **kwargs):
         user = User.objects.get(id=self.kwargs['id'])
-        email = request.POST.get("email")
-        mobile_no = request.POST.get("mobile_no")
+        email = request.POST.get("email").strip()
 
         # Check for existing user
-        if User.objects.filter(email=email, role_id=CUSTOMER, status__in=[ACTIVE, INACTIVE]).exclude(id=user.id).exists():
+        if User.objects.filter(email=email, role_id=AFFILIATE, status__in=[ACTIVE, INACTIVE]).exclude(id=user.id).exists():
             messages.error(request, 'User already exists with this email id.')
             return redirect('users:edit_user',id=user.id)
 
-        if User.objects.filter(mobile_no=mobile_no, role_id=CUSTOMER, status__in=[ACTIVE, INACTIVE]).exclude(id=user.id).exists():
+        if User.objects.filter(role_id=AFFILIATE, status__in=[ACTIVE, INACTIVE]).exclude(id=user.id).exists():
             messages.error(request, 'User already exists with this mobile no')
             return redirect('users:edit_user',id=user.id)
-
-        fields_to_update = [
-            'first_name','last_name', 'gender', 'email', 'mobile_no', 'address', 'latitude', 'longitude'
-        ]
-        for field in fields_to_update:
-            if request.POST.get(field):
-                setattr(user, field, request.POST.get(field))
 
         if request.FILES.get('profile_pic'):
             user.profile_pic = request.FILES.get('profile_pic')
 
-        user.save()
-        user.refresh_from_db()
+        if request.POST.get("first_name"):
+            user.first_name = request.POST.get("first_name").strip()
+        if request.POST.get("last_name"):
+            user.last_name = request.POST.get("last_name").strip()
+
         user.full_name = user.first_name + " " + user.last_name
         user.save()
         messages.success(request, 'Profile updated successfully.')
         return redirect('users:view_user', id=user.id)
 
-class ModifyCustomerStipeAccount(View):
+class UpdateAffiliateCommission(View):
     @method_decorator(admin_only)
-    def get(self,request,*args,**kwargs):
-        user = User.objects.get(id=self.kwargs['id'])
-        type = request.GET.get('type')
-        if type not in ['customer','account']:
-            messages.error(request, 'Invalid Request')
-            return redirect(request.META.get('HTTP_REFERER'))
+    def post(self, request, *args, **kwargs):
+        affiliate_commission = AffiliateSettings.objects.get(affiliate=self.kwargs['id'])
         
-        if type == 'customer' and not user.customer_id:
-            is_created = CreateStripeCustomer(request,user)
-            if is_created:
-                messages.success(request, 'Stripe customer created successfully')
-            else:
-                messages.error(request, 'Failed to create stripe customer')
-        elif type == 'account' and not user.account_id:
-            is_created = create_connected_account(user)
-            if is_created:
-                messages.success(request, 'Stripe account created successfully')
-            else:
-                messages.error(request, 'Failed to create stripe account')
-        else:
-            messages.error(request, 'Stripe ID already exists')
+        commission_percentage = request.POST.get('commission_percentage')
+        transactions = request.POST.get('transactions')
+        minimum_payment_threshold = request.POST.get('minimum_payment_threshold')
 
-        return redirect(request.META.get('HTTP_REFERER'))
+        affiliate_commission.Commission_percentage = float(commission_percentage) if commission_percentage else 0
+        affiliate_commission.number_of_transactions = int(transactions) if transactions else 0
+        affiliate_commission.minimum_payment_threshold = float(minimum_payment_threshold) if minimum_payment_threshold else 0
+
+        affiliate_commission.save()
+        messages.success(request, 'Commission setting updated successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+# class ModifyAffiliateStipeAccount(View):
+#     @method_decorator(admin_only)
+#     def get(self,request,*args,**kwargs):
+#         user = User.objects.get(id=self.kwargs['id'])
+#         type = request.GET.get('type')
+#         if type not in ['customer','account']:
+#             messages.error(request, 'Invalid Request')
+#             return redirect(request.META.get('HTTP_REFERER'))
+        
+#         if type == 'customer' and not user.customer_id:
+#             is_created = CreateStripeCustomer(request,user)
+#             if is_created:
+#                 messages.success(request, 'Stripe customer created successfully')
+#             else:
+#                 messages.error(request, 'Failed to create stripe customer')
+#         elif type == 'account' and not user.account_id:
+#             is_created = create_connected_account(user)
+#             if is_created:
+#                 messages.success(request, 'Stripe account created successfully')
+#             else:
+#                 messages.error(request, 'Failed to create stripe account')
+#         else:
+#             messages.error(request, 'Stripe ID already exists')
+
+#         return redirect(request.META.get('HTTP_REFERER'))
 
 class NotificationOnOff(View):
     @method_decorator(admin_only)

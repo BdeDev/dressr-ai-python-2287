@@ -46,6 +46,14 @@ class User(AbstractUser,CommonInfo):
     hair_color = models.ForeignKey('HairColor', on_delete=models.SET_NULL,null=True,blank=True)
     others = models.TextField(null=True,blank=True)
     email = models.CharField(max_length=100, null=True, blank=True)
+
+    refered_by = models.ForeignKey('accounts.User',on_delete=models.CASCADE,null=True,blank=True)
+    referral_code = models.CharField(max_length=20,null=True,blank=True)
+    ## Address attributes
+    address = models.CharField(max_length=255,blank=True, null=True)
+    longitude = models.FloatField(null=True, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    
     ## subscription 
     is_plan_purchased = models.BooleanField(default=False)
     is_subscription_active = models.BooleanField(default=False)
