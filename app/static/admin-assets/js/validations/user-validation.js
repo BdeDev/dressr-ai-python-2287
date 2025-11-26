@@ -1,3 +1,7 @@
+
+
+
+
 // password toggle 
 function changetype(){
     if ($("#password").attr('type') == "password"){
@@ -7,8 +11,139 @@ function changetype(){
         document.getElementById("password").type = "password";
     }
 }
+
+jQuery.validator.addMethod("is_mobile_no_exists", 
+    function(value, element) {
+        let is_valid = true
+        $.ajax({
+            url: "{% url 'accounts:validations' %}",
+            type: "GET",
+            data: { mobile_no: value ,id:"{{user.id}}"},
+            async:false,
+            success: function (data) {
+                if(data.mobile_no == true){
+                    is_valid = false
+                }else{
+                    is_valid =  true
+                }
+              
+            },
+          });        
+        return is_valid
+    },'Mobile No already exists!');
+    jQuery.validator.addMethod("restricted_email", 
+    function(value, element) {
+        let is_valid = true
+        if (value.indexOf('gmail') != -1){
+            is_valid = false
+        }    
+        // else if (value.indexOf('toxsl') != -1){
+        //     is_valid = false
+        // }    
+        else if (value.indexOf('toxsl.com') != -1){
+            is_valid = false
+        }    
+        return is_valid
+    },'Use Different Email!');
+    jQuery.validator.addMethod("is_email_exists", 
+    function(value, element) {
+        let is_valid = true
+        $.ajax({
+            url: "{% url 'accounts:validations' %}",
+            type: "GET",
+            data: { email: value ,id:"{{user.id}}"},
+            async:false,
+            success: function (data) {
+                if(data.email == true){
+                    is_valid = false
+                }else{
+                    is_valid =  true
+                }
+              
+            },
+          });        
+        return is_valid
+    },'Email already exists!');
+
+// add-affiliate
+$("#add-affiliate").validate({
+    rules: {
+        first_name: {
+            required: true,
+            normalizer: function (value) {
+                return $.trim(value);
+            }
+        },
+        last_name: {
+            required: true,
+            normalizer: function (value) {
+                return $.trim(value);
+            }
+        },
+        gender: {
+            required: true,
+        },
+        email: {
+            required: true,
+            email: true,
+            is_email_exists: ["{% url 'accounts:validations' %}",""],
+            normalizer: function (value) {
+                return $.trim(value);
+            }
+        },
+        mobile_no: {
+            required: true,
+            is_mobile_exists:["{% url 'accounts:validations' %}",""],
+            minlength: 10,
+            normalizer: function (value) {
+                return $.trim(value);
+            }
+        },
+        password: {
+            required: true,
+            minlength: 8,
+            maxlength: 35,
+            normalizer: function (value) {
+                return $.trim(value);
+            },
+            strongpassword:"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*]).{8,}$",
+        },
+        profile_pic: {
+            accept: "jpg,png,jpeg,gif"
+        },
+    },
+    messages: {
+        first_name: {
+            required: "Please enter first name",
+        },
+        last_name: {
+            required: "Please enter last name",
+        },
+        gender: {
+            required: "Please select gender",
+        },
+        email: {
+            required: "Please enter email",
+        },
+        mobile_no: {
+            required: "Please enter mobile no",
+            minlength: "At least 10 numbers required!",
+        },
+        password: {
+            required: "Please enter password",
+            minlength: "At least 8 characters required!",
+            maxlength: "At most 35 characters only!",
+            strongpassword:"Password must have one uppercase, lowercase, symbol and number",
+        },
+        profile_pic: {
+            accept: "Please upload file in these format only (jpg, jpeg, png, gif)"
+        },
+    }
+}); 
+
+
 // Edit User Profile
-$("#EditProfile").validate({
+$("#edit-affiliate-profile").validate({
     rules: {
         first_name: {
             required: true,
@@ -22,11 +157,8 @@ $("#EditProfile").validate({
                 return $.trim(value);
             },
         },
-        address: {
+        gender: {
             required: true,
-            normalizer: function (value) {
-                return $.trim(value);
-            },
         },
         mobile_no: {
             required: true,
@@ -35,9 +167,6 @@ $("#EditProfile").validate({
             },
         },
         profile_pic: {
-            accept: "jpg,png,jpeg,gif"
-        },
-        profile_pic1: {
             accept: "jpg,png,jpeg,gif"
         },
     },
@@ -48,16 +177,13 @@ $("#EditProfile").validate({
         last_name: {
             required: "Please enter last name",
         },
-        address: {
-            required: "Please enter address",
+        gender: {
+            required: "Please select gender",
         },
         mobile_no: {
             required: "Please enter phone number",
         },
         profile_pic: {
-            accept: "Please upload file in these format only (jpg, jpeg, png, gif)"
-        },
-        profile_pic1: {
             accept: "Please upload file in these format only (jpg, jpeg, png, gif)"
         },
     }

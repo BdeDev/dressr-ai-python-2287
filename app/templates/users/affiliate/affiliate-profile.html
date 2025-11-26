@@ -1,0 +1,379 @@
+{% include "admin-includes/header.html" %}{% load static %}{% load extras %}
+{% protocol_domain request as protocol_domain %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Affiliate Information</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'users:affiliate_list' %}">Affiliates </a> </li>
+                        <li class="breadcrumb-item active">Profile</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-primary me-2" href="{% url 'logger:send_custom_email' user.id %}" ><i class="fas fa-mail-bulk me-1"></i> Send Email</a>
+                <a class="btn btn-primary me-2" href="{% url 'accounts:notifications_list' user.id %}" ><i class="fas fa-bell me-1"></i> Notifications</a>
+                {% if not user.status == 3 %}
+                    <a class="btn btn-primary me-2" href="{% url 'users:edit_affiliate' user.id %}" ><i class="fa fa-edit me-1"></i> Update</a>
+                {% endif %}
+                <a href="{% url 'users:add_affiliate' %}" data-bs-toggle="modal" data-bs-target="#max-free-items-uploads" class='btn btn-theme me-2'> Commission Settings</a>
+                <a class="btn btn-secondary" href="{% url 'users:affiliate_list' %}" ><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 mt-3">
+                <div class="card product-profile-wrapper">
+                    <div class="product-detail-wrapper">
+                        <div class="profile-imgbox">
+                            {% if user.profile_pic %}
+                            <a class="product-img" href="{{ user.profile_pic.url }}" data-fancybox="gallery">
+                                <img style="height: auto;" src="{{ user.profile_pic.url }}" alt="image">
+                            </a>
+                            {% else %}
+                            <a class="product-img" href="{% static 'admin-assets/images/dp.png' %}" data-fancybox="gallery">
+                                <img style="height: auto;" src="{% static 'admin-assets/images/dp.png' %}" alt="image">
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 productdetails">
+                                <h5 class=""><b>Customer Information</b></h5>
+                                <ul class="product-bar mb-2">
+                                    <li>
+                                        <h4>User Id </h4>
+                                        <h6>{% if user.id %}{{user.id}}{% else %}-{% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Username</h4>
+                                        <h6>{% if user.username %}{{user.username}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>First Name </h4>
+                                        <h6>{% if user.first_name %}{{user.first_name|capfirst}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Last Name </h4>
+                                        <h6>{% if user.last_name %}{{user.last_name|capfirst}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Full Name </h4>
+                                        <h6>{% if user.full_name %}{{user.full_name|capfirst}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Mobile Number </h4>
+                                        <h6>{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}} {% endif %}{{user.mobile_no}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Email </h4>
+                                        <h6>{% if user.email %}{{user.email}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Gender</h4>
+                                        <h6>
+                                            {% if user.gender == 1 %}
+                                            <span class="badge bg-secondary">MALE</span>
+                                            {% elif user.gender == 2 %}
+                                            <span class="badge bg-secondary">FEMALE</span>
+                                            {% elif user.gender == 3 %}
+                                            <span class="badge bg-secondary">OTHER</span>
+                                            {% else %}
+                                            -
+                                            {% endif %}
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Role</h4>
+                                        <h6>
+                                            {% if user.role_id == 1 %}
+                                            <span class="badge bg-primary">ADMIN</span>
+                                            {% elif user.role_id == 2 %}
+                                            <span class="badge bg-primary">CUSTOMER</span>
+                                            {% elif user.role_id == 3 %}
+                                            <span class="badge bg-primary">AFFILIATE</span>
+                                            {% endif %}
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Status</h4>
+                                        <h6>
+                                            {% if user.status == 1 %}
+                                            <span class="badge bg-success">ACTIVE</span>
+                                            {% elif user.status == 2 %}
+                                            <span class="badge bg-warning">INACTIVE</span>
+                                            {% elif user.status == 3 %}
+                                            <span class="badge bg-danger">DELETED</span>
+                                            {% endif %}
+                                        </h6>
+                                    </li> 
+                                    {% if user.status == 3 %}
+                                    <li>
+                                        <h4>Account Delete Reason </h4>
+                                        <h6>
+                                            {% if user.account_delete_reason %}{{user.account_delete_reason}} {% else %} - {% endif %}
+                                        </h6>
+                                    </li> 
+                                    {% endif %}
+                                    
+                                    <li>
+                                        <h4>Created On </h4>
+                                        <h6>
+                                            <script>
+                                                var date = ConvertDateTime("{{ user.created_on|date:'Y-m-d' }}", "{{ user.created_on|time:'H:i' }}");
+                                                document.write(date);
+                                            </script>
+                                        </h6>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6 productdetails">
+                                
+                                <h5><b>Login Information</b></h5>
+                                <ul class="product-bar mb-2">
+                                    <li>
+                                        <h4>Last Login </h4>
+                                        <h6>
+                                            {% if user.last_login %}
+                                            <script>
+                                                var date = ConvertDateTime("{{ user.last_login|date:'Y-m-d' }}", "{{ user.last_login|time:'H:i' }}");
+                                                document.write(date);
+                                            </script>
+                                            {% else %}-{% endif %}
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Affiliate Reference Code</h4>
+                                        <h6>
+                                            {% if user.referral_code %}{{user.referral_code}}{% else %}-{% endif %}
+                                        </h6>
+                                    </li> 
+                                    <li>
+                                        <h4>Affiliate Reference Url</h4>
+                                        <h6>
+                                            {{protocol_domain.protocol }}://{{request.get_host}}?mdr_ref={{user.referral_code}}
+                                        </h6>
+                                    </li> 
+                                    <li>
+                                        <h4>Access Token </h4>
+                                        <h6>
+                                            {% if token and token.key %}Token {{token.key}}{% else %}-{% endif %}
+                                        </h6>
+                                    </li> 
+                                </ul>
+                                <h5 class=""><b>Preferred Contact Methods</b></h5>
+                                <ul class="product-bar mb-2">
+                                    <li>
+                                        <h4>Is Notification Enable</h4>
+                                        <h6>
+                                            {% if user.notification_enable %}
+                                            <span class="badge bg-info">Yes</span>
+                                            {% else %}
+                                            <span class="badge bg-warning">No</span>
+                                            {% endif%}                 
+                                        </h6>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
+                            {% if user.status == 1 %}
+                                <a href="{% url 'users:inactivate_user' user.id %}" onclick="Loader()" class="btn btn-warning ms-2">DEACTIVATE</a>
+                                <a href="{% url 'users:delete_user' user.id %}" onclick="Loader()" class="btn btn-danger ms-2">DELETE</a>
+                            {% elif user.status == 2 %}
+                                <a href="{% url 'users:activate_user' user.id %}" onclick="Loader()" class="btn btn-success ms-2">ACTIVATE</a>
+                                <a href="{% url 'users:delete_user' user.id %}" onclick="Loader()" class="btn btn-danger ms-2">DELETE</a>
+                            {% else %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tabs -->
+            <div class="col-lg-12 col-sm-12 mt-5">
+                <div class="row  mt-4">
+                    <div class="bs-example action-tabs">
+                        <ul class="nav nav-tabs" id="myTab">
+                            <li class="nav-item">
+                                <a href="#sectionA" class="nav-link nav-link-items active nav-link1" data-toggle="tab">Login History</a>
+                            </li>
+                             <li class="nav-item">
+                                <a href="#sectionB" class="nav-link nav-link-items nav-link1" data-toggle="tab">Sales</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="sectionA" class="tab-pane fade show active ">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>User IP</strong></th>
+                                                                <th><strong>Agent</strong></th>
+                                                                <th><strong>Status</strong></th>
+                                                                <th><strong>Created On </strong></th>
+                                                                <th><strong>Url </strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if loginhistory %}
+                                                                {% for history in loginhistory %}
+                                                                <tr>
+                                                                    <td>{{history.user_ip}}</td>
+                                                                    <td>{{history.user_agent}}</td>
+                                                                    <td>
+                                                                        {% if history.status == 1 %}
+                                                                        <div class="badge bg-success">SUCCESS</div>
+                                                                        {% else %}
+                                                                        <div class="badge bg-danger">FAILURE</div>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ history.created_on|date:'Y-m-d' }}", "{{ history.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                    <td>{% if history.url %}{{history.url}}{% else %}-{% endif %}</td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if loginhistory|length > 10 %}
+                                                <div class='text-left mt-2' >
+                                                    <a class='btn btn-primary' href="{% url 'accounts:login_history' %}?email={{user.email}}">View More <i class="fas fa-angle-double-right ms-2"></i></a>
+                                                </div>
+                                                {% endif %}
+                                                {% comment %} <!-- pagination-->
+                                                {% include "admin-includes/pagination.html" with listing_objects=loginhistory %}
+                                                <!-- pagination end--> {% endcomment %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <div id="sectionB" class="tab-pane fade show">
+                                <section id="tab" class="tab-panel">
+                                    <input type="hidden" id="user_id" value="{{ user.id }}">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-xl-9 col-lg-12">
+                                                    <div class="card flex-fill">
+                                                        <div class="card-header pb-0 d-md-flex justify-content-between align-items-center">
+                                                            <h5 class="card-title mb-0">Performance in <span id="selected_year"></span></span></h5>
+                                                            <div class="graph-sets mt-md-0 mt-2">
+                                                                <div class="dropdown d-flex">
+                                                                    <select class="graph-dropdown me-2" name="years" id="years" onchange="GetGraphData(this.value)"></select>
+                                                                
+                                                                    <select class="graph-dropdown me-2 form-select" name="month_year" id="month_year" onchange="GetGraphData(this.value)">
+                                                                        <option value="">Select</option>
+                                                                        <option value="1">January</option>
+                                                                        <option value="2">February</option>
+                                                                        <option value="3">March</option>
+                                                                        <option value="4">April</option>
+                                                                        <option value="5">May</option>
+                                                                        <option value="6">June</option>
+                                                                        <option value="7">July</option>
+                                                                        <option value="8">August</option>
+                                                                        <option value="9">September</option>
+                                                                        <option value="10">October</option>
+                                                                        <option value="11">November</option>
+                                                                        <option value="12">December</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <div id="chart-container"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xl-3 col-md-4 mt-md-0 mt-2">
+                                                    <div class="card h-100">
+                                                        <div class="card-body d-flex flex-column justify-content-center">
+                                                            <ul class="list-group list-group-flush text-center">
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    <span >Orders</span>
+                                                                    <span id="total_Orders">0</span>
+                                                                </li>
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    <span>Commission</span>
+                                                                    <span id="total_commissions">0</span>
+                                                                </li>
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    <span>Sales</span>
+                                                                    <span id="total_sales">0</span>
+                                                                </li>
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    <span>Clicks</span>
+                                                                    <span id="total_clicks">0</span>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tabs end -->
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="max-free-items-uploads" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Commission Settings</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="basic-form">
+                    <form id="commission_settings" onsubmit="Loader(this.id)" action="{% url 'users:edit_affiliate_commission' user.id  %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="form-group mb-3 col-md-12 required-field">
+                                <label class="form-label">Commission Pecentage</label>
+                                <input type="text" maxlength=4 onkeypress="return /[0-9]/i.test(event.key)" placeholder="Commission Percentage"{% if affiliate_setting %}value="{{affiliate_setting.Commission_percentage}}"{% endif %} name="commission_percentage"  id="commission_percentage" class="form-control">
+                            </div>
+							<div class="form-group mb-3 col-md-12 required-field">
+                                <label class="form-label">Number of Orders</label>
+                                <input type="text" maxlength=8 onkeypress="return /[0-9]/i.test(event.key)" placeholder="Number of transactions"{% if affiliate_setting %}value="{{affiliate_setting.number_of_transactions}}"{% endif %} name="transactions"  id="transactions" class="form-control">
+                            </div>
+							<div class="form-group mb-3 col-md-12 required-field">
+                                <label class="form-label">Minimum Threshold For Payment</label>
+                                <input type="text" maxlength=4 onkeypress="return /[0-9]/i.test(event.key)" placeholder="Minimum threshold for payment"{% if affiliate_setting %}value="{{affiliate_setting.minimum_payment_threshold}}"{% endif %} name="minimum_payment_threshold"  id="minimum_payment_threshold" class="form-control">
+                            </div>
+                            <div class="text-end col-md-12">
+                                <button id="form-btn" class="btn btn-primary" type="submit">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script  src="{% static 'admin-assets/js/validations/commission-settings.js' %}"></script>

@@ -416,3 +416,196 @@ class PublishUnpublishDiscountAd(View):
             messages.success(request,'Discount ads published successfully')
         discount_ad.save()
         return redirect('ecommerce:view_discount',id=discount_ad.id)
+    
+
+
+#Add marketing data from admin  
+class AffiliateMarketingTools(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        marketing_categories=MarketingToolsCategories.objects.all().order_by('-created_on')
+        marketing_categories = query_filter_constructer(request,marketing_categories,
+                {
+                    "title__icontains":"title",
+                    "created_on__date":"created_on",
+                }
+            )
+        if request.GET and not marketing_categories:
+            messages.error(request, 'No Data Found!')
+        guide=AffiliateGuide.objects.first()
+        return render(request,'users/affiliate/admin/markteing_tools/marketing-tools.html',{
+            "head_title":'Affiliate Management',
+            "marketing_categories":marketing_categories,
+            'sort_params':request.GET.copy(),
+            "guide":guide
+        })
+    
+    def post(self, request, *args, **kwargs):
+        if not request.POST.get('marketing_category'):
+            messages.error(request,'Please enter marketing category')
+        else:
+            marketing_category,created=MarketingToolsCategories.objects.get_or_create(title=request.POST.get('marketing_category').strip())
+            if created:
+                marketing_category.save()
+                messages.success(request,'Marketing category added successfully!')
+            else:
+                messages.success(request,'Marketing category already exists!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class UpdateMarketingCategory(View):
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        marketing_category = MarketingToolsCategories.objects.get(id=request.POST.get('category_id'))
+        if MarketingToolsCategories.objects.filter(title=request.POST.get('e_category_title').strip()).exclude(id=marketing_category.id):
+            messages.error(request,'Marketing category Already Exists!')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        
+        if request.POST.get('e_category_title'):
+            marketing_category.title=request.POST.get('e_category_title')
+
+        marketing_category.save()
+        messages.success(request, 'Marketing category updated successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+class DeleteMarketingCategory(View):
+    def get(self,request,*args,**kwargs):
+        MarketingToolsCategories.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request, 'Marketing category deleted successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
+
+   
+class ViewMarketingCategory(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        marketing_category = MarketingToolsCategories.objects.get(id=self.kwargs['id'])
+        category_media=marketing_category.category_media.all().order_by('-created_on')
+
+        category_media = query_filter_constructer(request,category_media,
+                {
+                    "name__icontains":"name",
+                    "created_on__date":"created_on",
+                }
+            )
+        if request.GET and not category_media:
+            messages.error(request, 'No Data Found!')
+    
+        return render(request,'users/affiliate/admin/markteing_tools/category_media.html',{
+            'head_title':'Affiliate Management',
+            'marketing_category':marketing_category,
+            'category_media':get_pagination(request,category_media),
+            "sort_params":request.GET
+              })
+
+
+class AddMarketingCatyegoryMedia(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        marketing_category = MarketingToolsCategories.objects.get(id=self.kwargs['id'])
+        return render(request, 'users/affiliate/admin/markteing_tools/add_category_media.html',{"head_title":"Affiliate Management","marketing_category":marketing_category})
+
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        marketing_category = MarketingToolsCategories.objects.get(id=self.kwargs['id'])
+        if not request.POST.get('name'):
+            messages.error(request,'Please enter media name')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        media_file = request.FILES.get('media_file')
+        link = request.POST.get('link')
+        if media_file and link:
+            messages.error(request, 'Please provide only one input: either a media file or a link, not both.')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        if not media_file and not link:
+            messages.error(request, 'Please provide at least one input: a media file or a link.')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        
+        category_media = MarketingCategoryMedia.objects.create(
+            category=marketing_category,
+            name = request.POST.get('name'),
+            media_file = request.FILES.get('media_file'),
+            link=request.POST.get('link')
+        )
+        messages.success(request, 'Category Media added successfully!')
+        return redirect('affiliate_v2:view_marketing_category',id=marketing_category.id)
+    
+
+class UpdateMarketingCatyegoryMedia(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        category_media = MarketingCategoryMedia.objects.get(id=self.kwargs['id'])
+        return render(request, 'users/affiliate/admin/markteing_tools/update_category_media.html',{"head_title":"Affiliate Management","category_media":category_media})
+
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        category_media = MarketingCategoryMedia.objects.get(id=self.kwargs['id'])
+        if MarketingCategoryMedia.objects.filter(category=category_media.category,name=request.POST.get('name').strip()).exclude(id=category_media.id):
+            messages.error(request,'Category Media Already Exists!')
+            return redirect('affiliate_v2:view_marketing_category',id=category_media.category.id)
+        media_file = request.FILES.get('media_file')
+        link = request.POST.get('link')
+        if media_file and link:
+            messages.error(request, 'Please provide only one input: either a media file or a link, not both.')
+            return redirect('affiliate_v2:view_marketing_category', id=category_media.category.id)
+
+        if not media_file and not link:
+            messages.error(request, 'Please provide at least one input: a media file or a link.')
+            return redirect('affiliate_v2:view_marketing_category', id=category_media.category.id)
+        category_media.name=request.POST.get('name')
+        category_media.media_file=media_file
+        category_media.link=link
+        category_media.save()
+        messages.success(request, 'Category Media updated successfully!')
+        return redirect('affiliate_v2:view_marketing_category',id=category_media.category.id)
+
+class DeleteMarketingCatyegoryMedia(View):
+    def get(self,request,*args,**kwargs):
+        MarketingCategoryMedia.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request, 'Marketing category media deleted successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
+    
+
+class AddAffiliateGuide(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        return render(request, 'users/affiliate/admin/guide/add_affiliate_guide.html',{"head_title":"Affiliate Management"})
+
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        if not request.POST.get('description'):
+            messages.error(request, 'please add guide description!')
+            return redirect('affiliate_v2:affiliate_marketing_tools')
+        if not AffiliateGuide.objects.first():
+            AffiliateGuide.objects.create(description=request.POST.get('description'),image=request.FILES.get('image'))
+            messages.success(request, 'Guide added successfully!')
+        else:
+            messages.error(request, 'Guide already exists!')
+        return redirect('affiliate_v2:affiliate_marketing_tools')
+    
+class EditAffiliateGuide(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        guide=AffiliateGuide.objects.first()
+        return render(request, 'users/affiliate/admin/guide/edit_affiliate_guide.html',{"head_title":"Affiliate Management","guide":guide})
+
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        guide=AffiliateGuide.objects.first()
+        if request.POST.get('description'):
+            guide.description=request.POST.get('description')
+        if request.FILES.get('image'):
+            guide.image=request.FILES.get('image')
+        guide.save()
+        messages.success(request, 'Guide updated successfully!')
+        return redirect('affiliate_v2:affiliate_marketing_tools')
+    
+class DeleteAffiliateGuide(View):
+    def get(self,request,*args,**kwargs):
+        try:
+            AffiliateGuide.objects.first().delete()
+            messages.success(request, 'Guide deleted successfully!')
+        except:
+            pass
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
+
+

@@ -2,6 +2,7 @@ from accounts.common_imports import *
 from accounts.utils import *
 from .serializer import *
 from .healper import *
+from accounts.management.commands.default_data import ACTIVITY_ITEM_MAP
 
 class GetWardrobeAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -639,60 +640,6 @@ class AddItemInOutfitAPI(APIView):
         return Response({"message":"Outfit addedd Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
 #####----------------------Trip Management API's--------------------------###
-# class AddTripAPI(APIView):
-#     permission_classes = [permissions.IsAuthenticated]
-#     parser_classes = [MultiPartParser, FormParser]
-
-#     @swagger_auto_schema(
-#         tags=['Trip Management'],
-#         operation_id="Add trip",
-#         operation_description="Add a new trip for the user",
-#         manual_parameters=[
-#             openapi.Parameter('activity', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Activity Flag ID"),
-#             openapi.Parameter('activity_flag', openapi.IN_FORM, type=openapi.TYPE_STRING, description="{'name':'fgas','description':'dshdhdf'} (if creating a new one)"),
-#             openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip title"),
-#             openapi.Parameter('description', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip description"),
-#             openapi.Parameter('location', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip location"),
-#             openapi.Parameter('latitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Latitude"),
-#             openapi.Parameter('longitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Longitude"),
-#             openapi.Parameter('start_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
-#             openapi.Parameter('end_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
-#             openapi.Parameter('trip_length', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Duration in days"),
-#         ],
-#     )
-#     def post(self, request, *args, **kwargs):
-#         required_fields = ['title', 'description', 'location', 'start_date', 'end_date', 'trip_length']
-#         missing = [f for f in required_fields if not request.data.get(f)]
-#         if missing:
-#             return Response(
-#                 {"message": f"Missing required fields: {', '.join(missing)}", "status": status.HTTP_400_BAD_REQUEST},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-        
-#         activity_flag_obj = None
-#         activity_flag_data = request.data.get('activity_flag')
-#         activity_id = request.data.get('activity')
-#         if activity_flag_data:
-#             activity_flag_json = json.loads(activity_flag_data)
-#             activity_flag_obj, _ = ActivityFlag.objects.get_or_create(name=activity_flag_json.get('name').strip(),description=activity_flag_json.get('description').strip())
-#         elif activity_id:
-#             activity_flag_obj = get_or_none(ActivityFlag, "Invalid activity flag ID", id=activity_id)
-#         else:
-#             return Response({"message": "Please provide either 'activity' or 'activity_flag'.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-#         trip, created = Trips.objects.get_or_create(
-#             title=request.data.get('title').strip(),
-#             description=request.data.get('description').strip(),
-#             location=request.data.get('location').strip(),
-#             latitude=request.data.get('latitude'),
-#             longitude=request.data.get('longitude'),
-#             created_by=request.user,
-#             activity_flag=activity_flag_obj,
-#             start_date=request.data.get('start_date'),
-#             end_date=request.data.get('end_date'),
-#             trip_length=int(request.data.get('trip_length'))
-#         )
-#         message = "Trip created successfully!" if created else "Trip already exists."
-#         return Response({"message": message, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
 class GetMyAllTripAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -939,7 +886,6 @@ class AddTripAPI(APIView):
             trip.outfit.add(*outfit_ids)
         return Response({"message": "Trip created successfully!","status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
 
-
 class MarkItemFavouriteAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
     parser_classes = [MultiPartParser,FormParser]
@@ -976,10 +922,15 @@ class FavouriteItemListAPI(APIView):
         tags=["WarDrobe management"],
         operation_description="Favourite Item List API",
         operation_id="Favourite Item List API",
-        manual_parameters=[],
+        manual_parameters=[
+            openapi.Parameter('category_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Category id"),
+        ],
     )
     def get(self, request, *args, **kwargs):
         favourite_items = request.user.favourite_item.all()
+        if request.query_params.get('category_id'):
+            category = get_or_none(ClothCategory,'Category does not exist !',id = request.query_params.get('category_id').strip() )
+            favourite_items = favourite_items.filter(cloth_category=category)
         data = ClothItemSerializer(favourite_items,many=True,context = {"request":request}).data
         return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)    
 
@@ -1125,7 +1076,6 @@ class ItemSeachFilterAPI(APIView):
         data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
-
 class RecentSearchAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
@@ -1140,7 +1090,6 @@ class RecentSearchAPI(APIView):
         searches = RecentSearch.objects.filter(user=request.user).order_by('-created_on')[:5]
         data = RecentSearchSerializer(searches,many=True,context = {"request":request}).data
         return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-
 
 class RemoveItemFromRecentSearchAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
@@ -1176,7 +1125,6 @@ class RemoveAllItemFromRecentSearchAPI(APIView):
         recent_search = RecentSearch.objects.filter(user=request.user)
         recent_search.delete()
         return Response({"message":"Recent Search Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
-
 
 ###-----------------------User Tag Management-------------------------###
 
@@ -1316,7 +1264,6 @@ class GetWearLogsByItemAPI(APIView):
         data = WearHistorySerializer(wear_logs[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
-
 class MostWearClothAnalyticsAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
@@ -1387,3 +1334,43 @@ class MostWearClothAnalyticsAPI(APIView):
         }
 
         return Response(response, status=200)
+
+
+class OutfitRecommendationAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Trip Management"],
+        operation_id="Item Recommened for trip",
+        operation_description="Item Recommened for trip",
+        manual_parameters=[openapi.Parameter('activity_id', openapi.IN_QUERY,type=openapi.TYPE_STRING,description="Activity ID"),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        CustomRequiredFieldsValidator.validate_api_field(self, request, 
+                [{"field_name": "activity_id","method": "get","error_message": "Please enter activity id"},])
+        required_items = []
+        user_activity = get_or_none(ActivityFlag,"Activity flag does not exist!",id=request.query_params.get("activity_id").strip())
+        key = user_activity.name.lower().replace(" ", "_")
+        required_items += ACTIVITY_ITEM_MAP.get(key, [])
+        required_items = list(set(required_items))
+        cloth_items = ClothingItem.objects.filter(wardrobe__user=request.user,cloth_category__title__in=required_items).select_related("cloth_category")
+        
+        # missing_items = [
+        #     item for item in required_items
+        #     if item not in owned_categories
+        # ]
+      
+        # store_items = StoreItem.objects.filter(category__in=missing_items)
+        # for item in store_items:
+        #     Recommendation.objects.create(
+        #         vacation_plan=user_trip,
+        #         recommended_item=item.title,
+        #         category=item.category,
+        #         purchase_link=item.link,
+        #         reason="You don't have this item; recommended for your trip"
+        #     )
+
+        data = ClothItemSerializer(cloth_items,many=True,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)

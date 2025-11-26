@@ -2,6 +2,8 @@ from .views import *
 from django.contrib import admin
 from .views_api import *
 from django.urls import re_path
+from .view_graphs import *
+from .view_export import *
 
 admin.autodiscover()
 app_name = 'ecommerce'
@@ -40,4 +42,7 @@ urlpatterns = [
     re_path(r'^banners-list-api/$', BannersListAPI.as_view(), name='banner_list_api'),
     re_path(r'^fashion-tips-list-api/$', FashionTipsAPI.as_view(), name='fashion_tips_list_api'),
     re_path(r'^partner-store-api/$', PartnerStoresAPI.as_view(), name='partner_store_api'),
+
+    re_path(r'^affiliate-performance-graph/$', AffiliatePerformanceGraph.as_view(), name='affiliate_performance_graph'),
+    re_path(r'^download-performance-report/$', DownloadAffiliatePerformanceReport.as_view(), name='download_performance_report'),
 ]
