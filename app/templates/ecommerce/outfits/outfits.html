@@ -59,7 +59,7 @@
 										<tr>
                                             <td> {{outfit.title|default:"-"}}</td>
 											<td> {{outfit.occasion.title|default:"-"}}</td>
-                                            <td class='clickable-row' data-href="{% url 'users:view_user' outfit.created_by.id %}"> {{outfit.created_by.full_name|capfirst|default:"-"}}</td>
+                                            <td> {{outfit.created_by.full_name|capfirst|default:"-"}}</td>
 											<td> 
                                                 {% if outfit.weather_type == 1 %}
                                                     <span class="badge bg-success">SUMMER</span>

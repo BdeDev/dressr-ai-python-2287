@@ -53,7 +53,7 @@
 									{% if wardrobs %}
 										{% for wardrob in wardrobs %}
 										<tr>
-                                            <td class='clickable-row' data-href="{% url 'wardrobe:view_wardrobe' wardrob.id %}"> {{wardrob.user.full_name|default:"-"}}</td>
+                                            <td class='clickable-row' data-href="{% url 'wardrobe:view_wardrobe' wardrob.id %}"> {{wardrob.user.full_name|capfirst|default:"-"}}</td>
 											<td class='clickable-row' data-href="{% url 'wardrobe:view_wardrobe' wardrob.id %}"> {{wardrob.name|default:"-"}}</td>
 											<td class='clickable-row' data-href="{% url 'wardrobe:view_wardrobe' wardrob.id %}">
 												{% if discount.is_shared %}
