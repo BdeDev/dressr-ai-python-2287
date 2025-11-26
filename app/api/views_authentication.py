@@ -945,7 +945,6 @@ class UpdateProfileDetails(APIView):
 
         if request.FILES.get('profile_pic'):
             user.profile_pic = profile_pic
-
         message = "Profile updated successfully!"
         if not user.is_profile_setup:
             user.is_profile_setup = True

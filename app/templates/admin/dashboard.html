@@ -95,6 +95,84 @@
                 </div>
             </div>
         </div>
+
+        <div class="row mt-4" >
+            <div class="col-xl-12 col-lg-12"><div>
+                <div class="card shadow">
+                    <div class="card-header align-items-center d-flex justify-content-between pb-0">
+                        <div>
+                            <h4 class="card-title mb-0 flex-grow-1">Users Who Joined Today</h4>
+                        </div>
+                    
+                        <div class="flex-shrink-0">
+                            {% if 1|today_customers %}
+                            <a href="{% url 'users:customers_list' %}">See All </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive table-card">
+                            <table class="table table-centered align-middle table-nowrap mb-0">
+                                <thead class="text-muted table-light">
+                                    <tr>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Role</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Mobile Number</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if 1|today_customers %}
+                                        {% for user in 1|today_customers %}
+                                        <tr>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-2">
+                                                        {% if user.profile_pic %}
+                                                        <a href="{{user.profile_pic.url}}" data-fancybox>
+                                                            <img src="{{user.profile_pic.url}}" class="rounded-lg me-2" width="30" alt="">
+                                                        </a>
+                                                        {% else %}
+                                                        <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                            <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                            class="rounded-lg me-2" width="24" alt="">
+                                                        </a>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1 profile_approve">
+                                                        <h4>{% if user.full_name %}{{user.full_name}}{% else %}--{% endif %}</h4>
+                                                    </div>
+                                                </div> 
+                                            </td>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
+                                                {% if user.role_id == 1 %}
+                                                <span class="badge bg-primary">ADMIN</span>
+                                                {% elif user.role_id == 2 %}
+                                                <span class="badge bg-primary">CUSTOMER</span>
+                                                {% elif user.role_id == 3 %}
+                                                <span class="badge bg-primary">BUYER</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
+                                                <h4>{% if user.email %}{{user.email}}{% else %}-{% endif %}</h4>
+                                            </td>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
+                                                <h4>{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %}{{ user.mobile_no }}{% else %}-{% endif %}</h4>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="12" class="text-center">No Customer Joined Today</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% include "admin-includes/footer.html" %}

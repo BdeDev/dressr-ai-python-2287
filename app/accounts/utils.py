@@ -57,7 +57,21 @@ def generate_mydressr_username(name):
 
     return list(suggestions)
 
-
+"""
+generate a referal code.
+"""
+def GenerateReferal():
+    rand_digits = str(random.randint(1000, 9999))
+    rand_lower_string = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
+    referral_code=list(rand_lower_string.upper()+rand_digits)
+    random.shuffle(referral_code)
+    referral_code=referral_code
+    referral_code=""+"".join(referral_code)
+    if User.objects.filter(referral_code=referral_code):
+        GenerateReferal()
+    else:
+        return referral_code
+    
 def get_admin():
     '''
     Get Superuser 

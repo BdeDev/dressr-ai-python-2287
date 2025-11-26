@@ -81,23 +81,21 @@ urlpatterns = [
 
 
     re_path(r'^add-trip-api/$', AddTripAPI.as_view(), name='add_trip_api'),
+    re_path(r'^item-recommendation-for-trip-api/$', OutfitRecommendationAPI.as_view(), name='item_recommendation_for_trip_api'),
     re_path(r'^get-trip-list-api/$', GetMyAllTripAPI.as_view(), name='get_trip_list_api'),
     re_path(r'^get-trip-api/$', GetMyTripOutfitsAPI.as_view(), name='get_trip_api'),
     re_path(r'^delete-trip-api/$', DeleteTripAPI.as_view(), name='delete_trip_api'),
-
 
     # admin panel
     re_path(r'^wardrobe-list/$', WardrobeList.as_view(), name='wardrobe_list'),
     re_path(r'^view-wardrobe/(?P<id>[-\w]+)/$', WardrobeView.as_view(), name='view_wardrobe'),
     re_path(r'^view-item-details/(?P<id>[-\w]+)/$', ViewItemDetails.as_view(), name='view_item_detais'),
     
-
     ##-----------------------------------Item Wear Logs----------------------------########
     re_path(r'^wear-log-api/$', WearLogAPI.as_view(), name='wear_log_api'),
     re_path(r'^wear-calendar-api/$', WearCalendarAPI.as_view(), name='wear_calendar_api'),
     re_path(r'^get-wear-log-history-api/$', GetWearLogsByItemAPI.as_view(), name='get_wear_log_history_api'),
     re_path(r'^wardrobe-analytics-api/$', MostWearClothAnalyticsAPI.as_view(), name='wardrobe_analytics_api'),
-
 
     re_path(r'^view-item-wear-calender/(?P<id>[-\w]+)/$', ViewItemWearCalender.as_view(), name='view_item_wear_calender'),
     re_path(r'^calendar-data-ajax/$', CalenderDataAjax.as_view(), name='calender_data_ajax'),

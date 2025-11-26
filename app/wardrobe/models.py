@@ -131,7 +131,6 @@ class Recommendation(CommonInfo):
     class Meta:
         db_table = 'recomendation'
 
-
 class RecentSearch(CommonInfo):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recent_searches")
     keyword = models.CharField(max_length=255)
