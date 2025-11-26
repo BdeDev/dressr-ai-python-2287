@@ -80,8 +80,6 @@ class MyOutFitSerializer(ModelSerializer):
         user = self.context.get("request").user
         return 1 if obj.favourite.filter(id=user.id).exists() else 0
 
-
-
 class TripsSerializer(ModelSerializer):
     outfit = SerializerMethodField()
     activity_flag = SerializerMethodField()
