@@ -264,7 +264,7 @@ class ActivityFlags(View):
         activity_id = request.POST.get('activity_id')
         if activity_id:
             activity_flag = get_or_none(ActivityFlag,'Activiy flag does not exist !',id=activity_id)
-            if ActivityFlag.objects.filter(name=request.POST.get('name')).exclude(id=activity_id).exists():
+            if ActivityFlag.objects.filter(name=request.POST.get('name').strip()).exclude(id=activity_id).exists():
                 messages.error(request, "Activiy flag already exists!")
                 return redirect('wardrobe:activity_flags')
             if request.POST.get('name'):
@@ -274,16 +274,15 @@ class ActivityFlags(View):
             activity_flag.save()
             messages.success(request, "Activiy flag updated successfully!")
         else:
-            if ActivityFlag.objects.filter(name=request.POST.get('name')).exists():
+            if ActivityFlag.objects.filter(name=request.POST.get('name').strip()).exists():
                 messages.error(request, "Activiy flag already exists!")
                 return redirect('wardrobe:activity_flags')
-            if request.FILES.get('description'):
-                ActivityFlag.objects.create(
-                    name = request.POST.get('name').strip(),
-                    description = request.POST.get('description').strip(),
-                    created_by = request.user,
-                )
-                messages.success(request, "Activiy flag added successfully!")
+            ActivityFlag.objects.create(
+                name = request.POST.get('name').strip(),
+                description = request.POST.get('description').strip(),
+                create_by = request.user,
+            )
+            messages.success(request, "Activiy flag added successfully!")
         return redirect('wardrobe:activity_flags')
     
 class DeleteActivityFlag(View):
@@ -334,7 +333,15 @@ class ViewTripDetails(View):
     @method_decorator(admin_only)
     def get(self,request,*args,**kwargs):
         trip = Trips.objects.get(id=self.kwargs.get('id'))
-        return render(request,'ecommerce/trips/view-trip-detail.html',{"trip":trip,"head_title":"Trips Management"})
+        activities = list(trip.activity_flag.all())
+        outfits = list(trip.outfit.all())
+        paired_items = zip(activities, outfits)
+        context = {
+            "head_title":"Trips Management",
+            "trip": trip,
+            "paired_items": paired_items,
+        }
+        return render(request,'ecommerce/trips/view-trip-detail.html',context)
     
 
 class UserOutfit(View):

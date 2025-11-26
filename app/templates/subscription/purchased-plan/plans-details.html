@@ -81,7 +81,7 @@
                                 <li>
                                     <h4>User</h4>
                                     <h6>
-                                        <a href="{% url "users:view_user" plan.purchased_by.id %}">{{plan.purchased_by.full_name|default:"-"}}</a>
+                                        <a href="{% url "users:view_user" plan.purchased_by.id %}">{{plan.purchased_by.full_name|capfirst|default:"-"}}</a>
                                     </h6>
                                 </li>
                                 <li>

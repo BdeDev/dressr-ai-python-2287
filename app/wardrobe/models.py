@@ -126,6 +126,7 @@ class Recommendation(CommonInfo):
     recommended_item = models.CharField(max_length=255,blank=True, null=True)
     category = models.PositiveIntegerField(choices=PACKING_CATEGORY,blank=True, null=True)
     purchase_link = models.URLField(blank=True, null=True)
+    reason = models.TextField()
 
     class Meta:
         db_table = 'recomendation'

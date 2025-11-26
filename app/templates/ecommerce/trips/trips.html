@@ -38,7 +38,7 @@
 									<tr class="search-row">
                                         <td><input type="text" value="{{search_filters.title}}" class="form-control" name="title" maxlength="20"></td>
                                         <td><input type="text" value="{{search_filters.created_by.full_name}}" class="form-control" name="created_by" maxlength="20"></td>
-                                        <td><input type="number" value="{{search_filters.trip_length}}" class="form-control" name="trip_length" maxlength="20"></td>
+                                        <td><input type="number" onpaste="return false" value="{{search_filters.trip_length}}" class="form-control" name="trip_length" maxlength="20"  step="1" min="0" onkeydown="if(event.key === '.' || event.key === 'e') return false;"></td>
 										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
 									</tr>
@@ -48,7 +48,7 @@
 										{% for trip in trips %}
 										<tr>
                                             <td> {{trip.title|default:"-"}}</td>
-                                            <td class='clickable-row' data-href="{% url 'users:view_user' trip.created_by.id %}" > {{trip.created_by.full_name|default:"-"}}</td>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' trip.created_by.id %}" > {{trip.created_by.full_name|capfirst|default:"-"}}</td>
                                             <td> {{trip.trip_length|default:"-"}}</td>
 											<td>
 												<script>
@@ -79,7 +79,4 @@
         </div>
     </div>
 </div>
-
-
-
 {% include "admin-includes/footer.html" %}
