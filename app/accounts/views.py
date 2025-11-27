@@ -128,8 +128,11 @@ class ResetPassword(View):
         uid = kwargs.get('uid')
         token_key = kwargs.get('token')
         user = get_object_or_404(User, id=uid)
-        token = Token.objects.get(key=token_key, user=user)
-        return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
+        try:
+            token = Token.objects.get(key=token_key, user=user)
+            return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
+        except Exception as e:
+            return render(request, 'frontend/failed-verification.html',{'protocol': 'https' if USE_HTTPS else 'http', 'domain': env('SITE_DOMAIN')})
       
 
     def post(self, request, *args, **kwargs):
@@ -147,12 +150,9 @@ class ResetPassword(View):
             user.set_password(password)
             user.save()
             token.delete()
-
-            messages.success(request, 'Password reset successfully! Please log in.')
             return render(request,'frontend/password-reset-successful.html', {
                     "user": user, 'protocol': 'https' if USE_HTTPS else 'http', 'domain': env('SITE_DOMAIN')})
         except:
-            messages.error(request, 'Sorry! Your reset link has expired or is invalid.')
             return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
       
 

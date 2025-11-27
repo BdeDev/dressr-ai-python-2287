@@ -17,27 +17,27 @@
                 </a>
             </div>
             <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
-                <a href="#" style="color: inherit;" class="d-flex">
+                <a href="{% url 'users:affiliate_list' %}" style="color: inherit;" class="d-flex">
                     <div class="dash-count">
                         <div class="dash-counts">
-                            <h5>Active subscribers</h5>
-                            <h4>{{'active_subscribers'|subscribers}}</h4>
+                            <h5>Total Affiliate</h5>
+                            <h4>{{'total_affiliate'|affiliates_count}}</h4>
                         </div>
                         <div class="dash-imgs">
-                            <span><i class="fas fa-users"></i></span>
+                            <span><i class="fas fa-user-tie"></i></span>
                         </div>
                     </div>
                 </a>
             </div>
             <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
-                <a href="#" style="color: inherit;" class="d-flex">
+                <a href="{% url 'subscription:purchased_plans' %}" style="color: inherit;" class="d-flex">
                     <div class="dash-count">
                         <div class="dash-counts">
-                            <h5>Free Subscribers</h5>
-                            <h4>{{'free_users'|subscribers}}</h4>
+                            <h5>Active subscribers</h5>
+                            <h4>{{'total_subscribers'|subscribers}}</h4>
                         </div>
                         <div class="dash-imgs">
-                            <span><i class="fas fa-piggy-bank"></i></span>
+                            <span><i class="fas fa-users"></i></span>
                         </div>
                     </div>
                 </a>
@@ -95,7 +95,6 @@
                 </div>
             </div>
         </div>
-
         <div class="row mt-4" >
             <div class="col-xl-12 col-lg-12"><div>
                 <div class="card shadow">
@@ -177,6 +176,3 @@
 </div>
 {% include "admin-includes/footer.html" %}
 <script src="{% static 'admin-assets/js/customized-js/graph.js' %}"></script>
-<script>
-    GetGraphData() // user graph
-</script>

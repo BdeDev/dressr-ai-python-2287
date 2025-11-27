@@ -19,7 +19,7 @@
         </div>
         <div class="card">
             <div class="card-body">
-                <form id="edit-profile" onsubmit="return CheckAddress(this.id)" action="{% url 'users:edit_user' user.id %}" method="POST" enctype="multipart/form-data">
+                <form id="edit-profile" onsubmit="return CheckAddress(this.id)" action="{% url 'users:edit_affiliate' user.id %}" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-lg-4 col-md-6 col-12">

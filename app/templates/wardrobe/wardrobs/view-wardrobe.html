@@ -159,18 +159,18 @@
                                                 <i class="fa fa-heart not-favourite"></i>
                                             {% endif %}
                                         </span>
+                                        <a href="javascript:void(0);" onclick="getWardrobeItemDetails('{{ item.id }}')">
 
-                                        <a title="View" data-bs-toggle="modal"
+                                        {% comment %} <a title="View" data-bs-toggle="modal"
                                             onclick="GetValue('{{item.id}}','{{item.title}}','{{item.cloth_category.title}}','{{item.wear_count}}','{{item.weather_type}}','{{item.color}}','{{item.brand}}','{{item.occasion.title}}','{{item.image.url}}','{{item.created_on|date:"Y-m-d"}}T{{item.created_on|date:"H:i"}}')"
-                                            data-bs-target="#view-details">
+                                            data-bs-target="#view-details"> {% endcomment %}
                                         {% endif %}
-
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between">
-                                            <h5 class="card-title">{{item.title|default:"-"}} </h5>
-                                            <small>( Wears Times: {{item.wear_count}} )</small>
+                                                <h5 class="card-title">{{item.title|default:"-"}} </h5>
+                                                <small>( Wears Times: {{item.wear_count}} )</small>
                                             </div>
-                                            <p class="card-text">{{item.cloth_category.title|default:"-"}}  </p>
+                                            <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
                                         </div>
                                         </a>
                                     </div>
@@ -263,63 +263,43 @@
 {% include "admin-includes/footer.html" %}
 
 <script>
-	function GetValue(id, title,cloth_category,wear_count,weather_type,color,brand,occasion,image,created_on){
-    $('#item_id').text(id);
-    $('#item_title').text(title);
-    $('#item_wear_count').text(wear_count);
-    $('#item_category').text(cloth_category);
-   // $('#weather_type').text(weather_type);
-    $('#item_color').text(color);
-    $('#item_brand').text(brand);
-    $('#item_occasion').text(occasion);
-    $('#item_image_img').attr('src', image);
-    $('#item_image_link').attr('href', image);
-    $('#item_addedd_on').text(moment.utc(created_on).local().format("D MMMM YYYY, LT"));
+function getWardrobeItemDetails(itemId) {
+    $.ajax({
+        url: "{% url 'wardrobe:wardrobe_item_details' %}",
+        type: "GET",
+        data: { item_id: itemId },
+        success: function(response) {
+            let item = response.items_data;
+            $("#item_id").text(item.id);
+            $("#item_title").text(item.title);
+            $("#item_category").text(item.cloth_category);
+            $("#item_wear_count").text(item.wear_count);
+            $("#item_color").text(item.color);
+            $("#item_brand").text(item.brand);
+            $("#item_occasion").text(item.occasion);
+            $("#item_addedd_on").text(item.created_on);
+            $("#item_image_img").attr("src", item.image_url);
+            $("#item_image_link").attr("href", item.image_url);
+            const weatherTypeMapping = {
+                1: "Summer",
+                2: "Winter",
+                3: "Rainy Season",
+                4: "Spring Season",
+                5: "All Seasons"
+            };
+            let weatherVal = parseInt(item.weather_type);
+            let weatherText = weatherTypeMapping[weatherVal] || "Not Available";
+            $("#weather_type").text(weatherText);
 
-    const weatherTypeMapping = {
-        1: "Summer",
-        2: "Winter",
-        3: "Rainy Season",
-        4: "Spring Seasons",
-        5: "All Seasons"
-    };
-
-    let weatherVal = parseInt(weather_type);
-    let weatherText = weatherTypeMapping[weatherVal] || "Not Available";
-    document.getElementById("weather_type").innerText = weatherText;
+            $("#view-details").modal("show");
+        },
+        error: function() {
+            alert("Failed to load item details.");
+        }
+    });
 }
-
 </script>
 
-<style>
-    .heart-icon {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: #ffffff;
-        border-radius: 50%;
-        padding: 6px 8px;
-        cursor: pointer;
-        z-index: 10;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .heart-icon i {
-        font-size: 18px;
-        transition: 0.2s ease;
-    }
-
-    .heart-icon .not-favourite {
-        color: #ddcbcb !important;
-    }
-
-    .heart-icon .fa-heart {
-        color: #d11a2a;
-    }
-</style>
 <script>
     var swiper = new Swiper(".mySwiper", {
     slidesPerView: 5,

@@ -417,22 +417,7 @@ class ForgotPassword(APIView):
         reset_path = reverse("accounts:reset_password_user", kwargs={"uid": user.id, "token": token})
         reset_link = request.build_absolute_uri(reset_path)
         # Send reset link via email
-        bulk_send_user_email(
-            request,
-            user,
-            'EmailTemplates/ResetPassword.html',
-            'Reset Your Password',
-            email,
-            reset_link,
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            assign_to_celery=False
-        )
-        bulk_send_user_email(request,user,'EmailTemplates/ResetPassword.html','Reset Password',email,reset_link,"","","",assign_to_celery=False)
+        bulk_send_user_email(request,user,'EmailTemplates/ResetPassword.html','Reset Your Password',email,reset_link,"","","","","","",assign_to_celery=False)
         message = f"A password reset link has been sent to {email}."
         return Response({"message": message,"status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 

@@ -97,21 +97,24 @@ class UserGraph(View):
         pie_chart = {
             "chart": {"type": "pie"},
             "title": {"text": "Subscribers Overview"},
-            "colors": ["#0d6efd", "#198754", "#ffc107"],
+            "colors": ["#0d6efd", "#198754"],
             "series": [
                 {
                     "name": "Subscribers",
                     "data": [
-                        {"name": f"Free Subscribers ({(free_subscribers/total_subscribers*100) if total_subscribers else 0:.1f}%)",
-                         "y": free_subscribers},
-                        {"name": f"Premium Subscribers ({(premium_subscribers/total_subscribers*100) if total_subscribers else 0:.1f}%)",
-                         "y": premium_subscribers},
-                        {"name": f"Total Customers ({(total_customers)})",
-                         "y": total_customers},
-                    ]
+                        {
+                            "name": f"Free Subscribers ({(free_subscribers / total_subscribers * 100) if total_subscribers else 0:.1f}%)",
+                            "y": free_subscribers,
+                        },
+                        {
+                            "name": f"Premium Subscribers ({(premium_subscribers / total_subscribers * 100) if total_subscribers else 0:.1f}%)",
+                            "y": premium_subscribers,
+                        },
+                    ],
                 }
             ],
         }
+
 
         chart = {
             'title': {'text': ''},
