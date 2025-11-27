@@ -4402,3 +4402,31 @@ body {
 	width: 100%;
 	object-fit: cover;
 }
+
+.heart-icon {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background: #ffffff;
+	border-radius: 50%;
+	padding: 6px 8px;
+	cursor: pointer;
+	z-index: 10;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.heart-icon i {
+	font-size: 18px;
+	transition: 0.2s ease;
+}
+
+.heart-icon .not-favourite {
+	color: #ddcbcb !important;
+}
+
+.heart-icon .fa-heart {
+	color: #d11a2a;
+}

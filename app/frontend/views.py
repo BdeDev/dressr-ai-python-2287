@@ -86,7 +86,8 @@ class HowItWorksView(View):
         if request.user.is_authenticated:
             return redirect('frontend:index')
         How_it_works = Pages.objects.filter(type_id=HOW_IT_WORKS).first()
-        return render(request, "frontend/how_it_works.html",{"data":How_it_works, "page_title":"How it works"})
+        faqs = FAQs.objects.all().order_by('created_on')
+        return render(request, "frontend/how_it_works.html",{"data":How_it_works, "page_title":"How it works","faqs":faqs})
     
 class PricingView(View):
     def get(self, request, *args, **kwargs):

@@ -21,30 +21,51 @@ def ConvertDataCSV(data,file_name):
 '''
 Downloads Customer Report
 '''
+
 class DownLoadCustomerReports(View):
     @method_decorator(admin_only)
     def post(self, request, *args, **kwargs):
-        role = CUSTOMER
-        file_name = 'customer_data' if int(request.GET.get('role_id')) == 2 else 'subdmin_data'
-        users = User.objects.filter(role_id=role).order_by('-created_on').only('id')
-        status =[]
+        role_id = int(request.GET.get('role_id'))
+        if role_id == 2:
+            role = CUSTOMER
+            file_name = 'customer_data'
+        else:
+            role = AFFILIATE   
+            file_name = 'affiliate_data'
+
+        users = User.objects.filter(role_id=role).order_by('-created_on')
+
+        if not users:
+            messages.success(request, 'No records found.')
+            return redirect('users:customers_list')
+
+        status_list = []
         for user in users:
             if user.status == ACTIVE:
-                status.append('Active')
+                status_list.append('Active')
             elif user.status == INACTIVE:
-                status.append('Inactive')
+                status_list.append('Inactive')
             elif user.status == DELETED:
-                status.append('Deleted')
+                status_list.append('Deleted')
             else:
-                status.append('--')
+                status_list.append('--')
+
         data = pd.DataFrame({
-            "Full Name": [user.full_name if user.full_name else '--' for user in users],
-            "Email": [user.email if user.email else '-' for user in users],
-            "Mobile No": [str(user.country_code)+str(user.mobile_no) if user.mobile_no else '-' for user in users],
-            "Created on": [convert_to_local_timezone(request.POST.get('timezone'),datetime.strptime(user.created_on.strftime('%Y-%m-%d %H:%M:%S'),"%Y-%m-%d %H:%M:%S")) if user.created_on else '-' for user in users],
-            "User Status": status
+            "Full Name": [user.full_name or '--' for user in users],
+            "Email": [user.email or '-' for user in users],
+            "Mobile No": [
+                f"{user.country_code}{user.mobile_no}" if user.mobile_no else '-'
+                for user in users
+            ],
+            "Created on": [
+                convert_to_local_timezone(
+                    request.POST.get('timezone'),
+                    datetime.strptime(user.created_on.strftime('%Y-%m-%d %H:%M:%S'),
+                                      "%Y-%m-%d %H:%M:%S")
+                ) if user.created_on else '-'
+                for user in users
+            ],
+            "User Status": status_list,
         })
-        if not users:
-            messages.success(request,'Not Enough Customers')
-            return redirect('users:customers_list')
-        return ConvertDataCSV(data,file_name)
+
+        return ConvertDataCSV(data, file_name)

@@ -1,5 +1,5 @@
 
-function GetGraphData(){
+function GetPerformanceGraphData(){
     $.ajax({
         url: "/ecommerce/affiliate-performance-graph/",
         dataType: 'json',
@@ -23,7 +23,14 @@ function GetGraphData(){
         }
     });
 }
-GetGraphData();
+for (i = new Date().getFullYear(); i > new Date().getFullYear() - 5; i--)
+{
+    $('#years').append($('<option />').val(i).html(i));
+    $('#r_years').append($('<option />').val(i).html(i));
+    $('#r_years').append($('<option />').val(i).html(i));
+}
+GetPerformanceGraphData();
+
 
 $("#commission_settings").validate({
     rules: {

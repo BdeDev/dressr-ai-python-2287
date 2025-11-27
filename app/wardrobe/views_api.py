@@ -475,11 +475,15 @@ class MyOutFitListAPI(APIView):
         operation_id="Get All My Outfit",
         operation_description="Get All My Outfit",
         manual_parameters=[
-            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+            openapi.Parameter('occasion_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='occasion id'),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
         ],
     )
     def get(self, request, *args, **kwargs):
         outfits = Outfit.objects.filter(created_by=request.user).order_by('-created_on')
+        if request.query_params.get('occasion_id'):
+            outfits = Outfit.objects.filter(occasion=request.query_params.get('occasion_id').strip(),created_by=request.user).order_by('-created_on')
+
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), outfits)
         data = MyOutFitSerializer(outfits[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -650,12 +654,30 @@ class GetMyAllTripAPI(APIView):
         operation_id="Get All My Trips",
         operation_description="Get All My Trips",
         manual_parameters=[
+            openapi.Parameter('month', openapi.IN_QUERY, type=openapi.TYPE_STRING,description='YYYY-MM'),
             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
         ],
     )
     def get(self, request, *args, **kwargs):
         trips = Trips.objects.filter(created_by = request.user).order_by('-created_on')
-        start,end,meta_data = get_pages_data(request.query_params.get('page', None), trips)
+        month_param = request.query_params.get("month")
+        if month_param:
+            try:
+                year, month_num = map(int, month_param.split("-"))
+                start = date(year, month_num, 1)
+                if month_num == 12:
+                    end = date(year + 1, 1, 1)
+                else:
+                    end = date(year, month_num + 1, 1)
+                trips = trips.filter(start_date__gte=start, start_date__lt=end)
+
+            except Exception:
+                return Response(
+                    {"message": "Invalid month format. Use YYYY-MM.", "status": status.HTTP_400_BAD_REQUEST},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), trips,3)
         data = TripsSerializer(trips[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
@@ -852,6 +874,23 @@ class AddTripAPI(APIView):
         if Trips.objects.filter(start_date=request.data.get('start_date'),end_date=request.data.get('end_date'),created_by=request.user).exists():
             return Response({"message": "Trip already exist for same date !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
         
+        if request.data.get('start_date'):
+            try:
+                start_date = datetime.strptime(request.data.get('start_date').strip(), "%Y-%m-%d").date()
+            except:
+                return Response({"message": "Invalid date format. Use YYYY-MM-DD.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            if start_date < date.today():
+                return Response({"message": "Start date cannot be in the past.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get('end_date'):
+            try:
+                end_date = datetime.strptime(request.data.get('end_date').strip(), "%Y-%m-%d").date()
+            except:
+                return Response({"message": "Invalid date format. Use YYYY-MM-DD.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+            if end_date < date.today():
+                return Response({"message": "End date cannot be in the past.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
         trip = Trips.objects.create(
             title=request.data.get('title').strip(),
             description=request.data.get('description').strip(),
@@ -864,8 +903,8 @@ class AddTripAPI(APIView):
         )
         start = datetime.strptime(trip.start_date, "%Y-%m-%d")
         end = datetime.strptime(trip.end_date, "%Y-%m-%d")
-        duration = end - start
-        trip.trip_length = duration.days
+        duration = end - start 
+        trip.trip_length = duration.days + 1
         trip.save()
         
         for activity_value in activities:
@@ -1170,8 +1209,16 @@ class WearLogAPI(APIView):
             {"field_name": "item_id", "method": "post", "error_message": "Please enter Item Id"},
         ])
         item = get_or_none(ClothingItem,"Item not found",id=request.data.get("item_id"),wardrobe__user=request.user)
+        if request.data.get("date"):
+            try:
+                worn_date = datetime.strptime(request.data.get("date").strip(), "%Y-%m-%d").date()
+            except:
+                return Response({"message": "Invalid date format. Use YYYY-MM-DD.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            if worn_date < date.today():
+                return Response({"message": "Wear date cannot be in the past.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            worn_date = datetime.strptime(request.data.get("date"), "%Y-%m-%d").date()
+            worn_date = datetime.strptime(request.data.get("date").strip(), "%Y-%m-%d").date()
         except:
             return Response({"message": "Invalid date format (YYYY-MM-DD)", "status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
 

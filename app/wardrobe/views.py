@@ -597,3 +597,28 @@ class CalenderDataAjax(View):
         wear_items_data = list(wear_items.values('id', 'worn_on','item_id','user_id','item__image'))
         data['items_data'] = wear_items_data
         return JsonResponse(data)
+    
+
+class WardrobeItemsDetails(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        item_id = request.GET.get('item_id')
+        try:
+            item = ClothingItem.objects.get(id=item_id)
+        except ClothingItem.DoesNotExist:
+            return JsonResponse({"error": "Item not found"}, status=404)
+        data = {
+            "items_data": {
+                "id": item.id,
+                "title": item.title,
+                "cloth_category": item.cloth_category.title if item.cloth_category else "",
+                "wear_count": item.wear_count,
+                "weather_type": item.weather_type,
+                "color": item.color,
+                "brand": item.brand,
+                "occasion": item.occasion.title if item.occasion else "",
+                "created_on": item.created_on.strftime("%Y-%m-%d %H:%M"),
+                "image_url": item.image.url if item.image else "",
+            }
+        }
+        return JsonResponse(data)

@@ -92,6 +92,19 @@ def users_count(key):
 	return count
 
 
+@register.filter(name='affiliates_count')
+def affiliates_count(key):
+	count=0
+	if key=='active_affiliate':
+		count=User.objects.filter(role_id__in=[AFFILIATE],status=ACTIVE).count()
+	elif key=='inactive_affiliate':
+		count=User.objects.filter(role_id__in=[AFFILIATE],status=INACTIVE).count()
+	elif key=='deleted_affiliate':
+		count=User.objects.filter(role_id__in=[AFFILIATE],status=DELETED).count()
+	elif key=='total_affiliate':
+		count=User.objects.filter(role_id__in=[AFFILIATE]).count()
+	return count
+
 @register.filter(name='wardrobe_count')
 def wardrobe_count(key):
 	if key == 'total_count':
@@ -179,4 +192,8 @@ def subscribers(key):
         return active_subscribers
     if key == "free_users":
         return free_users
+    if key == "total_subscribers":
+        return UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE).values_list("purchased_by", flat=True).distinct().count()
     return 0
+
+
