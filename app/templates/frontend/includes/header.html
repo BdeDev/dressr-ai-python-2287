@@ -6,7 +6,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dresser AI - Your Personal Fashion Assistant</title>
+    <title>My Dressr - Your Personal Fashion Assistant</title>
     <link rel="icon" type="image/x-icon" href="/static/logo-wht.svg" />
 
     <link
@@ -61,29 +61,45 @@
                       <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
-                      <ul class="navbar-nav">
+                      <ul class="navbar-nav mx-auto">
                         <li class="nav-item">
-                          <a
-                            class="nav-link active"
-                            aria-current="page"
-                            href="{% url 'frontend:index' %}"
-                            >Home</a
-                          >
+                            <a class="nav-link active" 
+                              href="{% url 'frontend:index' %}">
+                              Home
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                          <a href="{% url 'frontend:about_us' %}" class="nav-link">About Us</a>
+                            <a class="nav-link {% if head_title == 'About Us' %}active{% endif %}"
+                              href="{% url 'frontend:about_us' %}">
+                              About Us
+                            </a>
                         </li>
-                          <li class="nav-item">
-                          <a href="{% url 'frontend:How_it_works' %}" class="nav-link">How It Works</a>
-                        </li>
+
                         <li class="nav-item">
-                          <a href="{% url 'frontend:Pricing' %}" class="nav-link">Pricing</a>
+                            <a class="nav-link {% if head_title == 'How it works' %}active{% endif %}"
+                              href="{% url 'frontend:How_it_works' %}">
+                              How It Works
+                            </a>
                         </li>
+
                         <li class="nav-item">
-                          <a href="{% url 'frontend:contact_us' %}" class="nav-link">Contact Us</a>
+                            <a class="nav-link {% if head_title == 'Pricing' %}active{% endif %}"
+                              href="{% url 'frontend:Pricing' %}">
+                              Pricing
+                            </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {% if head_title == 'Contact Us' %}active{% endif %}"
+                              href="{% url 'frontend:contact_us' %}">
+                              Contact Us
+                            </a>
+                        </li>
+
                       </ul>
                     </div>
+
                   </div>
                 </nav>
               </div>

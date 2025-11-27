@@ -249,11 +249,11 @@ class EditAffiliate(View):
         # Check for existing user
         if User.objects.filter(email=email, role_id=AFFILIATE, status__in=[ACTIVE, INACTIVE]).exclude(id=user.id).exists():
             messages.error(request, 'User already exists with this email id.')
-            return redirect('users:edit_user',id=user.id)
+            return redirect('users:edit_affiliate',id=user.id)
 
         if User.objects.filter(role_id=AFFILIATE, status__in=[ACTIVE, INACTIVE]).exclude(id=user.id).exists():
             messages.error(request, 'User already exists with this mobile no')
-            return redirect('users:edit_user',id=user.id)
+            return redirect('users:edit_affiliate',id=user.id)
 
         if request.FILES.get('profile_pic'):
             user.profile_pic = request.FILES.get('profile_pic')

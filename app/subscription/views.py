@@ -184,7 +184,7 @@ class ActivatePurchasedPlanNow(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
         purchase_plan = UserPlanPurchased.objects.get(id=self.kwargs['id'],status= USER_PLAN_IN_QUEUE)
-        user = purchase_plan.purchased_by
+        user = User.objects.get(id = purchase_plan.purchased_by.id )
 
         ## mark activate plan expire 
         UserPlanPurchased.objects.filter(
