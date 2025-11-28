@@ -3,8 +3,6 @@ from django.conf import settings
 from accounts.models import *
 from .default_data import default_skin_tones
 
-
-
 class Command(BaseCommand):
     help = "Adding defaut skin tone"
     def handle(self, *args, **options):

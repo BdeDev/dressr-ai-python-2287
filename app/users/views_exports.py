@@ -37,7 +37,7 @@ class DownLoadCustomerReports(View):
 
         if not users:
             messages.success(request, 'No records found.')
-            return redirect('users:customers_list')
+            return redirect('users:users_list')
 
         status_list = []
         for user in users:
