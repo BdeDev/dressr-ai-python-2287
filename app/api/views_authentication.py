@@ -128,7 +128,7 @@ class UserSignupView(APIView):
                 month_year = plan.month_year,
                 validity = plan.validity,
             )
-            activate_subscription(user.id)
+            activate_subscription(user)
             user.save()
         wardrobe,_ = Wardrobe.objects.get_or_create(user=user)
         try:
@@ -150,7 +150,7 @@ class UserSignupView(APIView):
             notification_type=ADMIN_NOTIFICATION,
             obj_id=str(user.id),
         )
-        bulk_send_user_email(request,user,'EmailTemplates/registration-success.html','Welcome To Dressr',request.POST.get("email"),"","","","",assign_to_celery=False)
+        bulk_send_user_email(request,user,'EmailTemplates/registration-success.html','Welcome To Dressr',request.data.get("email"),"","","","",assign_to_celery=False)
         return Response({"message":f"User registered successfully!","data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
 
 """

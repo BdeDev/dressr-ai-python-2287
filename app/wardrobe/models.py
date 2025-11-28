@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from accounts.common_imports import *
 from accounts.models import CommonInfo,User
@@ -7,9 +8,20 @@ class Wardrobe(CommonInfo):
     name = models.CharField(max_length=100, default="My Wardrobe",blank=True, null=True)
     is_shared = models.BooleanField(default=False)
     shared_with = models.ManyToManyField(User, blank=True,related_name="shared_wardrobes")
+    share_count = models.PositiveIntegerField(default=0,blank=True,null=True)
 
     class Meta:
         db_table = 'wardrobe'
+
+
+class WardrobePublicShare(CommonInfo):
+    wardrobe = models.OneToOneField(Wardrobe, on_delete=models.CASCADE, related_name="public_share")
+    share_token = models.UUIDField(default=uuid.uuid4, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'wardrobe_share'
+
 
 class ClothCategory(CommonInfo):
     title = models.CharField(max_length=100, blank=True, null=True)

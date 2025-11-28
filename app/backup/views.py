@@ -56,14 +56,11 @@ class CreateDBSchema(View):
 		database = env('DB_NAME')
 		backup_dir = os.path.join(settings.MEDIA_ROOT, 'backup_files')
 		os.makedirs(backup_dir, exist_ok=True)
-
 		filename = f"{database}{time.strftime('%Y%m%d-%H%M%S')}.json"
 		file_path = os.path.join(backup_dir, filename)
 
 		os.system("mysqldump -h " + env('DB_HOST') + " -u " + env('DB_USER') + " -p" + env('DB_PASSWORD') + " --no-data " + database + " > " + file_path)
-
 		Backup.objects.create(name=filename, size=os.path.getsize(file_path), is_schema=True, backup_file=f'backup_files/{filename}')
-
 		messages.success(request, 'Database structure created successfully!')
 		return redirect('backup:backup')
 

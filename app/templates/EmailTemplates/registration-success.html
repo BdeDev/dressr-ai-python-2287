@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en-US">{% load static %}
+<html lang="en-US">
+{% load static %}
 <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
     <title>Account Registration</title>
@@ -20,40 +21,55 @@
         }
     </style>
 </head>
+
 <body style="margin:0; background: #f1f5f9; padding:0;">
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#f1f5f9" style="font-family: 'Open Sans', Arial, sans-serif; margin:0; padding:0;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#f1f5f9"
+           style="font-family: 'Open Sans', Arial, sans-serif;">
         <tr>
             <td align="center">
-                <table class="main-table" cellpadding="0" cellspacing="0" border="0" width="670" style="background-color: #fff; max-width:670px; margin:50px auto; border-radius:3px; box-shadow:0 6px 18px 0 rgba(0,0,0,.06);">
+
+                <table class="main-table" cellpadding="0" cellspacing="0" border="0" width="670"
+                       style="background-color: #fff; max-width:670px; margin:50px auto; border-radius:3px;
+                       box-shadow:0 6px 18px rgba(0,0,0,.06);">
+
                     <tr>
                         <td class="logo-td" align="center" style="padding: 20px;background: #1e3d9d;">
-                            <a href="{{ protocol }}://{{ domain }}{% url "frontend:index" %}" title="logo" target="_blank">
-                                <img width="100" src="{{ protocol }}://{{ domain }}/static/admin-assets/images/logo-wht.svg" title="logo" alt="logo" style="display:block; margin:auto;">
-                            </a>
+                            <img width="100" src="{{ protocol }}://{{ domain }}/static/admin-assets/images/logo-wht.svg"
+                                 alt="logo" style="display:block; margin:auto;">
                         </td>
                     </tr>
-                    <tr>
-                        <td style="height:40px;">&nbsp;</td>
-                    </tr>
+
+                    <tr><td style="height:40px;">&nbsp;</td></tr>
                     <tr>
                         <td class="content-td" style="padding:0 35px;">
-                            <h1 style="color: #dd9933;font-weight: 500;margin: 0;font-size: 27px;font-family: 'Rubik',sans-serif;">Welcome To My Dressr</h1>
-                            <span style="display: inline-block;vertical-align: middle;margin: 0px 0 26px;border-bottom: 1px solid #1e3d9d; width: 240px;height: 5px;"></span>
-                            <p style="font-size:15px; color:#000; margin: 0; line-height:24px;padding-bottom: 10px;text-align: left;">
+                            <h1 style="color: #dd9933;font-weight:500;margin:0;font-size:27px;font-family:'Rubik',sans-serif;">
+                                Welcome To My Dressr
+                            </h1>
+
+                            <span style="display:block;margin:0 0 26px;border-bottom:1px solid #1e3d9d;
+                                         width:240px;height:5px;"></span>
+
+                            <p style="font-size:15px;color:#000;margin:0;line-height:24px;text-align:left;">
                                 Dear User,<br><br>
-                                We are pleased to inform you that your account has been successfully registered on My Dressr! You can now explore all the features and benefits our platform has to offer. <br><br>
-                                Here are your profile information:<br>
-                                Email: {% if user.email %}{{user.email}}{% endif %}<br><br>
-                                To get started, please follow these steps:<br>
-                                Open Our App: <a style="color:#4467ff" target="_blank" href="{{ protocol }}://{{ domain }}{% url 'frontend:index' %}">My Dressr App Link</a><br>
-                                Click on the "Login" button.<br>
-                                Enter your email and password.<br><br>
-                                If you encounter any issues or need further assistance, please do not hesitate to reach out to us.<br>
-                                <a style="color:#4467ff" target="_blank" href="">Click here for assistance</a>
-                                We are here to help! <br><br>
-                                Thank you for choosing My Dressr. We’re excited to have you with us!<br><br>
+                                Your account has been successfully registered on <b>My Dressr</b>!<br><br>
+
+                                <b>Your profile information:</b><br>
+                                Email: {{ user.email }}<br><br>
+
+                                <b>To get started:</b><br>
+                                • Open our app<br>
+                                • Click on the <b>Login</b> button<br>
+                                • Enter your email and password<br><br>
+
+                                If you face any issue, feel free to contact us.<br>
+                                <a style="color:#4467ff" target="_blank" href="{% url 'frontend:contact_us' %}">
+                                    Click here for contact
+                                </a>
+                                <br><br>
+
+                                Thank you for choosing My Dressr!<br><br>
                                 Best regards,<br>
-                                Team My Dressr
+                                <b>Team My Dressr</b>
                             </p>
                         </td>
                     </tr>
