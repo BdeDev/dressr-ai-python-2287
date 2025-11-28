@@ -85,21 +85,12 @@
                     <div class="swiper mySwiper">
                         <div class="swiper-wrapper">
                             {% for item in cloth_items %}
-                                {% is_favourite item.wardrobe.user item as item_is_favourite %}
                                 <div class="swiper-slide">
                                     <div class="card" style="width: 18rem; position: relative;">
                                         {% if item.image %}
                                         <a href="{{ item.image.url }}" data-fancybox>
                                             <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
                                         </a>
-
-                                        <span class="heart-icon" onclick="toggleFavorite('{{ item.id }}')">
-                                            {% if item_is_favourite %}
-                                                <i class="fa fa-heart text-danger"></i>
-                                            {% else %}
-                                                <i class="fa fa-heart not-favourite"></i>
-                                            {% endif %}
-                                        </span>
                                         <a href="javascript:void(0);" onclick="getWardrobeItemDetails('{{ item.id }}')">
                                         {% endif %}
                                         <div class="card-body">

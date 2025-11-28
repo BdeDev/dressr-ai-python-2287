@@ -1453,7 +1453,7 @@ class ShareWardrobeAPI(APIView):
         wardrobe_path = reverse("frontend:view_shared_wardrobe")
         wardrobe_link = f"{request.build_absolute_uri(wardrobe_path)}?wardrobe_id={wardrobe.id}"
         wardrobe.is_shared = True
-        wardrobe.is_shared = wardrobe.is_shared + 1
+        wardrobe.share_count = wardrobe.share_count + 1
         wardrobe.save()
 
         send_notification(
