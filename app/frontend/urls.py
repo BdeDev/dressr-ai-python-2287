@@ -25,5 +25,6 @@ urlpatterns = [
     re_path(r'^terms_and_conditions/$', TermsAndConditionsView.as_view(), name='terms_view'),
     re_path(r'^How_it_works/$', HowItWorksView.as_view(), name='How_it_works'),
     re_path(r'^Pricing/$', PricingView.as_view(), name='Pricing'),
+    re_path(r'^view-shared-wardrobe/$', ViewFriendwardrobe.as_view(), name='view_shared_wardrobe'),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

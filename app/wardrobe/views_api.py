@@ -1421,3 +1421,49 @@ class OutfitRecommendationAPI(APIView):
 
         data = ClothItemSerializer(cloth_items,many=True,context = {"request":request}).data
         return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+
+
+class ShareWardrobeAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="share digitized wardrobes with friends or family members",
+        operation_description="share digitized wardrobes with friends or family members",
+        manual_parameters=[
+            openapi.Parameter('user_email', openapi.IN_FORM,type=openapi.TYPE_STRING,description="User Email"),
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        CustomRequiredFieldsValidator.validate_api_field(self, request, 
+                [{"field_name": "user_email","method": "post","error_message": "Please enter user email"},])
+        
+        user_email = request.data.get("user_email")
+        share_friend = get_or_none(User,'User does not exist !',email=user_email)
+        wardrobe = Wardrobe.objects.filter(user=request.user).first()
+        if not wardrobe:
+            return Response({"message": "No wardrobe found for current user.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_404_NOT_FOUND)
+
+        if share_friend in wardrobe.shared_with.all():
+            return Response({"message": "This wardrobe is already shared with this user.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        
+        wardrobe.shared_with.add(share_friend)
+        wardrobe_path = reverse("frontend:view_shared_wardrobe")
+        wardrobe_link = f"{request.build_absolute_uri(wardrobe_path)}?wardrobe_id={wardrobe.id}"
+        wardrobe.is_shared = True
+        wardrobe.is_shared = wardrobe.is_shared + 1
+        wardrobe.save()
+
+        send_notification(
+            created_by=request.user,
+            created_for=None,
+            title=f"Wardrobe share",
+            description=f"share digitized wardrobes with {share_friend.email}",
+            notification_type=ADMIN_NOTIFICATION,
+            obj_id=str(share_friend.id),
+        )
+        bulk_send_user_email(request,request.user,'EmailTemplates/ShareWardrobe.html','A Wardrobe Has Been Shared With You!',share_friend.email,wardrobe_link,"","","","",assign_to_celery=False)
+        return Response({"wardrobe_link":wardrobe_link,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    

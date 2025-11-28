@@ -622,3 +622,6 @@ class WardrobeItemsDetails(View):
             }
         }
         return JsonResponse(data)
+
+
+
