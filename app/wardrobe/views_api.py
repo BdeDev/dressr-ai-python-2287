@@ -1467,3 +1467,20 @@ class ShareWardrobeAPI(APIView):
         bulk_send_user_email(request,request.user,'EmailTemplates/ShareWardrobe.html','A Wardrobe Has Been Shared With You!',share_friend.email,wardrobe_link,"","","","",assign_to_celery=False)
         return Response({"wardrobe_link":wardrobe_link,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
+
+class GetWardrobeDetailsAPI(APIView):
+    permission_classes = (permissions.AllowAny,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="View wardrobe Details",
+        operation_description="View wardrobe Details",
+        manual_parameters=[
+            openapi.Parameter('wardrobe_id', openapi.IN_QUERY,type=openapi.TYPE_STRING,description="Wardrobe Id"),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", id=request.query_params.get('wardrobe_id'))
+        data = WardrobeSerializer(wardrobe,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
