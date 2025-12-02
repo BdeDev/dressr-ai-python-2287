@@ -87,6 +87,7 @@ urlpatterns = [
     re_path(r'^delete-my-activity-flag-api/$', DeleteMyActivityFlagAPI.as_view(), name='delete_my_activity_flag_api'),
 
     re_path(r'^add-trip-api/$', AddTripAPI.as_view(), name='add_trip_api'),
+    re_path(r'^edit-trip-api/$', EditTripDetailAPI.as_view(), name='edit_trip_api'),
     re_path(r'^item-recommendation-for-trip-api/$', OutfitRecommendationAPI.as_view(), name='item_recommendation_for_trip_api'),
     re_path(r'^get-trip-list-api/$', GetMyAllTripAPI.as_view(), name='get_trip_list_api'),
     re_path(r'^get-trip-api/$', GetMyTripOutfitsAPI.as_view(), name='get_trip_api'),
