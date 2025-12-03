@@ -212,32 +212,8 @@
 <script src="{% static 'admin-assets/js/customized-js/loader.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
 <script src="{% static 'admin-assets/js/customized-js/show-more.js' %}"></script>
-
-
 </body>
 </html>
-<script src="{% static 'admin-assets/js/customized-js/dark_mode.js' %}"></script>
-<script>
-$.validator.addMethod("customEmail", function(value, element) {
-    var res = this.optional(element) || /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i.test(value);
-    return res
-}, "Please enter valid email address!");
-$(document).ready( function () {
-    var dtToday = new Date();
-    var month = dtToday.getMonth() + 1;
-    var day = dtToday.getDate();
-    var year = dtToday.getFullYear();
-    if (month < 10)
-        month = '0' + month.toString();
-    if (day < 10)
-        day = '0' + day.toString();
-    var maxDate = year + '-' + month + '-' + day;
-    
-    $('input[name=created_on]').attr('max', maxDate);
-    $('input[name=updated_on]').attr('max', maxDate);
-
-});
-</script>
 <script>
 function getWardrobeItemDetails(itemId) {
     $.ajax({

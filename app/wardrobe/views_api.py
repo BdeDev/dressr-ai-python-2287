@@ -924,6 +924,117 @@ class AddTripAPI(APIView):
         if outfit_ids:
             trip.outfit.add(*outfit_ids)
         return Response({"message": "Trip created successfully!","status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
+    
+
+
+class EditTripDetailAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    @swagger_auto_schema(
+        tags=['Trip Management'],
+        operation_id="Edit Trip Details",
+        operation_description="Edit trip detail with mapped activities and outfits.",
+        manual_parameters=[
+            openapi.Parameter('trip_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip id"),
+            openapi.Parameter('activity',openapi.IN_FORM,type=openapi.TYPE_STRING,description=("[{'activity_flag_id':'ed3rrfe45','outfit_id':'0dere44'},{'activity_flag_id':'ed3rfe45f45','outfit_id':'0dere44'})]")),
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip title"),
+            openapi.Parameter('description', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip description"),
+            openapi.Parameter('location', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Trip location"),
+            openapi.Parameter('latitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Latitude"),
+            openapi.Parameter('longitude', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Longitude"),
+            openapi.Parameter('start_date', openapi.IN_FORM, type=openapi.TYPE_STRING, description="YYYY-MM-DD"),
+            openapi.Parameter('end_date', openapi.IN_FORM, type=openapi.TYPE_STRING ,description="YYYY-MM-DD"),
+            # openapi.Parameter('trip_length', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description="Duration in days"),
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+
+        trip = get_or_none(Trips,'Trip does not exist !',id = request.query_params.get('trip_id').strip())
+        if request.data.get('title'):
+            if Trips.objects.filter(title=request.data.get('title').strip(),created_by=request.user).exists():
+                return Response({"message": "Trip already exist for same title !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('start_date'):
+            if Trips.objects.filter(start_date=request.data.get('start_date'),created_by=request.user).exists():
+                return Response({"message": "Trip already exist for same date !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('start_date'):
+            try:
+                start_date = datetime.strptime(request.data.get('start_date').strip(), "%Y-%m-%d").date()
+            except:
+                return Response({"message": "Invalid date format. Use YYYY-MM-DD.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+            if start_date < date.today():
+                return Response({"message": "Start date cannot be in the past.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get('end_date'):
+            try:
+                end_date = datetime.strptime(request.data.get('end_date').strip(), "%Y-%m-%d").date()
+            except:
+                return Response({"message": "Invalid date format. Use YYYY-MM-DD.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+            if end_date < date.today():
+                return Response({"message": "End date cannot be in the past.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get('title'):
+            trip.title = request.data.get('title').strip()
+
+        if request.data.get('description'):
+            trip.description = request.data.get('description').strip()
+
+        if request.data.get('location'):
+            trip.location = request.data.get('location').strip()
+
+        if request.data.get('latitude'):
+            trip.latitude = request.data.get('latitude').strip()
+
+        if request.data.get('longitude'):
+            trip.longitude = request.data.get('longitude').strip()
+
+        if request.data.get('start_date'):
+            trip.start_date = request.data.get('start_date').strip()
+
+        if request.data.get('end_date'):
+            trip.end_date = request.data.get('end_date').strip()
+
+        
+        start = datetime.strptime(trip.start_date, "%Y-%m-%d")
+        end = datetime.strptime(trip.end_date, "%Y-%m-%d")
+        duration = end - start 
+        trip.trip_length = duration.days + 1
+        trip.save()
+        
+        activity_ids = []
+        outfit_ids = []
+        if request.data.get("activity"):
+        
+            activity_data = request.data.get("activity")
+            if isinstance(activity_data, str):
+                try:
+                    activities = json.loads(activity_data)
+                except json.JSONDecodeError:
+                    return Response(request,{"message": "Invalid JSON format in 'sessions'.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                activities = activity_data
+                
+        for activity_value in activities:
+            activity_id = activity_value['activity_flag_id']
+            outfit_id = activity_value['outfit_id']
+        
+            if activity_id:
+                activity_obj = ActivityFlag.objects.filter(id=activity_id).first()
+                if activity_obj:
+                    activity_ids.append(activity_obj.id)
+            if outfit_id:
+                outfit_obj = Outfit.objects.filter(id=outfit_id).first()
+                if outfit_obj:
+                    outfit_ids.append(outfit_obj.id)
+        if activity_ids:
+            trip.activity_flag.add(*activity_ids)
+        if outfit_ids:
+            trip.outfit.add(*outfit_ids)
+        return Response({"message": "Trip created successfully!","status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
+
 
 class MarkItemFavouriteAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
@@ -1467,3 +1578,20 @@ class ShareWardrobeAPI(APIView):
         bulk_send_user_email(request,request.user,'EmailTemplates/ShareWardrobe.html','A Wardrobe Has Been Shared With You!',share_friend.email,wardrobe_link,"","","","",assign_to_celery=False)
         return Response({"wardrobe_link":wardrobe_link,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
+
+class GetWardrobeDetailsAPI(APIView):
+    permission_classes = (permissions.AllowAny,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="View wardrobe Details",
+        operation_description="View wardrobe Details",
+        manual_parameters=[
+            openapi.Parameter('wardrobe_id', openapi.IN_QUERY,type=openapi.TYPE_STRING,description="Wardrobe Id"),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", id=request.query_params.get('wardrobe_id'))
+        data = WardrobeSerializer(wardrobe,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
