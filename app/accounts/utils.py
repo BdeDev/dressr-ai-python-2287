@@ -439,5 +439,23 @@ def generate_discount_code(prefix="DIS", length=6, suffix=None):
     else:
         return code
     
+def get_file_type(file_obj):
+    mime = file_obj.content_type
+    if mime.startswith("image/"):
+        return "image"
 
-    
+    if mime == "application/pdf":
+        return "pdf"
+
+    if mime in [
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ]:
+        return "docx"
+
+    ext = os.path.splitext(file_obj.name)[1].lower()
+    if ext:
+        return ext.replace(".", "")
+
+    # Fallback
+    return "file"
