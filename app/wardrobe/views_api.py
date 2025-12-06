@@ -949,8 +949,7 @@ class EditTripDetailAPI(APIView):
         ],
     )
     def post(self, request, *args, **kwargs):
-
-        trip = get_or_none(Trips,'Trip does not exist !',id = request.query_params.get('trip_id').strip())
+        trip = get_or_none(Trips,'Trip does not exist !',id = request.data.get('trip_id').strip(),created_by=request.user)
         if request.data.get('title'):
             if Trips.objects.filter(title=request.data.get('title').strip(),created_by=request.user).exists():
                 return Response({"message": "Trip already exist for same title !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
@@ -997,13 +996,18 @@ class EditTripDetailAPI(APIView):
         if request.data.get('end_date'):
             trip.end_date = request.data.get('end_date').strip()
 
-        
-        start = datetime.strptime(trip.start_date, "%Y-%m-%d")
-        end = datetime.strptime(trip.end_date, "%Y-%m-%d")
-        duration = end - start 
-        trip.trip_length = duration.days + 1
+        try:
+            if request.data.get('start_date'):
+                start = datetime.strptime(trip.start_date, "%Y-%m-%d")
+            if request.data.get('end_date'):
+                end = datetime.strptime(trip.end_date, "%Y-%m-%d")
+            duration = end - start 
+            trip.trip_length = duration.days + 1
+        except:
+            pass
+
         trip.save()
-        
+
         activity_ids = []
         outfit_ids = []
         if request.data.get("activity"):
@@ -1017,23 +1021,23 @@ class EditTripDetailAPI(APIView):
             else:
                 activities = activity_data
                 
-        for activity_value in activities:
-            activity_id = activity_value['activity_flag_id']
-            outfit_id = activity_value['outfit_id']
-        
-            if activity_id:
-                activity_obj = ActivityFlag.objects.filter(id=activity_id).first()
-                if activity_obj:
-                    activity_ids.append(activity_obj.id)
-            if outfit_id:
-                outfit_obj = Outfit.objects.filter(id=outfit_id).first()
-                if outfit_obj:
-                    outfit_ids.append(outfit_obj.id)
-        if activity_ids:
-            trip.activity_flag.add(*activity_ids)
-        if outfit_ids:
-            trip.outfit.add(*outfit_ids)
-        return Response({"message": "Trip created successfully!","status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
+            for activity_value in activities:
+                activity_id = activity_value['activity_flag_id']
+                outfit_id = activity_value['outfit_id']
+            
+                if activity_id:
+                    activity_obj = ActivityFlag.objects.filter(id=activity_id).first()
+                    if activity_obj:
+                        activity_ids.append(activity_obj.id)
+                if outfit_id:
+                    outfit_obj = Outfit.objects.filter(id=outfit_id).first()
+                    if outfit_obj:
+                        outfit_ids.append(outfit_obj.id)
+            if activity_ids:
+                trip.activity_flag.add(*activity_ids)
+            if outfit_ids:
+                trip.outfit.add(*outfit_ids)
+        return Response({"message": "Trip updated successfully!","status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
 
 
 class MarkItemFavouriteAPI(APIView):

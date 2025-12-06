@@ -3,6 +3,7 @@ from accounts.common_imports import *
 from .models import *
 from accounts.management.commands.default_data import default_activity_flags,default_hair_colors,default_skin_tones,default_body_types
 from accounts.utils import *
+from ecommerce.models import Rating
 # Create your views here.
 
 """
@@ -370,7 +371,8 @@ class ViewOutfitDetails(View):
     @method_decorator(admin_only)
     def get(self,request,*args,**kwargs):
         outfit = Outfit.objects.get(id=self.kwargs.get('id'))
-        return render(request,'ecommerce/outfits/view-outfit-detail.html',{"outfit":outfit,"head_title":"Outfit Management"})
+        ratings = Rating.objects.filter(outfit_id = outfit)
+        return render(request,'ecommerce/outfits/view-outfit-detail.html',{"outfit":outfit,"ratings":ratings,"head_title":"Outfit Management"})
     
 
 class HairColorList(View):
@@ -622,6 +624,3 @@ class WardrobeItemsDetails(View):
             }
         }
         return JsonResponse(data)
-
-
-

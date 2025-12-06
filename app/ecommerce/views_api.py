@@ -77,3 +77,104 @@ class PartnerStoresAPI(APIView):
         start, end, meta_data = get_pages_data(request.query_params.get('page'), stores)
         data = PartnerStoresSerializer(stores[start:end],many=True,context={"request": request}).data
         return Response({"data": data, "meta": meta_data, "status": status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+
+class AddRatingAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    @swagger_auto_schema(
+        tags=['Feedback Management'],
+        operation_id="Add Feedback",
+        operation_description="Add rating for outfit or wardrobe item",
+        manual_parameters=[
+            openapi.Parameter('rating', openapi.IN_FORM, type=openapi.TYPE_INTEGER, description='Rate from 1–5'),
+            openapi.Parameter('comment', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Feedback comment"),
+            openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Wardrobe Item ID"),
+            openapi.Parameter('outfit_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Outfit ID"),
+        ],
+    )
+    def post(self, request):
+        rating_value = request.data.get("rating")
+        comment = request.data.get("comment")
+        item_id = request.data.get("item_id")
+        outfit_id = request.data.get("outfit_id")
+
+        # Must provide either item_id or outfit_id
+        if not item_id and not outfit_id:
+            return Response({"error": "Please provide either item_id or outfit_id."},status=status.HTTP_400_BAD_REQUEST)
+
+        if item_id and outfit_id:
+            return Response({"error": "Please send only one: item_id OR outfit_id, not both."},status=status.HTTP_400_BAD_REQUEST)
+
+        if not rating_value:
+            return Response({"error": "Rating is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            rating_value = int(rating_value)
+        except:
+            return Response({"error": "Rating must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if rating_value < 1 or rating_value > 5:
+            return Response({"error": "Rating must be between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
+
+        item = None
+        outfit = None
+
+        if item_id:
+            try:
+                item = ClothingItem.objects.get(id=item_id)
+            except Exception as e:
+                return Response({"error": "Invalid item_id. Item not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if outfit_id:
+            try:
+                outfit = Outfit.objects.get(id=outfit_id)
+            except Exception as e:
+                return Response({"error": "Invalid outfit_id. Outfit not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        rating, created = Rating.objects.update_or_create(
+            user=request.user,
+            item=item if item else None,
+            outfit=outfit if outfit else None,
+            defaults={"rating": rating_value, "comment": comment}
+        )
+
+        message = "Feedback added successfully!" if created else "Feedback updated successfully!"
+        return Response({"message": message,"status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
+
+
+class FeedbackListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Feedback Management"],
+        operation_id="Get feedback",
+        operation_description="Get feedback",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        stores = Rating.objects.all().order_by('-created_on')
+        start, end, meta_data = get_pages_data(request.query_params.get('page'), stores)
+        data = RatingSerializer(stores[start:end],many=True,context={"request": request}).data
+        return Response({"data": data, "meta": meta_data, "status": status.HTTP_200_OK},status=status.HTTP_200_OK)
+    
+
+class GetFeedbackDetailsAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Feedback Management"],
+        operation_id="View Feedback Details",
+        operation_description="View Feedback Details",
+        manual_parameters=[
+            openapi.Parameter('feedback_id', openapi.IN_QUERY,type=openapi.TYPE_STRING,description="Feedback Id"),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        wardrobe = get_or_none(Rating, "Invalid feedback id", id=request.query_params.get('feedback_id'))
+        data = RatingSerializer(wardrobe,context = {"request":request}).data
+        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    

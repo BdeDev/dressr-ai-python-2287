@@ -3,6 +3,7 @@ from accounts.common_imports import *
 from accounts.models import *
 from accounts.constants import *
 from subscription.models import *
+from wardrobe.models import *
 
 
 class AffiliateSettings(CommonInfo):
@@ -67,7 +68,7 @@ class MarketingCategoryMedia(CommonInfo):
     category = models.ForeignKey(MarketingToolsCategories, on_delete=models.CASCADE, null=True, blank=True,related_name='category_media')
     name = models.CharField(max_length=255, null=True, blank=True)
     media_file = models.FileField(upload_to='marketing_media/', null=True, blank=True)
-    link = models.URLField(max_length=500, null=True, blank=True)
+    link = models.URLField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -199,3 +200,25 @@ class DiscountAd(CommonInfo):
 
     class Meta:
         db_table = 'discount_ad'
+
+
+class Rating(CommonInfo):
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    item = models.ForeignKey(ClothingItem, null=True, blank=True, on_delete=models.CASCADE)
+    outfit = models.ForeignKey(Outfit, null=True, blank=True, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField(default=0)
+    comment = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'rating'
+
+
+class StoreCredentials(CommonInfo):
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    access_token = models.CharField(max_length=255, blank=True, null=True)
+    refresh_token = models.CharField(max_length=255, blank=True, null=True)
+    url = models.URLField(null=True, blank=True)
+    is_active  = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'store_creds'

@@ -854,6 +854,7 @@ class UpdateProfileDetails(APIView):
         operation_description="Update Profile ( Customer )",
         manual_parameters=[
             openapi.Parameter('username', openapi.IN_FORM, type=openapi.TYPE_STRING,description='username'),
+            openapi.Parameter('dob', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Date of birth'),
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='first name'),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING,description='last name'),
             openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='body type id'),
@@ -876,6 +877,7 @@ class UpdateProfileDetails(APIView):
         user_image = request.FILES.get('image')
         others = data.get('others')
         hieght_cm = data.get('height')
+        dob = data.get('dob')
         # Update name
         if first_name: user.first_name = first_name
         if last_name: user.last_name = last_name
@@ -922,6 +924,9 @@ class UpdateProfileDetails(APIView):
             final_username = formatted_suggestions[0]  # Select first recommended formatted username
 
             user.username = final_username
+            
+        if request.data.get('dob'):
+            user.dob = dob
             
         user.others = others
         user.hieght_cm = hieght_cm

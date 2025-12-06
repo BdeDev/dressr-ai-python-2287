@@ -101,6 +101,72 @@
                     </div>
                 </div>
             </div>
+            <!-- tabs -->
+            <div class="col-lg-12 col-sm-12 mt-5">
+                <div class="row  mt-4">
+                    <div class="bs-example action-tabs">
+                        <ul class="nav nav-tabs" id="myTab">
+                            <li class="nav-item">
+                                <a href="#sectionA" class="nav-link nav-link-items active nav-link1" data-toggle="tab">Outfit Feedback</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="sectionA" class="tab-pane fade show active ">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>User Name</strong></th>
+                                                                <th><strong>Rating</strong></th>
+                                                                <th><strong>Comment</strong></th>
+                                                                <th><strong>Created On </strong></th>
+                                                                <th><strong>Actions </strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if ratings %}
+                                                                {% for rating in ratings %}
+                                                                <tr>
+                                                                    <td>{{rating.user.full_name|default:'-'}}</td>
+                                                                    <td>{{rating.rating|default:'-'}}</td>
+                                                                    <td>{{rating.comment|default:'-'}}</td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ rating.created_on|date:'Y-m-d' }}", "{{ rating.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                    <td>
+
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if ratings|length > 10 %}
+                                                <div class='text-left mt-2' >
+                                                    <a class='btn btn-primary' href="{% url 'accounts:login_history' %}">View More <i class="fas fa-angle-double-right ms-2"></i></a>
+                                                </div>
+                                                {% endif %}
+                                                {% comment %} <!-- pagination-->
+                                                {% include "admin-includes/pagination.html" with listing_objects=loginhistory %}
+                                                <!-- pagination end--> {% endcomment %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tabs end -->
         </div>
     </div>
 </div>
