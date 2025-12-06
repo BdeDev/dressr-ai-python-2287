@@ -17,6 +17,8 @@
                 <a class="btn btn-secondary" href="{% url 'subscription:all_plans' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
             </div>
         </div>
+
+        
         <div class="card">
             <div class="card-body">
                 <form onsubmit="Loader(this.id)" id="add-subscription-plan" action="{% url 'subscription:add_subscription_plan' %}" method="POST" >
