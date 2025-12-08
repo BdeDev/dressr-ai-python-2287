@@ -70,10 +70,15 @@ class PartnerStoresAPI(APIView):
         tags=["Partner Stores Management"],
         operation_id="Get Partner Stores",
         operation_description="Get Partner Stores",
-        manual_parameters=[],
+        manual_parameters=[
+            openapi.Parameter('search', openapi.IN_QUERY, type=openapi.TYPE_STRING, description='search by name'),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+        ],
     )
     def get(self, request, *args, **kwargs):
         stores = PartnerStore.objects.all().order_by('-created_on')
+        if request.query_params.get('search'):
+            stores = PartnerStore.objects.filter(name__icontains = request.query_params.get('search'))
         start, end, meta_data = get_pages_data(request.query_params.get('page'), stores)
         data = PartnerStoresSerializer(stores[start:end],many=True,context={"request": request}).data
         return Response({"data": data, "meta": meta_data, "status": status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -100,7 +105,6 @@ class AddRatingAPI(APIView):
         item_id = request.data.get("item_id")
         outfit_id = request.data.get("outfit_id")
 
-        # Must provide either item_id or outfit_id
         if not item_id and not outfit_id:
             return Response({"error": "Please provide either item_id or outfit_id."},status=status.HTTP_400_BAD_REQUEST)
 

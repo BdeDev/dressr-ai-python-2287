@@ -39,6 +39,7 @@ import string
 from accounts.tasks import *
 from wardrobe.models import *
 from django.utils.text import slugify
+import requests
 
 
 db_logger = logging.getLogger('db')

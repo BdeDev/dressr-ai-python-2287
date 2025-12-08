@@ -1589,13 +1589,39 @@ class GetWardrobeDetailsAPI(APIView):
 
     @swagger_auto_schema(
         tags=["WarDrobe management"],
-        operation_id="View wardrobe Details",
-        operation_description="View wardrobe Details",
+        operation_id="View wardrobe details",
+        operation_description="Retrieve wardrobe details or outfits based on type",
         manual_parameters=[
-            openapi.Parameter('wardrobe_id', openapi.IN_QUERY,type=openapi.TYPE_STRING,description="Wardrobe Id"),
+            openapi.Parameter('wardrobe_id', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Wardrobe ID",required=True),
+            openapi.Parameter('type', openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description="1 = Items, 2 = Outfits",required=True),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
         ],
     )
-    def get(self, request, *args, **kwargs):
-        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", id=request.query_params.get('wardrobe_id'))
-        data = WardrobeSerializer(wardrobe,context = {"request":request}).data
-        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    def get(self, request):
+        wardrobe_id = request.query_params.get("wardrobe_id")
+        req_type = request.query_params.get("type")
+        if not wardrobe_id:
+            return Response({"error": "wardrobe_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not req_type:
+            return Response({"error": "type is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            req_type = int(req_type)
+        except ValueError:
+            return Response({"error": "type must be 1 or 2"}, status=status.HTTP_400_BAD_REQUEST)
+
+        wardrobe = Wardrobe.objects.filter(id=wardrobe_id).first()
+        if not wardrobe:
+            return Response({"error": "Invalid wardrobe_id"}, status=status.HTTP_404_NOT_FOUND)
+        if req_type == 1:
+            data = WardrobeSerializer(wardrobe,context={"request": request}).data
+
+            return Response({"data": data},status=status.HTTP_200_OK)
+        if req_type == 2:
+            user_outfits = Outfit.objects.filter(created_by=wardrobe.user).order_by("-created_on")
+            start, end, meta_data = get_pages_data(request.query_params.get("page"),user_outfits)
+            data = MyOutFitSerializer(user_outfits[start:end],many=True,context={"request": request}).data
+            return Response({"data": data,"meta": meta_data},status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid type. Allowed values: 1 = Items, 2 = Outfits"},status=status.HTTP_400_BAD_REQUEST)

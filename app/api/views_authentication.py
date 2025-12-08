@@ -14,6 +14,8 @@ from accounts.models import *
 from accounts.utils import *
 from wardrobe.models import Wardrobe
 
+from api.avatar import *
+
 """
 Authentication Management
 """
@@ -843,6 +845,7 @@ class UserProfileDetails(APIView):
         data = UserSerializer(user, context={"request": request}).data
         return Response({"data": data, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
+from django.core.files.storage import default_storage
 
 class UpdateProfileDetails(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -909,20 +912,15 @@ class UpdateProfileDetails(APIView):
             
         if request.data.get('username'):
             new_username = request.data.get('username').strip()
-
-            # Check if username exists
             if User.objects.filter(username=new_username).exclude(id=user.id).exists():
-                # Generate suggestions using the user's first name
                 suggestions = generate_mydressr_username(user.full_name)
                 return Response({"message": "Username already taken.",
                     "suggestions": suggestions,
                     "status": 400
                 }, status=400)
 
-            # If username does NOT exist, apply formatting rule
             formatted_suggestions = generate_mydressr_username(new_username)
-            final_username = formatted_suggestions[0]  # Select first recommended formatted username
-
+            final_username = formatted_suggestions[0]
             user.username = final_username
             
         if request.data.get('dob'):
@@ -930,8 +928,23 @@ class UpdateProfileDetails(APIView):
             
         user.others = others
         user.hieght_cm = hieght_cm
-        if request.FILES.get('image'):
-            user.user_image = user_image
+
+
+        uploaded = request.FILES.get("image")
+       
+        if uploaded:
+            temp_path = default_storage.save(f"temp/{uploaded.name}", uploaded)
+
+            avatar_url = request.build_absolute_uri(default_storage.url(temp_path))
+            prompt = (
+                "Create a high-resolution, realistic avatar of the person in the image. "
+                "Keep facial features accurate, skin tone natural, and hair realistic. "
+                "The avatar should be front-facing, well-lit, and suitable for profile pictures. "
+                "Do not alter the clothing or background drastically."
+            )
+            result = generate_lightx_avatar_and_save(user, avatar_url, prompt=prompt)
+            if not result.get("success"):
+                return Response({"message": "Avatar generation failed", "error": result.get("error")}, status=400)
 
         if request.FILES.get('profile_pic'):
             user.profile_pic = profile_pic
