@@ -16,6 +16,8 @@ from wardrobe.models import Wardrobe
 from django.core.files.base import ContentFile
 from api.avatar import *
 
+from api.avatar import *
+
 """
 Authentication Management
 """
@@ -845,6 +847,7 @@ class UserProfileDetails(APIView):
         data = UserSerializer(user, context={"request": request}).data
         return Response({"data": data, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
+from django.core.files.storage import default_storage
 
 class UpdateProfileDetails(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -879,7 +882,6 @@ class UpdateProfileDetails(APIView):
         others = data.get('others')
         hieght_cm = data.get('height')
         dob = data.get('dob')
-
         if first_name: user.first_name = first_name
         if last_name: user.last_name = last_name
         
@@ -926,73 +928,7 @@ class UpdateProfileDetails(APIView):
             
         user.others = others
         user.hieght_cm = hieght_cm
-
-        uploaded = request.FILES.get("image")
-        user.user_image = uploaded
-        user.save()
         
-        # if uploaded:
-        #     user.refresh_from_db()
-        #     avatar_url = request.build_absolute_uri(user.user_image.url)
-        #     db_logger.info(avatar_url)
-        #     prompt = (
-        #         "Create a high-resolution avatar version of the person in the image. Do not change or modify the clothing, background, body, pose, lighting, or any other part of the image. Only transform the face into a realistic, natural-looking avatar while preserving the original facial structure, skin tone, and hair style as closely as possible. The output must look almost identical to the original photo except for the face being converted into an avatar style."
-        #     )
-        #     result = create_lightx_avatar(avatar_url, avatar_url, prompt=prompt)
-        #     if not result.get("success"):
-        #         return Response(
-        #             {"message": "Avatar generation failed", "error": result.get("error")},
-        #             status=400
-        #         )
-        #     order_id = result["data"]["body"]["orderId"]
-        #     max_attempts = 10
-        #     wait_time = 3
-        #     avatar_result = None
-
-        #     for attempt in range(max_attempts):
-        #         time.sleep(wait_time)
-
-        #         status_check = check_lightx_order_status(order_id)
-        #         if not status_check.get("success"):
-        #             return Response(
-        #                 {"message": "Order status failed", "error": status_check.get("error")},
-        #                 status=400
-        #             )
-
-        #         body = status_check["data"]["body"]
-        #         status_data = body.get("status")
-        #         output = body.get("output")
-
-        #         if output and status_data in ["active", "success"]:
-        #             avatar_result = status_check
-        #             break
-
-        #         if status_data in ["failed", "error"]:
-        #             return Response(
-        #                 {"message": "Avatar generation failed", "details": body},
-        #                 status=400
-        #             )
-        #     if not avatar_result:
-        #         return Response(
-        #             {"message": "Avatar is still processing. Try again after a few seconds."},
-        #             status=202
-        #         )
-        #     image_url = avatar_result["data"]["body"]["output"]
-        #     img_response = requests.get(image_url)
-        #     if img_response.status_code != 200:
-        #         return Response({"message": "Failed to download avatar image"}, status=400)
-
-        #     file_name = image_url.split("/")[-1]
-        #     user.user_image.save(file_name, ContentFile(img_response.content))
-        #     user.save()
-        #     send_notification(
-        #         created_by=user,
-        #         created_for=None,
-        #         title="New Avatar Generated",
-        #         description=f"A new avatar has been successfully generated for {user.full_name}.",
-        #         notification_type=ADMIN_NOTIFICATION,
-        #         obj_id=str(user.id),
-        #     )
         if request.FILES.get('profile_pic'):
             user.profile_pic = profile_pic
         message = "Profile updated successfully!"
