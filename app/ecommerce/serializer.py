@@ -18,3 +18,9 @@ class PartnerStoresSerializer(ModelSerializer):
     class Meta:
         model = PartnerStore
         fields = ('__all__')
+
+
+class RatingSerializer(ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ('__all__')

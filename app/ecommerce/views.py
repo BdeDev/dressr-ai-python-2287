@@ -609,3 +609,67 @@ class DeleteAffiliateGuide(View):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
 
 
+"""
+Store Credentials
+"""
+class StoreCredentialsView(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        store_creds = StoreCredentials.objects.all().order_by('-created_on')
+        return render(request,'ecommerce/partner-store/partner-store.html',{
+            "head_title":'Store credentials Management',
+            "store_creds" : get_pagination(request, store_creds),
+            "scroll_required":True if request.GET else False,
+            "total_objects":store_creds.count()
+        })
+    
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        store_id = request.POST.get('store_id')
+        access_token = request.POST.get('access_token').strip()
+        refresh_token = request.POST.get('refresh_token').strip()
+        url = request.FILES.get('url')
+        if store_id:
+            try:
+                store_creds = StoreCredentials.objects.get(id=store_id)
+            except StoreCredentials.DoesNotExist:
+                messages.error(request, "Store credentials store not found!")
+                return redirect('ecommerce:store_creds')
+            
+            if StoreCredentials.objects.filter(access_token=access_token, refresh_token=refresh_token).exclude(id=store_id).exists():
+                messages.error(request, "Store credentials store already exists!")
+                return redirect('ecommerce:store_creds')
+
+            store_creds.access_token = access_token
+            store_creds.refresh_token = refresh_token
+            store_creds.url = url
+            store_creds.save()
+            messages.success(request, "Store credentials store updated successfully!")
+        else:
+            if StoreCredentials.objects.filter(access_token=access_token, refresh_token=refresh_token).exists():
+                messages.error(request, "Store credentials store already exists!")
+                return redirect('ecommerce:store_creds')
+            StoreCredentials.objects.create(
+                access_token=access_token,
+                refresh_token=refresh_token,
+                url = url,
+                created_by = request.user
+            )
+            messages.success(request, "Store credentials added successfully!")
+        return redirect('ecommerce:store_creds')
+    
+class DeleteStoreCredentials(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        delete_store = StoreCredentials.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Store credentials Deleted Successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+class UserFeedBackList(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        ratings = Rating.objects.all().order_by('-created_on')
+        return render(request, 'ecommerce/user-rating/user-rating-list.html',{
+            "head_title":'Feedback Management',
+            "ratings":ratings,
+        })
