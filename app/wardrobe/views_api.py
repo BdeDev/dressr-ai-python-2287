@@ -949,8 +949,7 @@ class EditTripDetailAPI(APIView):
         ],
     )
     def post(self, request, *args, **kwargs):
-
-        trip = get_or_none(Trips,'Trip does not exist !',id = request.query_params.get('trip_id').strip())
+        trip = get_or_none(Trips,'Trip does not exist !',id = request.data.get('trip_id').strip(),created_by=request.user)
         if request.data.get('title'):
             if Trips.objects.filter(title=request.data.get('title').strip(),created_by=request.user).exists():
                 return Response({"message": "Trip already exist for same title !","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
@@ -997,13 +996,18 @@ class EditTripDetailAPI(APIView):
         if request.data.get('end_date'):
             trip.end_date = request.data.get('end_date').strip()
 
-        
-        start = datetime.strptime(trip.start_date, "%Y-%m-%d")
-        end = datetime.strptime(trip.end_date, "%Y-%m-%d")
-        duration = end - start 
-        trip.trip_length = duration.days + 1
+        try:
+            if request.data.get('start_date'):
+                start = datetime.strptime(trip.start_date, "%Y-%m-%d")
+            if request.data.get('end_date'):
+                end = datetime.strptime(trip.end_date, "%Y-%m-%d")
+            duration = end - start 
+            trip.trip_length = duration.days + 1
+        except:
+            pass
+
         trip.save()
-        
+
         activity_ids = []
         outfit_ids = []
         if request.data.get("activity"):
@@ -1017,23 +1021,23 @@ class EditTripDetailAPI(APIView):
             else:
                 activities = activity_data
                 
-        for activity_value in activities:
-            activity_id = activity_value['activity_flag_id']
-            outfit_id = activity_value['outfit_id']
-        
-            if activity_id:
-                activity_obj = ActivityFlag.objects.filter(id=activity_id).first()
-                if activity_obj:
-                    activity_ids.append(activity_obj.id)
-            if outfit_id:
-                outfit_obj = Outfit.objects.filter(id=outfit_id).first()
-                if outfit_obj:
-                    outfit_ids.append(outfit_obj.id)
-        if activity_ids:
-            trip.activity_flag.add(*activity_ids)
-        if outfit_ids:
-            trip.outfit.add(*outfit_ids)
-        return Response({"message": "Trip created successfully!","status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
+            for activity_value in activities:
+                activity_id = activity_value['activity_flag_id']
+                outfit_id = activity_value['outfit_id']
+            
+                if activity_id:
+                    activity_obj = ActivityFlag.objects.filter(id=activity_id).first()
+                    if activity_obj:
+                        activity_ids.append(activity_obj.id)
+                if outfit_id:
+                    outfit_obj = Outfit.objects.filter(id=outfit_id).first()
+                    if outfit_obj:
+                        outfit_ids.append(outfit_obj.id)
+            if activity_ids:
+                trip.activity_flag.add(*activity_ids)
+            if outfit_ids:
+                trip.outfit.add(*outfit_ids)
+        return Response({"message": "Trip updated successfully!","status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
 
 
 class MarkItemFavouriteAPI(APIView):
@@ -1585,13 +1589,39 @@ class GetWardrobeDetailsAPI(APIView):
 
     @swagger_auto_schema(
         tags=["WarDrobe management"],
-        operation_id="View wardrobe Details",
-        operation_description="View wardrobe Details",
+        operation_id="View wardrobe details",
+        operation_description="Retrieve wardrobe details or outfits based on type",
         manual_parameters=[
-            openapi.Parameter('wardrobe_id', openapi.IN_QUERY,type=openapi.TYPE_STRING,description="Wardrobe Id"),
+            openapi.Parameter('wardrobe_id', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Wardrobe ID",required=True),
+            openapi.Parameter('type', openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description="1 = Items, 2 = Outfits",required=True),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
         ],
     )
-    def get(self, request, *args, **kwargs):
-        wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id", id=request.query_params.get('wardrobe_id'))
-        data = WardrobeSerializer(wardrobe,context = {"request":request}).data
-        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+    def get(self, request):
+        wardrobe_id = request.query_params.get("wardrobe_id")
+        req_type = request.query_params.get("type")
+        if not wardrobe_id:
+            return Response({"error": "wardrobe_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not req_type:
+            return Response({"error": "type is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            req_type = int(req_type)
+        except ValueError:
+            return Response({"error": "type must be 1 or 2"}, status=status.HTTP_400_BAD_REQUEST)
+
+        wardrobe = Wardrobe.objects.filter(id=wardrobe_id).first()
+        if not wardrobe:
+            return Response({"error": "Invalid wardrobe_id"}, status=status.HTTP_404_NOT_FOUND)
+        if req_type == 1:
+            data = WardrobeSerializer(wardrobe,context={"request": request}).data
+
+            return Response({"data": data},status=status.HTTP_200_OK)
+        if req_type == 2:
+            user_outfits = Outfit.objects.filter(created_by=wardrobe.user).order_by("-created_on")
+            start, end, meta_data = get_pages_data(request.query_params.get("page"),user_outfits)
+            data = MyOutFitSerializer(user_outfits[start:end],many=True,context={"request": request}).data
+            return Response({"data": data,"meta": meta_data},status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid type. Allowed values: 1 = Items, 2 = Outfits"},status=status.HTTP_400_BAD_REQUEST)

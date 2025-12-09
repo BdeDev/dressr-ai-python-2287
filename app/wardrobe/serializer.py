@@ -6,11 +6,12 @@ from api.serializer import *
 class ClothItemSerializer(ModelSerializer):
     cloth_category = SerializerMethodField()
     is_favourite = SerializerMethodField()
+    feedback = SerializerMethodField()
     
     class Meta:
         model = ClothingItem
         fields = ['id','title','wardrobe','image','cloth_category','occasion',
-                  'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','tags','is_favourite']
+                  'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','tags','is_favourite','feedback']
 
     def get_cloth_category(self,obj):
         return obj.cloth_category.id,obj.cloth_category.title
@@ -18,6 +19,12 @@ class ClothItemSerializer(ModelSerializer):
     def get_is_favourite(self, obj):
         user = self.context.get("request").user
         return 1 if obj.favourite.filter(id=user.id).exists() else 0
+
+    def get_feedback(self,obj):
+        feedback = obj.rating_set.all()
+        if not feedback:
+            return None
+        return feedback
 
 
 class WardrobeSerializer(ModelSerializer):
@@ -56,10 +63,11 @@ class ClothCategorySerializer(ModelSerializer):
 class MyOutFitSerializer(ModelSerializer):
     items = SerializerMethodField(read_only=True)
     is_favourite = SerializerMethodField()
+    feedback = SerializerMethodField()
 
     class Meta:
         model = Outfit
-        fields = ['id','title','items','occasion','weather_type','created_by','color','notes','image','is_favourite']
+        fields = ['id','title','items','occasion','weather_type','created_by','color','notes','image','is_favourite','feedback']
 
     def get_items(self, obj):
         items = obj.items.all()
@@ -79,6 +87,12 @@ class MyOutFitSerializer(ModelSerializer):
     def get_is_favourite(self, obj):
         user = self.context.get("request").user
         return 1 if obj.favourite.filter(id=user.id).exists() else 0
+    
+    def get_feedback(self,obj):
+        feedback = obj.rating_set.all()
+        if not feedback:
+            return None
+        return feedback
 
 class TripsSerializer(ModelSerializer):
     outfit = SerializerMethodField()
@@ -87,6 +101,7 @@ class TripsSerializer(ModelSerializer):
     class Meta:
         model = Trips
         fields = '__all__'
+
 
     def get_outfit(self, obj):
         request = self.context.get("request")
@@ -145,8 +160,7 @@ class ItemUsageFrequencySerializer(ModelSerializer):
 
     class Meta:
         model = ClothingItem
-        fields = ['id','title','wardrobe','image','cloth_category','occasion',
-                  'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','tags','is_favourite']
+        fields = ['id','title','wardrobe','image','cloth_category','occasion', 'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','tags','is_favourite']
 
     def get_image(self, obj):
         request = self.context.get("request")

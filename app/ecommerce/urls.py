@@ -46,4 +46,15 @@ urlpatterns = [
     re_path(r'^affiliate-graph/$', AffiliateGraph.as_view(), name='affiliate_graph'),
     re_path(r'^affiliate-performance-graph/$', AffiliatePerformanceGraph.as_view(), name='affiliate_performance_graph'),
     re_path(r'^download-performance-report/$', DownloadAffiliatePerformanceReport.as_view(), name='download_performance_report'),
+
+
+    # Feedback api
+    re_path(r'^add-feedback-api/$', AddRatingAPI.as_view(), name='partneradd_feedback_api'),
+    re_path(r'^get-feedback-list-api/$', FeedbackListAPI.as_view(), name='get_feedback_list_api'),
+    re_path(r'^get-feedback-detail-api/$', GetFeedbackDetailsAPI.as_view(), name='get_feedback_detail_api'),
+
+
+    # Feedback Management on admin panel
+    re_path(r'^feedback-list/$', UserFeedBackList.as_view(), name='feedback_list'),
+   
 ]
