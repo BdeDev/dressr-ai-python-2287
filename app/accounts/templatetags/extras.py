@@ -1,7 +1,7 @@
 from django import template
 from accounts.views import *
 from contact_us.models import *
-from wardrobe.models import Wardrobe
+from wardrobe.models import Wardrobe,VirtualTryOn
 from subscription.models import *
 from django.http.request import HttpRequest
 from django.contrib.sites.shortcuts import get_current_site
@@ -196,4 +196,6 @@ def subscribers(key):
         return UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE).values_list("purchased_by", flat=True).distinct().count()
     return 0
 
-
+@register.filter(name='total_try_on')
+def total_try_on(key):
+	return VirtualTryOn.objects.all().count()

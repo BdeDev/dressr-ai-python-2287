@@ -1280,28 +1280,6 @@ class RemoveAllItemFromRecentSearchAPI(APIView):
         recent_search.delete()
         return Response({"message":"Recent Search Deleted Successfully!","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
-###-----------------------User Tag Management-------------------------###
-
-class AddTagAPI(APIView):
-    permission_classes = [permissions.IsAuthenticated,]
-    parser_classes = [MultiPartParser,FormParser]
-
-    @swagger_auto_schema(
-        tags=['Tag Management'],
-        operation_id="Add Tag",
-        operation_description="Add Tag",
-        manual_parameters=[
-            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING,description="title"),
-        ],
-    )
-    def post(self, request, *args, **kwargs):
-        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
-            {"field_name": "title", "method": "post", "error_message": "Please enter title"},
-        ])
-        tags,created = Tag.objects.get_or_create(title = request.data.get('title').strip())
-        if created:
-            return Response({"message":"Tag already exist !","status": status.HTTP_400_BAD_REQUEST}, status = status.HTTP_400_BAD_REQUEST)
-        return Response({"message":"Tag created Successfully !","status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
 
 ###---------------WearLog management----------------------######
 
@@ -1365,7 +1343,6 @@ class WearCalendarAPI(APIView):
         ]
     )
     def get(self, request, *args, **kwargs):
-        
         entries = WearHistory.objects.filter(user=request.user)
         wear_log = request.query_params.get("wear_log")
         if wear_log:
@@ -1442,8 +1419,6 @@ class MostWearClothAnalyticsAPI(APIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         items = ClothingItem.objects.filter(wardrobe__user=user)
-
-        # If no items
         if not items.exists():
             return Response({"message": "No wardrobe items found.","most_worn": [],"least_worn": [],"recommendations": []})
 
@@ -1471,15 +1446,10 @@ class MostWearClothAnalyticsAPI(APIView):
             recommendations.append("Your wardrobe usage is well-balanced.")
 
         wardrobe = get_or_none(Wardrobe, "Wardrobe does not exist!", user=request.user)
-        # All items in wardrobe
         total_items = ClothingItem.objects.filter(wardrobe=wardrobe).count()
-
-        # Items worn at least once
         worn_item_ids = (WearHistory.objects.filter(item__wardrobe=wardrobe).values_list('item', flat=True).distinct())
 
         used_items_count = worn_item_ids.count()
-
-        # Utilization percentage
         utilization = (used_items_count / total_items * 100) if total_items else 0
 
         response = {"stats": {"total_items": ClothingItem.objects.filter(wardrobe__user=user).count(),

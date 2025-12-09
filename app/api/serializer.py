@@ -3,7 +3,7 @@ from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework.authtoken.models import Token 
 from contact_us.models import *
 from api.helper import *
-from wardrobe.models import Wardrobe
+from wardrobe.models import Wardrobe,VirtualTryOn
 
 class UserSerializer(ModelSerializer):
     token = SerializerMethodField(read_only=True)
@@ -117,4 +117,12 @@ class BodyTypeSerializer(ModelSerializer):
 
     class Meta:
         model = BodyType
+        fields = '__all__'
+
+
+
+class VirtualTryOnSerializer(ModelSerializer):
+
+    class Meta:
+        model = VirtualTryOn
         fields = '__all__'

@@ -1,6 +1,6 @@
 from .views import *
 from django.contrib import admin
-from django.urls import re_path,path
+from django.urls import re_path
 from .views_api import *
 
 admin.autodiscover()
@@ -52,12 +52,7 @@ urlpatterns = [
     re_path(r'^add-multiple-item-api/$', AddMultipleItemInWardrobeAPI.as_view(), name='add_multiple_item_api'),
     re_path(r'^favourite-item-list-api/$', FavouriteItemListAPI.as_view(), name='favourite_item_list_api'),
 
-    
     re_path(r'^share-wardrobe-api/$', ShareWardrobeAPI.as_view(), name='share_wardrobe_api'),
-    # path('view-shared-wardrobe-api/<uuid:wardrobe_id>/',ViewFriendwardrobe.as_view(),name='view_shared_wardrobe_api'),
-    # path('share-wardrobe-api/',ShareWardrobeAPI.as_view(),name='share_wardrobe_api'),
-    
-
 
     re_path(r'^item-search-api/$', ItemSeachFilterAPI.as_view(), name='item_search_api'),
     re_path(r'^recent-search-api/$', RecentSearchAPI.as_view(), name='recent_search_api'),
