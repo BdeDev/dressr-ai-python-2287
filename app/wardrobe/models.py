@@ -42,11 +42,6 @@ class Accessory(CommonInfo):
     class Meta:
         db_table = 'accessories'
 
-class Tag(CommonInfo):
-    title = models.CharField(max_length=50,blank=True, null=True)
-
-    class Meta:
-        db_table = 'tag'
 
 class ClothingItem(CommonInfo):
     title = models.CharField(max_length=200,blank=True, null=True)
@@ -66,7 +61,6 @@ class ClothingItem(CommonInfo):
     wear_count = models.PositiveIntegerField(default=0)
     favourite = models.ManyToManyField(User, related_name='favourite_item')
     item_url = models.URLField(blank=True, null=True)
-    tags = models.ManyToManyField(Tag, related_name="items")
 
     class Meta:
         db_table = 'clothing_item'
@@ -124,14 +118,6 @@ class Trips(CommonInfo):
 
     class Meta:
         db_table = 'trip'
-        
-# class PackingItem(CommonInfo):
-#     name = models.CharField(max_length=255,null=True, blank=True)
-#     category = models.PositiveIntegerField(default=CLOTHING,choices=PACKING_CATEGORY,blank=True, null=True)
-#     activity_flag = models.ForeignKey(ActivityFlag, on_delete=models.SET_NULL, null=True, blank=True)
-
-#     class Meta:
-#         db_table = 'packing_item'
 
 class Recommendation(CommonInfo):
     vacation_plan = models.ForeignKey(Trips, on_delete=models.CASCADE, related_name="recommendations",blank=True, null=True)
@@ -149,3 +135,19 @@ class RecentSearch(CommonInfo):
 
     class Meta:
         db_table = 'recent_search'
+
+
+class VirtualTryOn(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="virtual_try_ons")
+    sigmentation_type = models.PositiveIntegerField(choices=SIGMENT_TYPE, blank=True, null=True)
+    source_image = models.ImageField(upload_to="tryon/source/", blank=True, null=True)
+    garment_image = models.ImageField(upload_to="tryon/masks/", blank=True, null=True)
+    order_id = models.CharField(max_length=100, blank=True, null=True)
+    request_payload = models.JSONField(blank=True, null=True)
+    response_payload = models.JSONField(blank=True, null=True)
+    output_image = models.ImageField(upload_to="tryon/output/", blank=True, null=True)
+    status = models.PositiveIntegerField(choices=TRY_ON_STATUS, blank=True, null=True)
+    error_message = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'virtual_try_on'

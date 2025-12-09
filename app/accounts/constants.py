@@ -198,3 +198,16 @@ COMMISSION_HISTORY_STATUS=((1, "Pending"),(2, "Approved"),(3, "Paid"))
 COMMISSION_STATUS_PENDING=1
 COMMISSION_STATUS_APPROVED=2
 COMMISSION_STATUS_PAID=3
+
+
+TRY_ON_STATUS = ((1, "Pending"),(2, "Processing"),(3, "Success"),(4, "Failed"))
+TRY_ON_PENDING = 1
+TRY_ON_PROCESSING = 2
+TRY_ON_SUCCESS = 3
+TRY_ON_FAILED = 4
+
+
+SIGMENT_TYPE = ((0,"Upper Body"),(1,"Lower Body"),(2,"Full Body"))
+UPPER_BODY = 0
+LOWER_BODY = 1
+FULL_BODY = 2

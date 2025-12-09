@@ -49,4 +49,8 @@ urlpatterns = [
     ##CheckDate
     re_path(r'datecheck-api/$',CheckDate.as_view(),name="datecheck_api"),
 
+
+    re_path(r'avatar-creation-api/$',CreateUserAvatarAPI.as_view(),name="avatar_creation_api"),
+    re_path(r'virtual-try-on-api/$',CreateVirtualTryOnAPI.as_view(),name="virtual_try_on_api"),
+
 ]
