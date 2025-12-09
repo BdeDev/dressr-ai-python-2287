@@ -268,6 +268,9 @@
                             <li class="nav-item">
                                 <a href="#sectionC" class="nav-link nav-link-items nav-link1" data-toggle="tab">Favourite Items</a>
                             </li>
+                            <li class="nav-item">
+                                <a href="#sectionD" class="nav-link nav-link-items nav-link1" data-toggle="tab">Virtual Try Ons</a>
+                            </li>
                         </ul>
                         <div class="tab-content">
                             <div id="sectionA" class="tab-pane fade show active ">
@@ -443,6 +446,106 @@
                                                                     <td>
                                                                         <script>
                                                                             var date = ConvertDateTime("{{ item.created_on|date:'Y-m-d' }}", "{{ item.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="d-flex">
+                                                                            {% comment %} <a title="View" href="{% url 'wardrobe:view_outfit_detail' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a> {% endcomment %}
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                               <!-- pagination-->
+                                                {% include "admin-includes/pagination.html" with listing_objects=favourite_items %}
+                                                <!-- pagination end-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <div id="sectionD" class="tab-pane fade show">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>Order Id</strong></th>
+                                                                <th><strong>Source Image</strong></th>
+                                                                <th><strong>Garment Image</strong></th>
+                                                                <th><strong>Output Image</strong></th>
+                                                                <th><strong>Sigmentation Type</strong></th>
+                                                                <th><strong>Created On</strong></th>
+                                                                {% comment %} <th><strong>Actions</strong></th> {% endcomment %}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if virtual_tryons %}
+                                                                {% for tryon in virtual_tryons %}
+                                                                <tr>
+                                                                    <td> {{tryon.order_id|default:"-"}}</td>
+                                                                    <td> 
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if tryon.source_image %}
+                                                                            <a href="{{tryon.source_image.url}}" data-fancybox>
+                                                                                <img src="{{tryon.source_image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% else %}
+                                                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td> 
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if tryon.garment_image %}
+                                                                            <a href="{{tryon.garment_image.url}}" data-fancybox>
+                                                                                <img src="{{tryon.garment_image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% else %}
+                                                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td> 
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if tryon.output_image %}
+                                                                            <a href="{{tryon.output_image.url}}" data-fancybox>
+                                                                                <img src="{{tryon.output_image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% else %}
+                                                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td> 
+                                                                        {% if tryon.sigmentation_type == 0 %}
+                                                                            <span class="badge bg-success">Upper</span>
+                                                                        {% elif tryon.sigmentation_type == 1 %}
+                                                                            <span class="badge bg-warning">Lower</span>
+                                                                        {% elif tryon.sigmentation_type == 2 %}
+                                                                            <span class="badge bg-primary">Full Body</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ tryon.created_on|date:'Y-m-d' }}", "{{ tryon.created_on|time:'H:i' }}");
                                                                             document.write(date);
                                                                         </script>
                                                                     </td>

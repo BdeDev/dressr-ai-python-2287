@@ -58,6 +58,7 @@ class ViewUser(View):
                 "outfits":get_pagination(request,outfits),
                 "item_count":ClothingItem.objects.filter(wardrobe__user=user).count(),
                 "favourite_items":get_pagination(request,user.favourite_item.all()),
+                "virtual_tryons":get_pagination(request,VirtualTryOn.objects.filter(user=user))
             })
         
         elif user.role_id == AFFILIATE:

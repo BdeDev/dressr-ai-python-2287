@@ -13,7 +13,7 @@ from tempfile import NamedTemporaryFile
 from accounts.models import *
 from accounts.utils import *
 from wardrobe.models import Wardrobe
-
+from django.core.files.base import ContentFile
 from api.avatar import *
 
 """
@@ -845,7 +845,6 @@ class UserProfileDetails(APIView):
         data = UserSerializer(user, context={"request": request}).data
         return Response({"data": data, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
-from django.core.files.storage import default_storage
 
 class UpdateProfileDetails(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -877,11 +876,10 @@ class UpdateProfileDetails(APIView):
         last_name = data.get('last_name')
         gender = data.get('gender')
         profile_pic = request.FILES.get('profile_pic')
-        user_image = request.FILES.get('image')
         others = data.get('others')
         hieght_cm = data.get('height')
         dob = data.get('dob')
-        # Update name
+
         if first_name: user.first_name = first_name
         if last_name: user.last_name = last_name
         
@@ -929,23 +927,72 @@ class UpdateProfileDetails(APIView):
         user.others = others
         user.hieght_cm = hieght_cm
 
-
         uploaded = request.FILES.get("image")
-       
-        if uploaded:
-            temp_path = default_storage.save(f"temp/{uploaded.name}", uploaded)
+        user.user_image = uploaded
+        user.save()
+        
+        # if uploaded:
+        #     user.refresh_from_db()
+        #     avatar_url = request.build_absolute_uri(user.user_image.url)
+        #     db_logger.info(avatar_url)
+        #     prompt = (
+        #         "Create a high-resolution avatar version of the person in the image. Do not change or modify the clothing, background, body, pose, lighting, or any other part of the image. Only transform the face into a realistic, natural-looking avatar while preserving the original facial structure, skin tone, and hair style as closely as possible. The output must look almost identical to the original photo except for the face being converted into an avatar style."
+        #     )
+        #     result = create_lightx_avatar(avatar_url, avatar_url, prompt=prompt)
+        #     if not result.get("success"):
+        #         return Response(
+        #             {"message": "Avatar generation failed", "error": result.get("error")},
+        #             status=400
+        #         )
+        #     order_id = result["data"]["body"]["orderId"]
+        #     max_attempts = 10
+        #     wait_time = 3
+        #     avatar_result = None
 
-            avatar_url = request.build_absolute_uri(default_storage.url(temp_path))
-            prompt = (
-                "Create a high-resolution, realistic avatar of the person in the image. "
-                "Keep facial features accurate, skin tone natural, and hair realistic. "
-                "The avatar should be front-facing, well-lit, and suitable for profile pictures. "
-                "Do not alter the clothing or background drastically."
-            )
-            result = generate_lightx_avatar_and_save(user, avatar_url, prompt=prompt)
-            if not result.get("success"):
-                return Response({"message": "Avatar generation failed", "error": result.get("error")}, status=400)
+        #     for attempt in range(max_attempts):
+        #         time.sleep(wait_time)
 
+        #         status_check = check_lightx_order_status(order_id)
+        #         if not status_check.get("success"):
+        #             return Response(
+        #                 {"message": "Order status failed", "error": status_check.get("error")},
+        #                 status=400
+        #             )
+
+        #         body = status_check["data"]["body"]
+        #         status_data = body.get("status")
+        #         output = body.get("output")
+
+        #         if output and status_data in ["active", "success"]:
+        #             avatar_result = status_check
+        #             break
+
+        #         if status_data in ["failed", "error"]:
+        #             return Response(
+        #                 {"message": "Avatar generation failed", "details": body},
+        #                 status=400
+        #             )
+        #     if not avatar_result:
+        #         return Response(
+        #             {"message": "Avatar is still processing. Try again after a few seconds."},
+        #             status=202
+        #         )
+        #     image_url = avatar_result["data"]["body"]["output"]
+        #     img_response = requests.get(image_url)
+        #     if img_response.status_code != 200:
+        #         return Response({"message": "Failed to download avatar image"}, status=400)
+
+        #     file_name = image_url.split("/")[-1]
+        #     user.user_image.save(file_name, ContentFile(img_response.content))
+        #     user.save()
+        #     send_notification(
+        #         created_by=user,
+        #         created_for=None,
+        #         title="New Avatar Generated",
+        #         description=f"A new avatar has been successfully generated for {user.full_name}.",
+        #         notification_type=ADMIN_NOTIFICATION,
+        #         obj_id=str(user.id),
+        #     )
         if request.FILES.get('profile_pic'):
             user.profile_pic = profile_pic
         message = "Profile updated successfully!"
@@ -1029,3 +1076,253 @@ class BodyTypeListView(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None),body_type)
         data = BodyTypeSerializer(body_type[start : end],many=True,context={"request":request}).data
         return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+    
+
+#---------------AI avatar creation API-----------------
+
+
+class CreateUserAvatarAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=["User Avatar Management"],
+        operation_id="Create User Avatar",
+        operation_description="Create User Avatar",
+        manual_parameters=[
+            
+            openapi.Parameter('body_type', openapi.IN_FORM, type=openapi.TYPE_STRING,description='body type id'),
+            openapi.Parameter('height', openapi.IN_FORM, type=openapi.TYPE_STRING,description='height in cm'),
+            openapi.Parameter('skin_tone_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='skin tone id'),
+            openapi.Parameter('hair_color_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='hair color id'),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description="Add Image"),
+           
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        response=CustomRequiredFieldsValidator.validate_api_field(self,request,
+            [
+                {"field_name": "body_type", "method": "post", "error_message": "Please enter body type"},
+                {"field_name": "skin_tone_id", "method": "post", "error_message": "Please enter skin tone"},
+                {"field_name": "hair_color_id", "method": "post", "error_message": "Please enter hair colour"},
+                {"field_name": "height", "method": "post", "error_message": "Please enter height"},
+                {"field_name": "image", "method": "post", "error_message": "Please upload image"},
+               
+            ]
+        )
+
+        user = request.user
+        data = request.data
+        height_cm = data.get('height')
+        # Fetch objects in a cleaner way
+        body_type = BodyType.objects.filter(id=data.get("body_type")).first()
+        skin_tone = SkinTone.objects.filter(id=data.get("skin_tone_id")).first()
+        hair_color = HairColor.objects.filter(id=data.get("hair_color_id")).first()
+
+        # Validate these 3 objects
+        if not body_type:
+            return Response({"message": "Body type not found!", "status": 400}, status=400)
+
+        if not skin_tone:
+            return Response({"message": "Skin tone not found!", "status": 400}, status=400)
+
+        if not hair_color:
+            return Response({"message": "Hair color not found!", "status": 400}, status=400)
+
+        # Upload image
+        uploaded_image = request.FILES.get("image")
+        user.user_image = uploaded_image
+        user.save()
+
+        if uploaded_image:
+            user.refresh_from_db()
+            avatar_url = request.build_absolute_uri(user.user_image.url)
+            db_logger.info(avatar_url)
+
+            # Prepare prompt
+            prompt = (
+                f"Create a high-resolution avatar version of the person in the image. "
+                f"The person has the following characteristics: "
+                f"body type = '{body_type.title}', "
+                f"skin tone = '{skin_tone.title}', "
+                f"hair color = '{hair_color.title}', "
+                f"height = {height_cm} cm. "
+                f"Do NOT change or modify the clothing, background, body, body shape, height, pose, or lighting. "
+                f"ONLY transform the face into a realistic, natural-looking avatar while preserving the original "
+                f"facial structure, skin tone appearance, and hairstyle. "
+                f"The output must look almost identical to the original photo except for the face being converted "
+                f"into a natural avatar style."
+            )
+
+            result = create_lightx_avatar(avatar_url, avatar_url, prompt=prompt)
+
+            if not result.get("success"):
+                return Response(
+                    {"message": "Avatar generation failed", "error": result.get("error")},
+                    status=400
+                )
+
+            order_id = result["data"]["body"]["orderId"]
+
+            # Polling Loop
+            max_attempts = 10
+            wait_time = 3
+            avatar_result = None
+
+            for _ in range(max_attempts):
+                time.sleep(wait_time)
+
+                status_check = check_lightx_order_status(order_id)
+
+                if not status_check.get("success"):
+                    return Response(
+                        {"message": "Order status failed", "error": status_check.get("error")},
+                        status=400
+                    )
+
+                body = status_check["data"]["body"]
+                status_data = body.get("status")
+                output = body.get("output")
+
+                if output and status_data in ["active", "success"]:
+                    avatar_result = status_check
+                    break
+
+                if status_data in ["failed", "error"]:
+                    return Response(
+                        {"message": "Avatar generation failed", "details": body},
+                        status=400
+                    )
+
+            if not avatar_result:
+                return Response(
+                    {"message": "Avatar is still processing. Try again shortly."},
+                    status=202
+                )
+
+            # Download generated image
+            image_url = avatar_result["data"]["body"]["output"]
+            img_response = requests.get(image_url)
+
+            if img_response.status_code != 200:
+                return Response({"message": "Failed to download avatar image"}, status=400)
+
+            file_name = image_url.split("/")[-1]
+            user.user_image.save(file_name, ContentFile(img_response.content))
+            user.save()
+
+            # Send notification
+            send_notification(
+                created_by=user,
+                created_for=None,
+                title="New Avatar Generated",
+                description=f"A new avatar has been successfully generated for {user.full_name}.",
+                notification_type=ADMIN_NOTIFICATION,
+                obj_id=str(user.id),
+            )
+
+        serialized_data = UserSerializer(user, context={"request": request}).data
+        return Response(
+            {"message": "Avatar created successfully!", "data": serialized_data, "status": 200},
+            status=200
+        )
+
+class CreateVirtualTryOnAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser, FormParser]
+
+    @swagger_auto_schema(
+        tags=["Virtual Try On Management"],
+        operation_id="Create Virtual Try On",
+        operation_description="Create Virtual Try On",
+        manual_parameters=[
+            openapi.Parameter('sigment_type', openapi.IN_FORM, type=openapi.TYPE_INTEGER,description='0:upper_body, 1:lower_body, 2:full_body'),
+            openapi.Parameter('garment_image', openapi.IN_FORM, type=openapi.TYPE_FILE,description='upload garment image'),
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(
+            self, request,
+            [
+                {"field_name": "sigment_type", "method": "post", "error_message": "Please enter sigment type"},
+                {"field_name": "garment_image", "method": "post", "error_message": "Please upload garment image"},
+            ]
+        )
+
+        user = request.user
+        garment_file = request.FILES.get("garment_image")
+        sig_type = int(request.data.get("sigment_type"))
+        avatar_url = request.build_absolute_uri(user.user_image.url)
+        existing_tryon = VirtualTryOn.objects.filter(user=user,sigmentation_type=sig_type,garment_image__icontains=garment_file.name,source_image=user.user_image).first()
+
+        if existing_tryon and existing_tryon.output_image:
+            serialized_data = VirtualTryOnSerializer(existing_tryon, context={"request": request}).data
+            return Response({"message": "Existing Virtual Try On Found!","data": serialized_data,"status": 200}, status=200)
+
+        virtual_try_on = VirtualTryOn.objects.create(
+            user=user,
+            sigmentation_type=sig_type,
+            garment_image=garment_file,
+            source_image=user.user_image,
+            status=TRY_ON_PROCESSING
+        )
+
+        garment_url = request.build_absolute_uri(virtual_try_on.garment_image.url)
+        result = lightx_virtual_tryon(avatar_url, garment_url, sig_type)
+        if not result.get("success"):
+            virtual_try_on.status = TRY_ON_FAILED
+            virtual_try_on.save()
+            return Response({"message": "Virtual try on failed", "error": result.get("error")}, status=400)
+
+        order_id = result["data"]["body"]["orderId"]
+        virtual_try_on.order_id = order_id
+        virtual_try_on.save()
+
+        max_attempts = 10
+        wait_time = 3
+        avatar_result = None
+
+        for _ in range(max_attempts):
+            time.sleep(wait_time)
+
+            status_check = check_virtual_tryon_status(order_id)
+            if not status_check.get("success"):
+                return Response({"message": "Order status failed", "error": status_check.get("error")}, status=400)
+
+            body = status_check["data"]["body"]
+            status_data = body.get("status")
+            output = body.get("output")
+
+            if output and status_data in ["active", "success"]:
+                avatar_result = status_check
+                break
+
+            if status_data in ["failed", "error"]:
+                virtual_try_on.status = "failed"
+                virtual_try_on.save()
+                return Response({"message": "Virtual try on generation failed", "details": body}, status=400)
+
+        if not avatar_result:
+            return Response({"message": "Virtual try on still processing. Try again later."}, status=202)
+
+        image_url = avatar_result["data"]["body"]["output"]
+        img_response = requests.get(image_url)
+
+        if img_response.status_code != 200:
+            return Response({"message": "Failed to download virtual try on image"}, status=400)
+
+        file_name = image_url.split("/")[-1]
+        virtual_try_on.output_image.save(file_name, ContentFile(img_response.content))
+        virtual_try_on.status = TRY_ON_SUCCESS
+        virtual_try_on.save()
+
+        send_notification(
+            created_by=user,
+            created_for=None,
+            title="New Virtual Try On Generated",
+            description=f"A new virtual try on is ready for {virtual_try_on.user.full_name}.",
+            notification_type=ADMIN_NOTIFICATION,
+            obj_id=str(virtual_try_on.user.id),
+        )
+        serialized_data = VirtualTryOnSerializer(virtual_try_on, context={"request": request}).data
+        return Response({"message": "Virtual Try On Generated Successfully!","data": serialized_data,"status": 200}, status=200)
