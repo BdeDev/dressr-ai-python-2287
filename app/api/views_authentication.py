@@ -15,8 +15,7 @@ from accounts.utils import *
 from wardrobe.models import Wardrobe
 from django.core.files.base import ContentFile
 from api.avatar import *
-
-from api.avatar import *
+from wardrobe.serializer import MyOutFitSerializer
 
 """
 Authentication Management
@@ -868,7 +867,7 @@ class UpdateProfileDetails(APIView):
             openapi.Parameter('gender', openapi.IN_FORM, type=openapi.TYPE_STRING,description='Male:1 Female:2, Other:3 '),
             openapi.Parameter('skin_tone_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='skin tone id'),
             openapi.Parameter('hair_color_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description='hair color id'),
-            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description="Add Image"),
+            # openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description="Add Image"),
             openapi.Parameter('others', openapi.IN_FORM, type=openapi.TYPE_STRING,description="to enhance personalization"),
         ],
     )
@@ -884,9 +883,8 @@ class UpdateProfileDetails(APIView):
         dob = data.get('dob')
         if first_name: user.first_name = first_name
         if last_name: user.last_name = last_name
-        
-        user.full_name = user.first_name + ' ' + user.last_name
 
+        user.full_name = user.first_name + ' ' + user.last_name
         if gender is not None: user.gender = int(gender)
 
         if data.get('body_type'):
@@ -1016,7 +1014,6 @@ class BodyTypeListView(APIView):
 
 #---------------AI avatar creation API-----------------
 
-
 class CreateUserAvatarAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser,FormParser]
@@ -1050,12 +1047,10 @@ class CreateUserAvatarAPI(APIView):
         user = request.user
         data = request.data
         height_cm = data.get('height')
-        # Fetch objects in a cleaner way
         body_type = BodyType.objects.filter(id=data.get("body_type")).first()
         skin_tone = SkinTone.objects.filter(id=data.get("skin_tone_id")).first()
         hair_color = HairColor.objects.filter(id=data.get("hair_color_id")).first()
 
-        # Validate these 3 objects
         if not body_type:
             return Response({"message": "Body type not found!", "status": 400}, status=400)
 
@@ -1075,23 +1070,17 @@ class CreateUserAvatarAPI(APIView):
             avatar_url = request.build_absolute_uri(user.user_image.url)
             db_logger.info(avatar_url)
 
-            # Prepare prompt
             prompt = (
-                f"Create a high-resolution avatar version of the person in the image. "
-                f"The person has the following characteristics: "
-                f"body type = '{body_type.title}', "
-                f"skin tone = '{skin_tone.title}', "
-                f"hair color = '{hair_color.title}', "
-                f"height = {height_cm} cm. "
-                f"Do NOT change or modify the clothing, background, body, body shape, height, pose, or lighting. "
-                f"ONLY transform the face into a realistic, natural-looking avatar while preserving the original "
-                f"facial structure, skin tone appearance, and hairstyle. "
-                f"The output must look almost identical to the original photo except for the face being converted "
-                f"into a natural avatar style."
+                f"Create a photorealistic avatar with the following characteristics:"
+                f" Body type: '{body_type.title}', "
+                f" Skin tone: '{skin_tone.title}', "
+                f" Hair color: '{hair_color.title}', "
+                f" Height: {height_cm} cm."
+                f" The avatar should be set against a pure white background."
             )
 
             result = create_lightx_avatar(avatar_url, avatar_url, prompt=prompt)
-
+            db_logger.info(f'resuly------------{result}')
             if not result.get("success"):
                 return Response(
                     {"message": "Avatar generation failed", "error": result.get("error")},
@@ -1099,9 +1088,9 @@ class CreateUserAvatarAPI(APIView):
                 )
 
             order_id = result["data"]["body"]["orderId"]
-
+            db_logger.info(f"order_id------{order_id}")
             # Polling Loop
-            max_attempts = 10
+            max_attempts = 6
             wait_time = 3
             avatar_result = None
 
@@ -1109,14 +1098,19 @@ class CreateUserAvatarAPI(APIView):
                 time.sleep(wait_time)
 
                 status_check = check_lightx_order_status(order_id)
-
+                db_logger.info(f"status_check------{status_check}")
                 if not status_check.get("success"):
                     return Response(
                         {"message": "Order status failed", "error": status_check.get("error")},
                         status=400
                     )
 
-                body = status_check["data"]["body"]
+                body = status_check.get("data", {}).get("body")
+                if body is None:
+                    return Response(
+                        {"message": "No body found in the status check response"},
+                        status=400
+                    )
                 status_data = body.get("status")
                 output = body.get("output")
 
@@ -1194,12 +1188,16 @@ class CreateVirtualTryOnAPI(APIView):
         if existing_tryon and existing_tryon.output_image:
             serialized_data = VirtualTryOnSerializer(existing_tryon, context={"request": request}).data
             return Response({"message": "Existing Virtual Try On Found!","data": serialized_data,"status": 200}, status=200)
+        
+        response = urlopen(avatar_url)
+        image_bytes = response.read()
+        source_image_file = ContentFile(image_bytes, name=f"{user.id}_source.png")
 
         virtual_try_on = VirtualTryOn.objects.create(
             user=user,
             sigmentation_type=sig_type,
             garment_image=garment_file,
-            source_image=user.user_image,
+            source_image=source_image_file,
             status=TRY_ON_PROCESSING
         )
 
@@ -1262,3 +1260,139 @@ class CreateVirtualTryOnAPI(APIView):
         )
         serialized_data = VirtualTryOnSerializer(virtual_try_on, context={"request": request}).data
         return Response({"message": "Virtual Try On Generated Successfully!","data": serialized_data,"status": 200}, status=200)
+
+
+
+
+class CreateAIOutFitAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser, FormParser]
+
+    @swagger_auto_schema(
+        tags=["Virtual Try On Management"],
+        operation_id="Create Virtual Try On", 
+        operation_description="Create Virtual Try On",
+        manual_parameters=[
+            openapi.Parameter('cloth_category_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='Category IDs'), # Top, Bottom etc..
+            openapi.Parameter('accessories_ids', openapi.IN_FORM, type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_STRING), description='Accessory IDs'), # belt , watch etc
+            openapi.Parameter('occasion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Occasion ID'),
+            openapi.Parameter('weather_type', openapi.IN_FORM, type=openapi.TYPE_STRING, description='1:Summer, 2:Winter, 3:Rainy, 4:Spring, 5:All Season'),
+            openapi.Parameter('color', openapi.IN_FORM, type=openapi.TYPE_STRING, description='Color'),
+            openapi.Parameter('title', openapi.IN_FORM, type=openapi.TYPE_STRING, description='title'),
+            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, description='outfit image'),
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(
+            self, request,
+            [
+                {"field_name": "cloth_category_ids", "method": "post", "error_message": "Please enter cloth category ids"},
+                {"field_name": "accessories_ids", "method": "post", "error_message": "Please enter accessory ids"},
+                {"field_name": "occasion_id", "method": "post", "error_message": "Please enter accessory ids"},
+                {"field_name": "weather_type", "method": "post", "error_message": "Please enter accessory ids"},
+                {"field_name": "title", "method": "post", "error_message": "Please enter accessory ids"},
+            ]
+        )
+        
+        user = request.user
+        category_ids = ClothCategory.objects.filter(id__in=request.data.getlist('cloth_category_ids'))
+        accessory_ids = Accessory.objects.filter(id__in=request.data.getlist('accessories_ids'))
+        occasion = Occasion.objects.filter(id=request.data.get('occasion_id')).first()
+        color = request.data.get('color')
+
+        if not occasion:
+            return Response({"message": "Invalid occasion ID.","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+        if int(request.data.get('weather_type')) not in [1, 2, 3, 4, 5]:
+            return Response({"message": "Invalid weather type","status": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        category_names = ", ".join([c.title for c in category_ids])
+        accessory_names = ", ".join([a.title for a in accessory_ids])
+        weather_map = {
+            "1": "summer",
+            "2": "winter",
+            "3": "rainy season",
+            "4": "spring season",
+            "5": "all season"
+        }
+        weather_text = weather_map.get(str(request.data.get('weather_type')), "general weather")
+
+        prompt = (
+            f'''Generate a high-quality AI outfit for a virtual try-on,The outfit must follow these specifications: Clothing categories = '{category_names}', 
+            Accessories = '{accessory_names}', 
+            Occasion = '{occasion.title}', 
+            Weather type = '{weather_text}', 
+            Color theme = '{color}'. 
+            Create a realistic, stylish, fashion-focused outfit that matches the selected categories, 
+            weather suitability, and occasion. 
+            Ensure proper color harmony and accessories placement. 
+            Do NOT change or modify the person's body, pose, background, or lighting. 
+            Only generate the outfit exactly as per the selected categories and theme.'''
+        )
+
+        outfit = Outfit.objects.create(
+            title=request.data.get('title').strip(),
+            occasion=occasion,
+            weather_type=int(request.data.get('weather_type')),
+            created_by=user,
+            color=color,
+            notes = prompt,
+        )
+        outfit.image = request.FILES.get('image')
+        outfit.save()
+        avatar_url = request.build_absolute_uri(user.user_image.url)
+        result = create_lightx_outfit(avatar_url, prompt)
+        if not result.get("success"):
+            return Response({"message": "Outfit generation failed", "error": result.get("error")}, status=400)
+        order_id = result["data"]["body"]["orderId"]
+
+        max_attempts = 10
+        wait_time = 3
+        avatar_result = None
+
+        for _ in range(max_attempts):
+            time.sleep(wait_time)
+            status_check = check_outfit_status(order_id)
+            if not status_check.get("success"):
+                return Response({"message": "Order status failed", "error": status_check.get("error")}, status=400)
+
+            body = status_check.get("data", {}).get("body")
+            if body is None:
+                return Response({"message": "No body found in the status check response"},status=400)
+            
+            status_data = body.get("status")
+            output = body.get("output")
+
+            if output and status_data in ["active", "success"]:
+                avatar_result = status_check
+                break
+
+            if status_data in ["failed", "error"]:
+                return Response({"message": "Outfit generation failed", "details": body}, status=400)
+
+        if not avatar_result:
+            return Response({"message": "Outfit generation still processing. Try again later."}, status=202)
+
+        image_url = avatar_result["data"]["body"]["output"]
+        img_response = requests.get(image_url)
+
+        if img_response.status_code != 200:
+            return Response({"message": "Failed to download outfit generation image"}, status=400)
+
+        file_name = image_url.split("/")[-1]
+        outfit.image.save(file_name, ContentFile(img_response.content))
+        outfit.save()
+
+        send_notification(
+            created_by=user,
+            created_for=None,
+            title="New Virtual Try On Generated",
+            description=f"A new outfit is ready for {outfit.created_by.full_name}.",
+            notification_type=ADMIN_NOTIFICATION,
+            obj_id=str(outfit.id),
+        )
+        serialized_data = MyOutFitSerializer(outfit, context={"request": request}).data
+        return Response({"message": "Virtual Try On Generated Successfully!","data": serialized_data,"status": 200}, status=200)
+
+

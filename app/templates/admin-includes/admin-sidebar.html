@@ -321,6 +321,12 @@
                                     Firebase
                                 </a>
                             </li>
+
+                            <li>
+                                <a {% if head_title == 'LightX Editor Credentials Management' %} class="active" {% endif %} href="{% url 'credentials:lightx_editor_key_list' %}" onclick="Loader()">
+                                    LightX Editor
+                                </a>
+                            </li>
                         </ul>
                     </li>
                     <li class="submenu {% if   head_title == 'Help & Support Management' or head_title == 'Social Links Management' or head_title == 'Domain Management' %}active{% endif %}">

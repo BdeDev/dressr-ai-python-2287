@@ -2,7 +2,7 @@
 from .models import *
 from accounts.common_imports import *
 from accounts.utils import *
-from django.http import HttpResponseRedirect
+from django.shortcuts import HttpResponseRedirect
 
 """
 SMTP keys Management
@@ -294,5 +294,74 @@ class ChangeStripeStatus(View):
             StripeSetting.objects.all().update(active = False)
             key.active = True   
             messages.success(request,'Key activated auccessfully!')
+        key.save()
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+
+class LightXEditorCredsList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        lightx_editor  = LightXEditorCredentials.objects.all().order_by('-created_on')
+        lightx_editor = query_filter_constructer(request,lightx_editor,{
+            "api_key__icontains":"api_key",
+            "is_active__icontains":"is_active",
+            "created_on__date":"created_on"
+        })
+        if request.GET and not lightx_editor:
+            messages.error(request, 'No Data Found')
+        return render(request,'credentials/lightx-editor/lightx.html.html',{
+            "head_title":'LightX Editor Credentials Management',
+            "lightx_editor" : get_pagination(request, lightx_editor),
+            "search_filters":request.GET.copy(),
+            "scroll_required":True if request.GET else False,
+            "total_objects":lightx_editor.count()
+        })
+    
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        lightx_id = request.POST.get('lightx_id')
+        if lightx_id:
+            lightx_creds = get_or_none(LightXEditorCredentials,'Skin tone does not exist !',id=lightx_id)
+            if LightXEditorCredentials.objects.filter(api_key=request.POST.get('api_key')).exclude(id=lightx_id).exists():
+                messages.error(request, "Lightx api key already exists!")
+                return redirect('credentials:lightx_editor_key_list')
+            if request.POST.get('api_key'):
+                lightx_creds.api_key = request.POST.get('api_key').strip()
+            lightx_creds.save()
+            messages.success(request, "Lightx api key updated successfully!")
+        else:
+            if LightXEditorCredentials.objects.filter(api_key=request.POST.get('api_key')).exists():
+                messages.error(request, "Lightx api key already exists!")
+                return redirect('credentials:lightx_editor_key_list')
+            LightXEditorCredentials.objects.create(
+                api_key=request.POST.get('api_key').strip(),
+            )
+            messages.success(request, "Lightx api key added successfully!")
+        return redirect('credentials:lightx_editor_key_list')
+    
+class DeleteLightXEditorCredentials(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        lightx_creds = LightXEditorCredentials.objects.get(id=self.kwargs.get('id'))
+        lightx_creds.delete()
+        messages.success(request, "Lightx api key deleted successfully !")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+class ChangeLightXEditorCredsStatus(View):
+    """
+    Change Light API Key Status
+    """
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        key = LightXEditorCredentials.objects.get(id=self.kwargs['id'])
+        if key.is_active:
+            key.is_active=False
+            messages.success(request,'API Key deactivated successfully!')
+        else:
+            LightXEditorCredentials.objects.all().update(is_active = False)
+            key.is_active = True   
+            messages.success(request,'API Key activated auccessfully!')
         key.save()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

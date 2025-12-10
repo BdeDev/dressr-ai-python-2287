@@ -1,6 +1,8 @@
 import requests
+from accounts.utils import get_api_key
 
-LIGHTX_API_KEY = "79708d18b10f4f8480952bcff855fcc4_f98e9f62b84446f09a2ea9113f0cea54_andoraitools"
+LIGHTX_API_KEY = get_api_key()
+CHECK_STATUS = "https://api.lightxeditor.com/external/api/v2/order-status"
 
 def create_lightx_avatar(image_url: str, reference_url: str = None, prompt: str = ""):
     url = "https://api.lightxeditor.com/external/api/v2/avatar"
@@ -26,7 +28,8 @@ def create_lightx_avatar(image_url: str, reference_url: str = None, prompt: str 
 
 
 def check_lightx_order_status(order_id: str):
-    url = "https://api.lightxeditor.com/external/api/v2/order-status"
+
+    url = CHECK_STATUS
     headers = {
         "Content-Type": "application/json",
         "x-api-key": LIGHTX_API_KEY
@@ -70,11 +73,53 @@ def check_virtual_tryon_status(order_id):
         "Content-Type": "application/json",
         "x-api-key": LIGHTX_API_KEY
     }
-    STATUS_URL = "https://api.lightxeditor.com/external/api/v2/order-status"
+    status_url = CHECK_STATUS
     payload = {"orderId": order_id}
 
     try:
-        response = requests.post(STATUS_URL, headers=headers, json=payload)
+        response = requests.post(status_url, headers=headers, json=payload)
+        return {"success": True, "data": response.json()} if response.status_code == 200 else {
+            "success": False,
+            "status_code": response.status_code,
+            "error": response.text
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+
+def create_lightx_outfit(image_url: str, prompt: str = ""):
+    url = "https://api.lightxeditor.com/external/api/v2/outfit"
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": LIGHTX_API_KEY
+    }
+    payload = {
+        "imageUrl": image_url,
+        "textPrompt": prompt
+        }
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        return {"success": True, "data": response.json()} if response.status_code == 200 else {
+            "success": False,
+            "status_code": response.status_code,
+            "error": response.text
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    
+
+    
+def check_outfit_status(order_id):
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": LIGHTX_API_KEY
+    }
+    status_url = CHECK_STATUS
+    payload = {"orderId": order_id}
+
+    try:
+        response = requests.post(status_url, headers=headers, json=payload)
         return {"success": True, "data": response.json()} if response.status_code == 200 else {
             "success": False,
             "status_code": response.status_code,
