@@ -439,3 +439,12 @@ def generate_discount_code(prefix="DIS", length=6, suffix=None):
         generate_discount_code()
     else:
         return code
+
+
+def get_api_key():
+    lightX_api = LightXEditorCredentials.objects.filter(is_active = True).first()
+    if lightX_api:
+        lightX_api = lightX_api.api_key
+    else:
+        lightX_api = env('LIGHTX_API_KEY')
+    return lightX_api
