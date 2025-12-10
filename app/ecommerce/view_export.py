@@ -31,7 +31,6 @@ class DownLoadCommissionReport(View):
         file_name='affiliate_orders'
 
         commission_history=CommissionHistory.objects.filter(affiliate=request.user).order_by('-created_on')
-
         status =[]
         for history in commission_history:
             if history.status == COMMISSION_STATUS_PENDING:

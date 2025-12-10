@@ -11,7 +11,7 @@ class ClothItemSerializer(ModelSerializer):
     class Meta:
         model = ClothingItem
         fields = ['id','title','wardrobe','image','cloth_category','occasion',
-                  'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','tags','is_favourite','feedback']
+                  'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','is_favourite','feedback']
 
     def get_cloth_category(self,obj):
         return obj.cloth_category.id,obj.cloth_category.title
@@ -160,7 +160,7 @@ class ItemUsageFrequencySerializer(ModelSerializer):
 
     class Meta:
         model = ClothingItem
-        fields = ['id','title','wardrobe','image','cloth_category','occasion', 'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','tags','is_favourite']
+        fields = ['id','title','wardrobe','image','cloth_category','occasion', 'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','is_favourite']
 
     def get_image(self, obj):
         request = self.context.get("request")

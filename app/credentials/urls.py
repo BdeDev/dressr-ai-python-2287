@@ -30,4 +30,10 @@ urlpatterns = [
     re_path(r'^delete-stripe-keys/(?P<id>[-\w]+)/$',DeleteStripeSetting.as_view(),name="delete_stripe_keys"),
     re_path(r'^change-stripe-keys/(?P<id>[-\w]+)/$',ChangeStripeStatus.as_view(),name="change_stripe_keys"),
 
+
+    ##LightX Editor API Key
+    re_path(r'^lightx-editor-key-list/$',LightXEditorCredsList.as_view(),name="lightx_editor_key_list"),
+    re_path(r'^delete-lightx-editor-key/(?P<id>[-\w]+)/$',DeleteLightXEditorCredentials.as_view(),name="delete_lightx_creds"),
+    re_path(r'^change-lightx-editor-key-status/(?P<id>[-\w]+)/$',ChangeLightXEditorCredsStatus.as_view(),name="change_lightx_key_status"),
+
 ]
