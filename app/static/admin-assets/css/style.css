@@ -4420,3 +4420,15 @@ body {
 .heart-icon .fa-heart {
 	color: #d11a2a;
 }
+
+.product-bar.outfit-custom {
+    width: 100%;
+    height: 620px;
+    overflow: hidden;
+}
+
+/* .product-bar.outfit-custom img {
+    width: 100%;
+    height: 100%;
+	object-fit: cover;
+} */

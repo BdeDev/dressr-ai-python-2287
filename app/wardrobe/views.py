@@ -605,6 +605,8 @@ class WardrobeItemsDetails(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
         item_id = request.GET.get('item_id')
+
+        item_feedback = Rating.objects.filter(item = item_id).order_by('-created_on')
         try:
             item = ClothingItem.objects.get(id=item_id)
         except ClothingItem.DoesNotExist:
@@ -621,6 +623,7 @@ class WardrobeItemsDetails(View):
                 "occasion": item.occasion.title if item.occasion else "",
                 "created_on": item.created_on.strftime("%Y-%m-%d %H:%M"),
                 "image_url": item.image.url if item.image else "",
+                "item_feedback":item_feedback
             }
         }
         return JsonResponse(data)

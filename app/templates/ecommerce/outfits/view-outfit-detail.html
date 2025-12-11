@@ -31,7 +31,13 @@
                                     <h4> Title </h4>
                                     <h6>{{outfit.title|default:"-"}}</h6>
                                 </li>
-                                 <li>
+                                {% if outfit.color %}
+                                <li>
+                                    <h4> Colour </h4>
+                                    <h6>{{outfit.color|default:"-"}}</h6>
+                                </li>
+                                {% endif %}
+                                <li>
                                     <h4> Occasion </h4>
                                     <h6><a href="{% url 'wardrobe:occasion' %}">{{outfit.occasion.title|default:'-'}}</a></h6>
                                 </li>
@@ -70,6 +76,7 @@
                                         {% else %}-{% endif %}
                                     </h6>
                                 </li>
+                                {% if outfit.items.all %}
                                 <li>
                                     <h4> Items in Outfit ({{outfit.items.count}})</h4>
                                     <h6>
@@ -82,18 +89,26 @@
                                         </div>
                                     </h6>
                                 </li>
+                                {% endif %}
+                                {% if outfit.notes %}
+                                <li>
+                                    <h4> Prompt </h4>
+                                    <h6>{{outfit.notes|safe}}</h6>
+                                </li>
+                                {% endif %}
                             </ul>
                         </div>
                         <div class=" col-md-6 productdetails">
                             <h5><b>Outfit Image</b></h5>
-                            <ul class="product-bar outfit-custom-size-img d-flex justify-content-center mb-2">
+                            <ul class="product-bar outfit-custom">
                                 {% if outfit.image %}
                                     <a href="{{outfit.image.url}}" data-fancybox>
-                                        <img src="{{outfit.image.url}}" alt="">
+                                        <img src="{{outfit.image.url}}" class="rounded-lg me-2"  alt="">
                                     </a>
                                 {% else %}
                                     <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
-                                        <img src="{% static 'admin-assets/images/dp.png' %}" alt="">
+                                        <img src="{% static 'admin-assets/images/dp.png' %}"
+                                        class="rounded-lg me-2" alt="">
                                     </a>
                                 {% endif %}
                             </ul>
@@ -149,14 +164,6 @@
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                {% if ratings|length > 10 %}
-                                                <div class='text-left mt-2' >
-                                                    <a class='btn btn-primary' href="{% url 'accounts:login_history' %}">View More <i class="fas fa-angle-double-right ms-2"></i></a>
-                                                </div>
-                                                {% endif %}
-                                                {% comment %} <!-- pagination-->
-                                                {% include "admin-includes/pagination.html" with listing_objects=loginhistory %}
-                                                <!-- pagination end--> {% endcomment %}
                                             </div>
                                         </div>
                                     </div>
@@ -171,11 +178,3 @@
     </div>
 </div>
 {% include "admin-includes/footer.html" %}
-<style>
-    .product-bar.outfit-custom-size-img {
-    max-height: 281px;
-    max-width: 364px;
-    overflow: hidden;
-    border: 1px solid #dbdbdb;
-}
-</style>

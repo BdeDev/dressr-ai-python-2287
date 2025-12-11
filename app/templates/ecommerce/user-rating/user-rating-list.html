@@ -1,4 +1,170 @@
-{% include 'admin-includes/header.html' %}
+{% include "admin-includes/header.html" %}
+{% load static %}{% load extras %}{% load humanize %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>User Rating </h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'users:users_list' %}">Customers</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'users:view_user' user.id %}">Profile</a></li>
+                        <li class="breadcrumb-item active">Notifications</li>
+                    </ol>
+                </nav>
+            </div>
+            {% comment %} <div class="page-btn d-flex flex-wrap align-items-baseline">
+                {%  if notifications %}
+                    <a title="Mark All Read" class="btn btn-primary me-1" href="{% url 'accounts:mark_read_notifications' user.id %}">
+                        <i class="fas fa-check-double me-1"></i> Mark All Read
+                    </a>
+                    <a class="btn btn-danger me-1 action_confirm" message="Are you sure you want to clear all notifications?" href="{% url 'accounts:delete_notifications'%}">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                {% endif %}
+                <input type="button" class="btn btn-secondary" value="Back" onclick="goBack()">
+            </div> {% endcomment %}
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 productdetails">
+                                <ul class="product-bar">
+                                    <li>
+                                        <h4>Item Id </h4>
+                                        <h6>{% if item_id.id %}{{item_id.id}}{% else %}-{% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Title </h4>
+                                        <h6>
+                                            <div class="d-flex align-items-center display-images">
+                                                {% if item_id.image.profile_pic %}
+                                                    <a href="{{item_id.image.url}}" data-fancybox>
+                                                        <img src="{{item_id.image.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                        <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                        class="rounded-lg me-2" width="50" alt="">
+                                                    </a>
+                                                {% endif %}
+                                                <span> <a class="w-100" href="{% url 'wardrobe:view_wardrobe' item_id.wardrobe.id %}">{{item_id.title|capfirst}}</a></span>
+                                            </div>
+                                        </h6>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6 productdetails">
+                                <ul class="product-bar">
+                                    <li>
+                                        <h4>Item Category </h4>
+                                        <h6>
+                                            {{item_id.cloth_category.title|capfirst}}
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Created By </h4>
+                                        <h6>
+                                            {% if item_id.wardrobe.user %}
+                                            <div class="d-flex align-items-center display-images">
+                                                {% if item_id.wardrobe.user.profile_pic %}
+                                                    <a href="{{item_id.wardrobe.user.profile_pic.url}}" data-fancybox>
+                                                        <img src="{{item_id.wardrobe.user.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                        <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                        class="rounded-lg me-2" width="50" alt="">
+                                                    </a>
+                                                {% endif %}
+                                                <span><a class="w-100" href="{% url 'users:view_user' item_id.wardrobe.user.id %}">{{item_id.wardrobe.user.full_name|capfirst}}</a></span>
+                                            </div>
+                                            {% else %}-{% endif %}
+                                        </h6>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="activity mt-3">
+            <div class="activity-box">
+                <div class='d-flex flex-wrap justify-content-between'>
+                    <!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=ratings %}
+                    <!-- showing_objects end-->
+                </div>
+                {% if ratings %}
+                <ul class="activity-list">
+                    {% for rating in ratings %}
+                    <li class="d-flex">
+                        <div class="activity-user">
+                            {% if rating.user.profile_pic %}
+                            <img alt="Lesley Grauer" src="{{rating.user.profile_pic.url}}" class=" img-fluid">
+                            {% else %}
+                            <img alt="Lesley Grauer" src="{% static 'admin-assets/images/dp.png' %}" class=" img-fluid">
+                            {% endif %}
+                        </div>
+                        <div class="activity-content">
+                            <div class="timeline-content">
+                                <span class="font-700 d-flex" style="flex-direction: column;">
+                                    <div>
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= rating.rating %}
+                                                <i class="fa fa-star" style="color: #FFD700;"></i>   <!-- Filled star -->
+                                            {% else %}
+                                                <i class="fa fa-star" style="color: #b8b3b3ff;"></i>   <!-- Empty star -->
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="description">
+                                        <p style="margin-bottom:0 !important">{{rating.comment|safe}}</p>
+                                        {% comment %} <span>Created By : {{rating.user.full_name|capfirst}}</span> {% endcomment %}
+                                    </div>
+                                    
+                                    
+                                    </span>
+                                <div class="activity-right-content">
+                                   <span class="time" style="d-flex flex-direction: column;">
+                                    <span>Created By : {{rating.user.full_name|capfirst}}</span><br>
+                                    <span>Created On : {{ rating.created_on|naturaltime }}</span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <!-- pagination-->
+                {% include "admin-includes/pagination.html" with listing_objects=notifications %}
+                <!-- pagination end-->
+                {% else %}
+                <ul class="activity-list">
+                    <li class="no-activity">
+                        <div class="activity-content">No Notifications Found</div>
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script>
+    function goBack(){
+        window.history.back()
+    }
+</script>
+
+
+
+{% comment %} {% include 'admin-includes/header.html' %}
 {% load static %}{% load extras %}
 <div class="page-wrapper">
     <div class="content">
@@ -20,9 +186,6 @@
 					{% include "admin-includes/showing_objects.html" with listing_objects=ratings %}
 					<!-- showing_objects end-->
 				</div>
-
-
-                
                 <div class="dataview">
                     <form onsubmit="Loader()" action="" method="GET">
                         <div class="table-responsive">
@@ -42,9 +205,9 @@
                                     <tr>
                                         <td class='clickable-row' data-href="{% url 'static_pages:view_testimonial' testimonial.id %}">
                                             <div class="d-flex align-items-center display-images">
-                                                {% if testimonial.client_image %}
-                                                <a href="{{testimonial.client_image.url}}" data-fancybox>
-                                                    <img src="{{testimonial.client_image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                {% if rating.user.profile_pic %}
+                                                <a href="{{rating.user.profile_pic.url}}" data-fancybox>
+                                                    <img src="{{rating.user.profile_pic.url}}" class="rounded-lg me-2" width="24" alt="">
                                                 </a>
                                                 {% else %}
                                                 <a href="{% static 'admin-assets/images/default.png' %}" data-fancybox>
@@ -52,20 +215,33 @@
                                                     class="rounded-lg me-2" width="24" alt="">
                                                 </a>
                                                 {% endif %}
-                                                <span class="w-space-no">{{testimonial.client_name|truncatechars:50}}</span>
+                                                <span class="w-space-no">{{rating.user.full_name|capfirst}}</span>
                                             </div>  
                                         </td>
-                                        <td class='clickable-row' data-href="{% url 'static_pages:view_testimonial' testimonial.id %}">{{testimonial.client_location|truncatechars:25}}</td>
                                         <td class='clickable-row' data-href="{% url 'static_pages:view_testimonial' testimonial.id %}">
-                                           {% if testimonial.publish_status %}
-                                           <span class="badge bg-primary">Published</span>
-                                           {% else %}
-                                           <span class="badge bg-warning">Pending</span>
-                                           {% endif %}
+                                            <div class="d-flex align-items-center display-images">
+                                                {% if rating.item.image %}
+                                                <a href="{{rating.item.image.url}}" data-fancybox>
+                                                    <img src="{{rating.item.image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                </a>
+                                                {% else %}
+                                                <a href="{% static 'admin-assets/images/default.png' %}" data-fancybox>
+                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                    class="rounded-lg me-2" width="24" alt="">
+                                                </a>
+                                                {% endif %}
+                                                <span class="w-space-no">{{rating.item.title|capfirst|default:"-"}}</span>
+                                            </div>  
                                         </td>
-                                        <td class='clickable-row' data-href="{% url 'static_pages:view_testimonial' testimonial.id %}">
+                                        <td>
+                                            {{rating.rating}}
+                                        </td>
+                                        <td>
+                                            {{rating.comment|safe}}
+                                        </td>
+                                        <td>
                                             <script>
-                                                var d = ConvertDateTime("{{ testimonial.created_on|date:'Y-m-d' }}", "{{ testimonial.created_on|time:'H:i' }}");
+                                                var d = ConvertDateTime("{{ rating.created_on|date:'Y-m-d' }}", "{{ rating.created_on|time:'H:i' }}");
                                                 document.write(d);
                                             </script>
                                         </td>
@@ -88,4 +264,4 @@
         </div>
     </div>
 </div>
-{% include 'admin-includes/footer.html' %}
+{% include 'admin-includes/footer.html' %} {% endcomment %}

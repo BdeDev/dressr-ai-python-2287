@@ -340,6 +340,7 @@
                                                                 <th><strong>Title</strong></th>
                                                                 <th><strong>Occasion</strong></th>
                                                                 <th><strong>Season</strong></th>
+                                                                <th><strong>Outfit Image</strong></th>
                                                                 <th><strong>Created On</strong></th>
                                                                 <th><strong>Actions</strong></th>
                                                             </tr>
@@ -362,6 +363,20 @@
                                                                         {% elif outfit.weather_type == 5 %}
                                                                             <span class="badge bg-secondary">ALL SEASON</span>
                                                                         {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if outfit.image %}
+                                                                            <a href="{{outfit.image.url}}" data-fancybox>
+                                                                                <img src="{{outfit.image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% else %}
+                                                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% endif %}
+                                                                        </div>
                                                                     </td>
                                                                     <td>
                                                                         <script>
