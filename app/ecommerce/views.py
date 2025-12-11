@@ -668,8 +668,41 @@ class DeleteStoreCredentials(View):
 class UserFeedBackList(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
+        item_id = ClothingItem.objects.get(id = self.kwargs.get('id'))
         ratings = Rating.objects.all().order_by('-created_on')
         return render(request, 'ecommerce/user-rating/user-rating-list.html',{
             "head_title":'Feedback Management',
+            "item_id":item_id,
             "ratings":ratings,
         })
+    
+
+class VirtualTryOnList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        virtual_try_ons = VirtualTryOn.objects.all().order_by('-created_on')
+        virtual_try_ons = query_filter_constructer(request,virtual_try_ons,{
+            "order_id":"order_id",
+            "user__full_name__icontains":"user",
+            "sigmentation_type":"sigmentation_type",
+            "status":"status",
+            "created_on__date":"created_on",
+        })
+
+        if request.POST and not virtual_try_ons:
+            messages.error(request, 'No Data Found')
+        return render(request,'ecommerce/virtual-try-on/try-on-list.html',{
+            "head_title":'Virtual Try On Management',
+            "virtual_try_ons" : get_pagination(request, virtual_try_ons),
+            "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
+            "total_objects":virtual_try_ons.count()
+        })
+    
+class ViewTryOnDetails(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        virtual_try_on = VirtualTryOn.objects.get(id=self.kwargs['id'])
+        return render(request,'ecommerce/virtual-try-on/try-on-details.html',{
+            'head_title':'Virtual Try On Management',
+            'virtual_try_on':virtual_try_on})

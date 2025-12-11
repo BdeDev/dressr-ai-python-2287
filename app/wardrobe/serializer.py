@@ -2,6 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from .models import *
 from accounts.utils import *
 from api.serializer import *
+from ecommerce.serializer import RatingSerializer
 
 class ClothItemSerializer(ModelSerializer):
     cloth_category = SerializerMethodField()
@@ -20,11 +21,11 @@ class ClothItemSerializer(ModelSerializer):
         user = self.context.get("request").user
         return 1 if obj.favourite.filter(id=user.id).exists() else 0
 
-    def get_feedback(self,obj):
+    def get_feedback(self, obj):
         feedback = obj.rating_set.all()
-        if not feedback:
+        if not feedback.exists():
             return None
-        return feedback
+        return RatingSerializer(feedback, many=True,context=self.context).data
 
 
 class WardrobeSerializer(ModelSerializer):
@@ -88,11 +89,11 @@ class MyOutFitSerializer(ModelSerializer):
         user = self.context.get("request").user
         return 1 if obj.favourite.filter(id=user.id).exists() else 0
     
-    def get_feedback(self,obj):
+    def get_feedback(self, obj):
         feedback = obj.rating_set.all()
-        if not feedback:
+        if not feedback.exists():
             return None
-        return feedback
+        return RatingSerializer(feedback, many=True,context=self.context).data
 
 class TripsSerializer(ModelSerializer):
     outfit = SerializerMethodField()

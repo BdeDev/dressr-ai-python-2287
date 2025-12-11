@@ -49,12 +49,16 @@ urlpatterns = [
 
 
     # Feedback api
-    re_path(r'^add-feedback-api/$', AddRatingAPI.as_view(), name='partneradd_feedback_api'),
-    re_path(r'^get-feedback-list-api/$', FeedbackListAPI.as_view(), name='get_feedback_list_api'),
-    re_path(r'^get-feedback-detail-api/$', GetFeedbackDetailsAPI.as_view(), name='get_feedback_detail_api'),
+    re_path(r'^add-feedback-api/$', AddRatingAPI.as_view(), name='add_feedback_api'),
+    # re_path(r'^get-feedback-list-api/$', FeedbackListAPI.as_view(), name='get_feedback_list_api'),
+    # re_path(r'^get-feedback-detail-api/$', GetFeedbackDetailsAPI.as_view(), name='get_feedback_detail_api'),
 
 
     # Feedback Management on admin panel
-    re_path(r'^feedback-list/$', UserFeedBackList.as_view(), name='feedback_list'),
+    re_path(r'^feedback-list/(?P<id>[-\w]+)/$', UserFeedBackList.as_view(), name='feedback_list'),
+
+    # Virtual try on Management on admin panel
+    re_path(r'^virtual-try-on-list/$', VirtualTryOnList.as_view(), name='virtual_try_on_list'),
+    re_path(r'^view-virtual-try-on/(?P<id>[-\w]+)/$', ViewTryOnDetails.as_view(), name='view_virtual_try_on'),
    
 ]
