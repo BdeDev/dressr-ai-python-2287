@@ -1,0 +1,181 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Virtual Try On </h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'ecommerce:virtual_try_on_list' %}">Virtual Try On</a></li>
+					</ol>
+				</nav>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=virtual_try_ons %}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="{% url 'ecommerce:virtual_try_on_list' %}" method="GET">
+						<div class="table-responsive">
+							<table class="table datatable">
+								<thead>
+									<tr>
+                                        <th><strong>Order Id</strong></th>
+										<th><strong>User</strong></th>
+                                        <th><strong>Source Image</strong></th>
+                                        <th><strong>Garment Image</strong></th>
+                                        <th><strong>Output Image</strong></th>
+                                        <th><strong>Sigmentation Type</strong></th>
+                                        <th><strong>Status</strong></th>
+										<th><strong>Created On</strong></th>
+										<th><strong>Actions </strong></th>
+									</tr>
+								</thead>
+								<thead>
+									<tr class="search-row">
+                                        <td><input type="text" value="{{search_filters.order_id}}" class="form-control" name="order_id" maxlength="20"></td>
+										<td><input type="text" value="{{search_filters.user.full_name}}" class="form-control" name="user" maxlength="20"></td>
+										<td><input readonly type="text" value="{{search_filters.user.full_name}}" class="form-control" name="user" maxlength="20"></td>
+                                        <td><input readonly type="text" value="{{search_filters.user.full_name}}" class="form-control" name="user" maxlength="20"></td>
+                                        <td><input readonly type="text" value="{{search_filters.user.full_name}}" class="form-control" name="user" maxlength="20"></td>
+                                        
+                                        <td>
+											<select class="form-control" name="sigmentation_type" onchange="this.form.submit()">
+												<option  value=""></option>
+												<option {% if search_filters.sigmentation_type == '0' %} selected {% endif %} value="0">UPPER BODY</option>
+												<option {% if search_filters.sigmentation_type == '1' %} selected {% endif %} value="1">LOWER BODY</option>
+												<option {% if search_filters.sigmentation_type == '2' %} selected {% endif %} value="2">FULL BBODYody</option>
+											</select>
+										</td>
+                                        <td>
+											<select class="form-control" name="status" onchange="this.form.submit()">
+												<option  value=""></option>
+												<option {% if search_filters.status == '1' %} selected {% endif %} value="1">PENDING</option>
+												<option {% if search_filters.status == '2' %} selected {% endif %} value="2">PROCESSING</option>
+												<option {% if search_filters.status == '3' %} selected {% endif %} value="3">SUCCESS</option>
+                                                <option {% if search_filters.status == '4' %} selected {% endif %} value="4">FAILED</option>
+											</select>
+										</td>
+										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+								<tbody>
+									{% if virtual_try_ons %}
+										{% for try_on in virtual_try_ons %}
+										<tr>
+                                            <td> {{try_on.order_id|default:"-"}}</td>
+											<td> 
+                                                {% if try_on.user %}
+                                                <div class="d-flex align-items-center display-images">
+                                                    {% if try_on.user.profile_pic %}
+                                                        <a href="{{try_on.user.profile_pic.url}}" data-fancybox>
+                                                            <img src="{{try_on.user.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                            <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                            class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% endif %}
+                                                    <span><a class="w-100" href="{% url 'users:view_user' try_on.user.id %}">{{try_on.user.full_name|capfirst}}</a></span>
+                                                </div>
+                                                {% else %}-{% endif %}
+                                            <td> 
+                                                <div class="d-flex align-items-center display-images">
+                                                    {% if try_on.source_image %}
+                                                        <a href="{{try_on.source_image.url}}" data-fancybox>
+                                                            <img src="{{try_on.source_image.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                            <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                            class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td> 
+                                                <div class="d-flex align-items-center display-images">
+                                                    {% if try_on.garment_image %}
+                                                        <a href="{{try_on.garment_image.url}}" data-fancybox>
+                                                            <img src="{{try_on.garment_image.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                            <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                            class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td> 
+                                                <div class="d-flex align-items-center display-images">
+                                                    {% if try_on.output_image %}
+                                                        <a href="{{try_on.output_image.url}}" data-fancybox>
+                                                            <img src="{{try_on.output_image.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                            <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                            class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+											<td> 
+                                                {% if try_on.sigmentation_type == 0 %}
+                                                    <span class="badge bg-success">UPPER BODY</span>
+                                                {% elif try_on.sigmentation_type == 1 %}
+                                                    <span class="badge bg-warning">LOWER BODY</span>
+                                                {% elif try_on.sigmentation_type == 2 %}
+                                                    <span class="badge bg-primary">FULL BODY</span>
+                                                {% else %}-
+                                                {% endif %}
+											</td>
+                                            <td> 
+                                                {% if try_on.status == 1 %}
+                                                    <span class="badge bg-primary">PENDING</span>
+                                                {% elif try_on.status == 2 %}
+                                                    <span class="badge bg-warning">PROCESSING</span>
+                                                {% elif try_on.status == 3 %}
+                                                    <span class="badge bg-success">SUCCESS</span>
+                                                {% elif try_on.status == 4 %}
+                                                    <span class="badge bg-danger">FAILED</span>
+                                                {% else %}-
+                                                {% endif %}
+											</td>
+                                            <td>
+												<script>
+													var date = ConvertDateTime("{{ try_on.created_on|date:'Y-m-d' }}", "{{ try_on.created_on|time:'H:i' }}");
+													document.write(date);
+												</script>
+											</td>
+											<td>
+												<div class="d-flex">
+                                                    <a title="View" href="{% url 'ecommerce:view_virtual_try_on' try_on.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+												</div>
+											</td>
+										</tr>
+										{% endfor %}
+									{% endif %}
+								</tbody>
+							</table>
+						</div>
+					</form>
+					<!-- pagination-->
+					{% include "admin-includes/pagination.html" with listing_objects=virtual_try_ons %}
+					<!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
