@@ -27,7 +27,7 @@
 							<table class="table datatable">
 								<thead>
 									<tr>
-                                        <th><strong>Order Id</strong></th>
+                                        {% comment %} <th><strong>Order Id</strong></th> {% endcomment %}
 										<th><strong>User</strong></th>
                                         <th><strong>Source Image</strong></th>
                                         <th><strong>Garment Image</strong></th>
@@ -40,7 +40,7 @@
 								</thead>
 								<thead>
 									<tr class="search-row">
-                                        <td><input type="text" value="{{search_filters.order_id}}" class="form-control" name="order_id" maxlength="20"></td>
+                                        {% comment %} <td><input type="text" value="{{search_filters.order_id}}" class="form-control" name="order_id" maxlength="20"></td> {% endcomment %}
 										<td><input type="text" value="{{search_filters.user.full_name}}" class="form-control" name="user" maxlength="20"></td>
 										<td><input readonly type="text" value="{{search_filters.user.full_name}}" class="form-control" name="user" maxlength="20"></td>
                                         <td><input readonly type="text" value="{{search_filters.user.full_name}}" class="form-control" name="user" maxlength="20"></td>
@@ -71,7 +71,7 @@
 									{% if virtual_try_ons %}
 										{% for try_on in virtual_try_ons %}
 										<tr>
-                                            <td> {{try_on.order_id|default:"-"}}</td>
+                                            {% comment %} <td> {{try_on.order_id|default:"-"}}</td> {% endcomment %}
 											<td> 
                                                 {% if try_on.user %}
                                                 <div class="d-flex align-items-center display-images">
@@ -161,6 +161,7 @@
 											<td>
 												<div class="d-flex">
                                                     <a title="View" href="{% url 'ecommerce:view_virtual_try_on' try_on.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                    <a title="Delete" href="{% url 'ecommerce:delete_virtual_try_on' try_on.id %}" id="delete-btn" class="btn btn-danger action_confirm shadow btn-xs sharp me-1" message="Are you sure you want to delete this try on ?"><i class="fa fa-trash"></i></a>
 												</div>
 											</td>
 										</tr>

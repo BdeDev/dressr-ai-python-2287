@@ -142,6 +142,7 @@ class VirtualTryOn(CommonInfo):
     sigmentation_type = models.PositiveIntegerField(choices=SIGMENT_TYPE, blank=True, null=True)
     source_image = models.ImageField(upload_to="tryon/source/", blank=True, null=True)
     garment_image = models.ImageField(upload_to="tryon/masks/", blank=True, null=True)
+    garment_url = models.URLField(blank=True, null=True)
     order_id = models.CharField(max_length=100, blank=True, null=True)
     request_payload = models.JSONField(blank=True, null=True)
     response_payload = models.JSONField(blank=True, null=True)

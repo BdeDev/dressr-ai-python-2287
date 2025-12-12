@@ -183,19 +183,19 @@ def is_favourite(user, item):
         return user.favourite_item.filter(id=item.id).exists()
     return False
 
-@register.filter(name='subscribers')
-def subscribers(key):
-    total_users = User.objects.filter(role_id=CUSTOMER,status=ACTIVE).count()
-    active_subscribers = UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE,subscription_plan__is_free_plan = False).values_list("purchased_by", flat=True).distinct().count()
-    free_users = total_users - active_subscribers
-    if key == "active_subscribers":
-        return active_subscribers
-    if key == "free_users":
-        return free_users
-    if key == "total_subscribers":
-        return UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE).values_list("purchased_by", flat=True).distinct().count()
-    return 0
 
 @register.filter(name='total_try_on')
 def total_try_on(key):
 	return VirtualTryOn.objects.all().count()
+
+#Dashboard template tags start
+@register.filter(name='subscribers_count')
+def subscribers_count(key):
+	count=0
+	if key=='free_subscribers':
+		count=UserPlanPurchased.objects.filter(subscription_plan__is_free_plan=True).count()
+	elif key=='premium_subscribers':
+		count=UserPlanPurchased.objects.filter(subscription_plan__is_free_plan=False).count()
+	elif key=='total_subscribers':
+		count=UserPlanPurchased.objects.filter().count()
+	return count

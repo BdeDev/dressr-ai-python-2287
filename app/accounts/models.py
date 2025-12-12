@@ -84,6 +84,7 @@ class HairColor(CommonInfo):
 
 class BodyType(CommonInfo):
     title = models.CharField(max_length=50, null=True,blank=True)
+    icon = models.ImageField(upload_to='body_icons/',blank=True,null=True)
     description = models.TextField(null=True,blank=True)
     is_active = models.BooleanField(default=True)
 

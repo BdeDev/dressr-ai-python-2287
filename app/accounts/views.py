@@ -433,7 +433,7 @@ class BannersList(View):
             if request.POST.get('title'):
                 banner.title = request.POST.get('title').strip()
             if request.FILES.get('image'):
-                banner.image = request.FILES.get('image').strip()
+                banner.image = request.FILES.get('image')
             banner.save()
             messages.success(request, "Banner updated successfully!")
         else:

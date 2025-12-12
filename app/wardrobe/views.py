@@ -4,6 +4,7 @@ from .models import *
 from accounts.management.commands.default_data import default_activity_flags,default_hair_colors,default_skin_tones,default_body_types
 from accounts.utils import *
 from ecommerce.models import Rating
+from ecommerce.serializer import RatingSerializer
 # Create your views here.
 
 """
@@ -374,6 +375,14 @@ class ViewOutfitDetails(View):
         ratings = Rating.objects.filter(outfit_id = outfit)
         return render(request,'ecommerce/outfits/view-outfit-detail.html',{"outfit":outfit,"ratings":ratings,"head_title":"Outfit Management"})
     
+class DeleteOutfit(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        outfit = Outfit.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Outfit Deleted Successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
 
 class HairColorList(View):
     @method_decorator(admin_only)
@@ -534,6 +543,8 @@ class BodyTypeList(View):
                 return redirect('wardrobe:body_type_list')
             if request.POST.get('title'):
                 body_type.title = request.POST.get('title').strip()
+            if request.FILES.get('icon'):
+                body_type.icon = request.FILES.get('icon')
             if request.POST.get('description'):
                 body_type.description = request.POST.get('description').strip()
             body_type.save()
@@ -544,6 +555,7 @@ class BodyTypeList(View):
                 return redirect('wardrobe:body_type_list')
             BodyType.objects.create(
                 title=request.POST.get('title').strip(),
+                icon = request.FILES.get('icon') if request.FILES.get('icon') else None,
                 description=request.POST.get('description').strip()
             )
             messages.success(request, "Body Type added successfully!")
@@ -623,7 +635,8 @@ class WardrobeItemsDetails(View):
                 "occasion": item.occasion.title if item.occasion else "",
                 "created_on": item.created_on.strftime("%Y-%m-%d %H:%M"),
                 "image_url": item.image.url if item.image else "",
-                "item_feedback":item_feedback
-            }
+                
+            },
+            "item_feedback":RatingSerializer(item_feedback,many=True,context = {'request':request}).data
         }
         return JsonResponse(data)
