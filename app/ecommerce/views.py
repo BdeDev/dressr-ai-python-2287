@@ -669,7 +669,7 @@ class UserFeedBackList(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
         item_id = ClothingItem.objects.get(id = self.kwargs.get('id'))
-        ratings = Rating.objects.all().order_by('-created_on')
+        ratings = Rating.objects.filter(item=item_id).order_by('-created_on')
         return render(request, 'ecommerce/user-rating/user-rating-list.html',{
             "head_title":'Feedback Management',
             "item_id":item_id,
@@ -706,3 +706,13 @@ class ViewTryOnDetails(View):
         return render(request,'ecommerce/virtual-try-on/try-on-details.html',{
             'head_title':'Virtual Try On Management',
             'virtual_try_on':virtual_try_on})
+
+
+class DeleteVirtualTryOn(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        virtual_try_on = VirtualTryOn.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Virtual Try On Deleted Successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+

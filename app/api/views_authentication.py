@@ -16,6 +16,7 @@ from wardrobe.models import Wardrobe
 from django.core.files.base import ContentFile
 from api.avatar import *
 from wardrobe.serializer import MyOutFitSerializer
+import time
 
 """
 Authentication Management
@@ -846,7 +847,6 @@ class UserProfileDetails(APIView):
         data = UserSerializer(user, context={"request": request}).data
         return Response({"data": data, "status": status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
-from django.core.files.storage import default_storage
 
 class UpdateProfileDetails(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -1088,8 +1088,17 @@ class CreateUserAvatarAPI(APIView):
                 "Set the avatar against a clean, pure white background."
             )
 
+
+
             result = create_lightx_avatar(avatar_url, avatar_url, prompt=prompt)
-            if result['data']['status'] == 'FAIL':
+            db_logger.info(f'------result------{result}')
+            user.others = prompt
+            try:
+                result['data']['status'] == 'FAIL'
+                return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
+            except:
+                pass
+            if result['data']['body']['status'] == 'failed':
                 return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
             if not result.get("success"):
                 return Response(
@@ -1107,7 +1116,14 @@ class CreateUserAvatarAPI(APIView):
                 time.sleep(wait_time)
 
                 status_check = check_lightx_order_status(order_id)
-                if status_check['data']['status'] == 'FAIL':
+                db_logger.info(f'-----status_check-------{status_check}')
+                try:
+                    status_check['data']['status'] == 'FAIL'
+                    return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
+                except:
+                    pass
+
+                if status_check['data']['body']['status'] == 'failed':
                     return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
                 
                 if not status_check.get("success"):
@@ -1206,9 +1222,7 @@ class CreateVirtualTryOnAPI(APIView):
             file_ext = ".jpg"
 
         file_name = f"garment_{uuid.uuid4()}{file_ext}"
-
         garment_file = ContentFile(img_response.content, name=file_name)
-
         sig_type = int(request.data.get("sigment_type"))
         avatar_url = request.build_absolute_uri(user.user_image.url)
         existing_tryon = VirtualTryOn.objects.filter(user=user,sigmentation_type=sig_type,garment_image__icontains=garment_file.name,source_image=user.user_image).first()
@@ -1225,17 +1239,21 @@ class CreateVirtualTryOnAPI(APIView):
             user=user,
             sigmentation_type=sig_type,
             source_image=source_image_file,
-            status=TRY_ON_PROCESSING
         )
+        virtual_try_on.garment_url = garment_image_url
         virtual_try_on.garment_image.save(file_name, garment_file)
         virtual_try_on.save()
 
-        # garment_url = request.build_absolute_uri(virtual_try_on.garment_image.url)
         result = lightx_virtual_tryon(avatar_url, garment_image_url, sig_type)
-        if result['data']['status'] == 'FAIL':
+        db_logger.info(f'-----result-------{result}')
+        try:
+            result['data']['status'] == 'FAIL'
             return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
-        if not result.get("success"):
+        except:
+            pass
+        if result['data']['body']['status'] == 'failed':
             virtual_try_on.status = TRY_ON_FAILED
+            virtual_try_on.error_message = result['data']['statusCode']
             virtual_try_on.save()
             return Response({"message": "Virtual try on failed", "error": result['data']['statusCode']}, status=400)
 
@@ -1251,11 +1269,17 @@ class CreateVirtualTryOnAPI(APIView):
             time.sleep(wait_time)
 
             status_check = check_virtual_tryon_status(order_id)
-            if status_check['data']['status'] == 'FAIL':
+            try:
+                result['data']['status'] == 'FAIL'
+                return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
+            except:
+                pass
+            if status_check['data']['body']['status'] == 'failed':
+                virtual_try_on.status = TRY_ON_PROCESSING
+                virtual_try_on.error_message = status_check['data']['statusCode']
+                virtual_try_on.save()
                 return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
-            if not status_check.get("success"):
-                return Response({"message": "Order status failed", "error": status_check['data']['statusCode']}, status=400)
-
+       
             body = status_check["data"]["body"]
             status_data = body.get("status")
             output = body.get("output")
@@ -1281,6 +1305,7 @@ class CreateVirtualTryOnAPI(APIView):
         file_name = image_url.split("/")[-1]
         virtual_try_on.output_image.save(file_name, ContentFile(img_response.content))
         virtual_try_on.status = TRY_ON_SUCCESS
+        virtual_try_on.error_message = result['data']['statusCode']
         virtual_try_on.save()
 
         send_notification(
@@ -1383,7 +1408,12 @@ class CreateAIOutFitAPI(APIView):
         avatar_url = request.build_absolute_uri(user.user_image.url)
         try:
             result = create_lightx_outfit(avatar_url, prompt)
-            if result['data']['status'] == 'FAIL':
+            try:
+                if result['data']['status'] == 'FAIL':
+                    return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
+            except:
+                pass
+            if result['data']['body']['status'] == 'failed':
                 return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
         except Exception as e:
             result.status = "failed"
@@ -1403,8 +1433,14 @@ class CreateAIOutFitAPI(APIView):
         for _ in range(max_attempts):
             time.sleep(wait_time)
             status_check = check_outfit_status(order_id)
-            if status_check['data']['status'] == 'FAIL':
+            try:
+                if status_check['data']['status'] == 'FAIL':
+                    return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
+            except:
+                pass
+            if status_check['data']['body']['status'] == 'failed':
                 return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
+            
             if not status_check.get("success"):
                 continue
 

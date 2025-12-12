@@ -172,10 +172,10 @@
                                             </div>
                                             <div class="d-flex justify-content-between">
                                             <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
-                                            <small>
-                                                <a href="{% url 'ecommerce:feedback_list' item.id %}">
-                                                    ( FeedBack Count: {{item.rating_set.count}} )
-                                                </a>
+                                                <small>
+                                                    <a href="{% url 'ecommerce:feedback_list' item.id %}">
+                                                        ( FeedBack Count: {{item.rating_set.count}} )
+                                                    </a>
                                                 </small>
                                             </div>
                                         </div>

@@ -2,6 +2,7 @@ from .views import *
 from django.contrib import admin
 from django.urls import re_path
 from .views_api import *
+from .view_graphs import *
 
 admin.autodiscover()
 app_name = 'subscription'
@@ -34,5 +35,9 @@ urlpatterns = [
     re_path(r'^add-stripe-card/$',AddStripeCardAPI.as_view(),name="add_stripe_card"),
     re_path(r'^stripe-cards-list/$',StripeAllUserCards.as_view(),name="stripe_cards_list"),
     re_path(r'^delete-stripe-card/$',DeleteStripeCardAPI.as_view(),name="delete_stripe_card"),
+
+
+    ## Subscription Graph
+    re_path(r'^subscription-graph/$', SubscriberGraph.as_view(), name='subscription_graph'),
     
 ]

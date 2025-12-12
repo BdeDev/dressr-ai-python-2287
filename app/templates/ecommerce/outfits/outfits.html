@@ -82,6 +82,7 @@
 											<td>
 												<div class="d-flex">
                                                     <a title="View" href="{% url 'wardrobe:view_outfit_detail' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+													<a title="Delete" href="{% url 'wardrobe:delete_outfit_details' outfit.id %}" id="delete-btn" class="btn btn-danger action_confirm shadow btn-xs sharp me-1" message="Are you sure you want to delete this outfit ?"><i class="fa fa-trash"></i></a>
 												</div>
 											</td>
 										</tr>

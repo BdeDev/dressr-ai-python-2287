@@ -36,6 +36,7 @@ urlpatterns = [
     re_path(r'^view-trip-details/(?P<id>[-\w]+)/$', ViewTripDetails.as_view(), name='view_trip_detail'),
     re_path(r'^user-outfit-list/$', UserOutfit.as_view(), name='user_outfit_list'),
     re_path(r'^view-outfit-details/(?P<id>[-\w]+)/$', ViewOutfitDetails.as_view(), name='view_outfit_detail'),
+    re_path(r'^delete-outfit-details/(?P<id>[-\w]+)/$', DeleteOutfit.as_view(), name='delete_outfit_details'),
 
     ### -------------------------------Wardrobe Management--------------------------------###
     re_path(r'^get-wardrobe-api/$', GetWardrobeAPI.as_view(), name='get_wardrobe_api'),
