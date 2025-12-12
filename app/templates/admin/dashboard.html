@@ -34,7 +34,7 @@
                     <div class="dash-count">
                         <div class="dash-counts">
                             <h5>Active subscribers</h5>
-                            <h4>{{'total_subscribers'|subscribers}}</h4>
+                            <h4>{{'total_subscribers'|subscribers_count}}</h4>
                         </div>
                         <div class="dash-imgs">
                             <span><i class="fas fa-users"></i></span>
@@ -84,11 +84,8 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-8">
+                            <div class="col-12">
                                 <div id="chart-container"></div>
-                            </div>
-                            <div class="col-4">
-                                <div id="chart-container-pie"></div>
                             </div>
                         </div>
                     </div>
@@ -102,7 +99,6 @@
                         <div>
                             <h4 class="card-title mb-0 flex-grow-1">Users Who Joined Today</h4>
                         </div>
-                    
                         <div class="flex-shrink-0">
                             {% if 1|today_customers %}
                             <a href="{% url 'users:users_list' %}">See All </a>

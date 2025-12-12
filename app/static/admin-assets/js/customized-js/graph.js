@@ -27,6 +27,9 @@ GetGraphData();
 // for sub admin graph
 
 
+
+
+
 function GetGraphDataAffiliate(){
     $.ajax({
         url: "/ecommerce/affiliate-graph/",
@@ -80,3 +83,6 @@ for (i = new Date().getFullYear(); i > new Date().getFullYear() - 5; i--)
 {
     $('#activity_years').append($('<option />').val(i).html(i));
 }
+
+
+

@@ -72,9 +72,6 @@ class AffiliateGraph(View):
         max_count = max(data["affiliates_count"] or [0])
         y_max = max(max_count + 10, 5)
 
-        total_affiliates = User.objects.filter(role_id=CUSTOMER).count()
-
-
         chart = {
             'title': {'text': ''},
             'xAxis': {'categories': data['data'], 'lineWidth': 0},
