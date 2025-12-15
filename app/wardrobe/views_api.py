@@ -1542,8 +1542,8 @@ class ShareWardrobeAPI(APIView):
         wardrobe.save()
 
         send_notification(
-            created_by=request.user,
-            created_for=None,
+            created_by=get_admin(),
+            created_for=[share_friend],
             title=f"Wardrobe share",
             description=f"share digitized wardrobes with {share_friend.email}",
             notification_type=ADMIN_NOTIFICATION,
@@ -1567,7 +1567,7 @@ class GetWardrobeDetailsAPI(APIView):
             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
         ],
     )
-    def get(self, request):
+    def get(self, request,*arge,**kwargs):
         wardrobe_id = request.query_params.get("wardrobe_id")
         req_type = request.query_params.get("type")
         if not wardrobe_id:
@@ -1595,3 +1595,32 @@ class GetWardrobeDetailsAPI(APIView):
             return Response({"data": data,"meta": meta_data},status=status.HTTP_200_OK)
 
         return Response({"error": "Invalid type. Allowed values: 1 = Items, 2 = Outfits"},status=status.HTTP_400_BAD_REQUEST)
+
+
+class SuggestedOutfitAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["WarDrobe management"],
+        operation_id="Today Outfit Suggestion",
+        operation_description="Today Outfit Suggestion",
+        manual_parameters=[],
+    )
+    def get(self, request,*arge,**kwargs):
+        outfit, weather = get_suggested_outfit_for_user(request.user)
+
+        if not outfit:
+            return Response({"message": "No outfit available"},status=404)
+        return Response({"outfit_id": outfit.id,"title": outfit.title,"weather": {"temp": weather["temperature"],"condition": weather["description"]},
+            "items": [
+                {
+                    "id": item.id,
+                    "title": item.title,
+                    "image": item.image.url if item.image else None,
+                    "category": item.cloth_category.name if item.cloth_category else None,
+                    "color": item.color
+                }
+                for item in outfit.items.all()
+            ]
+        })

@@ -149,6 +149,17 @@ class VirtualTryOn(CommonInfo):
     output_image = models.ImageField(upload_to="tryon/output/", blank=True, null=True)
     status = models.PositiveIntegerField(choices=TRY_ON_STATUS, blank=True, null=True)
     error_message = models.TextField(blank=True, null=True)
+    favourite = models.ManyToManyField(User, related_name='favourite_tryon')
 
     class Meta:
         db_table = 'virtual_try_on'
+
+
+class UserStylePreference(CommonInfo):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    preferred_colors = models.JSONField(default=list)
+    preferred_styles = models.JSONField(default=list)  # casual, formal, street
+    body_type = models.CharField(max_length=20, null=True)
+
+    class Meta:
+        db_table = 'style_preference'

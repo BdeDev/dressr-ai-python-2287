@@ -147,8 +147,8 @@ class UserSignupView(APIView):
         data = UserSerializer(user,context = {"request":request}).data
         # send notification to admin
         send_notification(
-            created_by=user,
-            created_for=None,
+            created_by=get_admin(),
+            created_for=[user],
             title=f"New Customer Registered",
             description=f"New Customer registered with email {user.email}",
             notification_type=ADMIN_NOTIFICATION,
@@ -338,8 +338,8 @@ class SocialLogin(APIView):
             message="Logged in successfully!"
             # send notification to admin
             send_notification(
-                created_by=user,
-                created_for=None,
+                created_by=get_admin(),
+                created_for=[user],
                 title=f"New Customer Registered",
                 description=f"New Customer registered with email {user.email}",
                 notification_type=ADMIN_NOTIFICATION,
@@ -1068,8 +1068,6 @@ class CreateUserAvatarAPI(APIView):
         if uploaded_image:
             user.refresh_from_db()
             avatar_url = request.build_absolute_uri(user.user_image.url)
-            db_logger.info(avatar_url)
-
             prompt = (
                 "Create a photorealistic, natural-looking avatar of the person while strictly preserving their original appearance. "
                 f"Body type: '{body_type.title}', "
@@ -1088,14 +1086,11 @@ class CreateUserAvatarAPI(APIView):
                 "Set the avatar against a clean, pure white background."
             )
 
-
-
             result = create_lightx_avatar(avatar_url, avatar_url, prompt=prompt)
-            db_logger.info(f'------result------{result}')
             user.others = prompt
             try:
-                result['data']['status'] == 'FAIL'
-                return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
+                if result['data']['status'] == 'FAIL':
+                    return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
             except:
                 pass
             if result['data']['body']['status'] == 'failed':
@@ -1106,8 +1101,6 @@ class CreateUserAvatarAPI(APIView):
                     status=400
                 )
             order_id = result["data"]["body"]["orderId"]
-            
-            # Polling Loop
             max_attempts = 6
             wait_time = 3
             avatar_result = None
@@ -1116,10 +1109,9 @@ class CreateUserAvatarAPI(APIView):
                 time.sleep(wait_time)
 
                 status_check = check_lightx_order_status(order_id)
-                db_logger.info(f'-----status_check-------{status_check}')
                 try:
-                    status_check['data']['status'] == 'FAIL'
-                    return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
+                    if status_check['data']['status'] == 'FAIL':
+                        return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
                 except:
                     pass
 
@@ -1127,17 +1119,11 @@ class CreateUserAvatarAPI(APIView):
                     return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
                 
                 if not status_check.get("success"):
-                    return Response(
-                        {"message": "Order status failed", "error": status_check['data']['statusCode']},
-                        status=400
-                    )
+                    return Response({"message": "Order status failed", "error": status_check['data']['statusCode']},status=400)
 
                 body = status_check.get("data", {}).get("body")
                 if body is None:
-                    return Response(
-                        {"message": "No body found in the status check response"},
-                        status=400
-                    )
+                    return Response({"message": "No body found in the status check response"},status=400)
                 status_data = body.get("status")
                 output = body.get("output")
 
@@ -1146,21 +1132,67 @@ class CreateUserAvatarAPI(APIView):
                     break
 
                 if status_data in ["failed", "error"]:
-                    return Response(
-                        {"message": "Avatar generation failed", "details": body},
-                        status=400
-                    )
+                    return Response({"message": "Avatar generation failed", "details": body},status=400)
 
             if not avatar_result:
-                return Response(
-                    {"message": "Avatar is still processing. Try again shortly."},
-                    status=202
-                )
+                return Response({"message": "Avatar is still processing. Try again shortly."},status=202)
 
-            # Download generated image
             image_url = avatar_result["data"]["body"]["output"]
-            img_response = requests.get(image_url)
 
+            if image_url:
+                remove_background  = remove_avatar_background(image_url)
+                try: 
+                    if remove_background['data']['status'] == 'FAIL':
+                        return Response({"message": remove_background['data']['message'], "error": remove_background['data']['statusCode']}, status=400)
+                except:
+                    pass
+
+                if remove_background['data']['body']['status'] == 'failed':
+                    return Response({"message": remove_background['data']['message'], "error": remove_background['data']['statusCode']}, status=400)
+                
+                if not remove_background.get("success"):
+                    return Response({"message": "Avatar generation failed", "error": remove_background['data']['statusCode']},status=400)
+                
+                order_id = remove_background["data"]["body"]["orderId"]
+                max_attempts = 6
+                wait_time = 3
+                image_result = None
+
+                for _ in range(max_attempts):
+                    time.sleep(wait_time)
+
+                    image_status_check = background_status_heck(order_id)
+                    try:
+                        if image_status_check['data']['status'] == 'FAIL':
+                            return Response({"message": image_status_check['data']['message'], "error": image_status_check['data']['statusCode']}, status=400)
+                    except:
+                        pass
+
+                    if image_status_check['data']['body']['status'] == 'failed':
+                        return Response({"message": image_status_check['data']['message'], "error": image_status_check['data']['statusCode']}, status=400)
+                    
+                    if not image_status_check.get("success"):
+                        return Response({"message": "Order status failed", "error": image_status_check['data']['statusCode']},status=400)
+
+                    image_body = image_status_check.get("data", {}).get("body")
+                    if image_body is None:
+                        return Response({"message": "No body found in the status check response"},status=400)
+                    image_status_data = image_body.get("status")
+                    output = image_body.get("output")
+
+                    if output and image_status_data in ["active", "success"]:
+                        image_result = image_status_check
+                        break
+
+                    if image_status_data in ["failed", "error"]:
+                        return Response({"message": "Avatar generation failed", "details": body},status=400)
+
+                if not image_result:
+                    return Response({"message": "Avatar is still processing. Try again shortly."},status=202)
+
+                image_url = image_result["data"]["body"]["output"]
+
+            img_response = requests.get(image_url)
             if img_response.status_code != 200:
                 return Response({"message": "Failed to download avatar image"}, status=400)
 
@@ -1168,21 +1200,16 @@ class CreateUserAvatarAPI(APIView):
             user.user_image.save(file_name, ContentFile(img_response.content))
             user.save()
 
-            # Send notification
             send_notification(
-                created_by=user,
-                created_for=None,
+                created_by=get_admin(),
+                created_for=[user.id],
                 title="New Avatar Generated",
                 description=f"A new avatar has been successfully generated for {user.full_name}.",
                 notification_type=ADMIN_NOTIFICATION,
                 obj_id=str(user.id),
             )
-
         serialized_data = UserSerializer(user, context={"request": request}).data
-        return Response(
-            {"message": "Avatar created successfully!", "data": serialized_data, "status": 200},
-            status=200
-        )
+        return Response({"message": "Avatar created successfully!", "data": serialized_data, "status": 200},status=200)
 
 class CreateVirtualTryOnAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -1211,11 +1238,8 @@ class CreateVirtualTryOnAPI(APIView):
         try:
             img_response = requests.get(garment_image_url)
             img_response.raise_for_status()
-        except Exception as ex:
-            return Response(
-                {"message": "Unable to download garment image", "error": str(ex)},
-                status=400
-            )
+        except Exception as e:
+            return Response({"message": "Unable to download garment image", "error": str(e)},status=400)
         
         file_ext = os.path.splitext(garment_image_url)[-1]
         if not file_ext:
@@ -1245,12 +1269,17 @@ class CreateVirtualTryOnAPI(APIView):
         virtual_try_on.save()
 
         result = lightx_virtual_tryon(avatar_url, garment_image_url, sig_type)
-        db_logger.info(f'-----result-------{result}')
+        if result['success'] == True :
+            virtual_try_on.response_payload = result['data']
+        else:
+            virtual_try_on.response_payload = result['error']
+
         try:
-            result['data']['status'] == 'FAIL'
-            return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
+            if result['data']['status'] == 'FAIL':
+                return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
         except:
             pass
+
         if result['data']['body']['status'] == 'failed':
             virtual_try_on.status = TRY_ON_FAILED
             virtual_try_on.error_message = result['data']['statusCode']
@@ -1267,11 +1296,10 @@ class CreateVirtualTryOnAPI(APIView):
 
         for _ in range(max_attempts):
             time.sleep(wait_time)
-
             status_check = check_virtual_tryon_status(order_id)
             try:
-                result['data']['status'] == 'FAIL'
-                return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
+                if status_check['data']['status'] == 'FAIL':
+                    return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
             except:
                 pass
             if status_check['data']['body']['status'] == 'failed':
@@ -1309,12 +1337,12 @@ class CreateVirtualTryOnAPI(APIView):
         virtual_try_on.save()
 
         send_notification(
-            created_by=user,
-            created_for=None,
+            created_by=get_admin(),
+            created_for=[user.id],
             title="New Virtual Try On Generated",
             description=f"A new virtual try on is ready for {virtual_try_on.user.full_name}.",
             notification_type=ADMIN_NOTIFICATION,
-            obj_id=str(virtual_try_on.user.id),
+            obj_id=str(virtual_try_on.id),
         )
         serialized_data = VirtualTryOnSerializer(virtual_try_on, context={"request": request}).data
         return Response({"message": "Virtual Try On Generated Successfully!","data": serialized_data,"status": 200}, status=200)
@@ -1468,8 +1496,8 @@ class CreateAIOutFitAPI(APIView):
         outfit.image.save(file_name, ContentFile(img_response.content))
 
         send_notification(
-            created_by=user,
-            created_for=None,
+            created_by=get_admin(),
+            created_for=[user.id],
             title="New outfit Generated",
             description=f"A new outfit is ready for {outfit.created_by.full_name}.",
             notification_type=ADMIN_NOTIFICATION,
@@ -1477,3 +1505,5 @@ class CreateAIOutFitAPI(APIView):
         )
         serialized = MyOutFitSerializer(outfit, context={"request": request}).data
         return Response({"status": 200,"message": "Outfit Generated Successfully!","data": serialized}, status=200)
+
+

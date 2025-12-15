@@ -158,7 +158,8 @@
                     </li>
                     <li class="submenu {% if head_title == "User Management" or head_title == "Affiliate Management"  %} active {% endif %}">
                         <a href="javascript:void(0);"><i class="fad fa-users"></i><span> Users</span>
-                            <span class="menu-arrow"></span></a>
+                            <span class="menu-arrow"></span>
+                        </a>
                         <ul>
                             <li>
                                 <a {% if head_title == 'User Management' %} class="active" {% endif %} href="{% url 'users:users_list' %}" onclick="Loader()">
