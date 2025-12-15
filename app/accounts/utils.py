@@ -33,7 +33,7 @@ from rest_framework import status
 from dateutil.relativedelta import relativedelta
 from user_agents import parse
 from subscription.models import *
-from ecommerce.models import DiscountAd
+from ecommerce.models import DiscountAd,Rating
 import random
 import string
 from accounts.tasks import *
@@ -448,3 +448,97 @@ def get_api_key():
     else:
         lightX_api = env('LIGHTX_API_KEY')
     return lightX_api
+
+
+def get_weather_api(city):
+    geo = requests.get(
+        "https://geocoding-api.open-meteo.com/v1/search",
+        params={"name": city, "count": 1},
+        timeout=5
+    ).json()
+
+    lat = geo["results"][0]["latitude"]
+    lon = geo["results"][0]["longitude"]
+
+    weather = requests.get(
+        "https://api.open-meteo.com/v1/forecast",
+        params={
+            "latitude": lat,
+            "longitude": lon,
+            "current_weather": True
+        },
+        timeout=5
+    ).json()
+
+    return weather["current_weather"]
+
+def normalize_weather_type(weather):
+    if not weather:
+        return None
+
+    temp = weather.get("temperature", 0)
+
+    if temp >= 30:
+        return 1  # HOT
+    elif temp >= 20:
+        return 2  # WARM
+    elif temp >= 10:
+        return 3  # COOL
+    else:
+        return 4  # COLD
+
+def rating_score(user, outfit):
+    rating = Rating.objects.filter(user=user, outfit=outfit).first()
+    return {5: 4, 4: 3, 3: 1, 2: -1, 1: -3}.get(rating.rating, 0) if rating else 0
+
+
+def item_rating_score(user, outfit):
+    score = 0
+    for item in outfit.items.all():
+        rating = Rating.objects.filter(user=user, item=item).first()
+        if rating:
+            score += {5: 2, 4: 1, 3: 0, 2: -1, 1: -2}.get(rating.rating, 0)
+    return score
+
+
+def score_outfit(outfit, user, prefs, weather_type):
+    score = 0
+
+    if outfit.weather_type == weather_type:
+        score += 3
+
+    if outfit.color and outfit.color in prefs.preferred_colors:
+        score += 2
+
+    score += rating_score(user, outfit)
+    score += item_rating_score(user, outfit)
+
+    return score
+
+
+def generate_today_outfit(user, weather_type):
+    prefs, _ = UserStylePreference.objects.get_or_create(
+        user=user,
+        defaults={"preferred_colors": [], "preferred_styles": []}
+    )
+
+    outfits = Outfit.objects.filter(created_by=user)
+
+    ranked = sorted(
+        outfits,
+        key=lambda o: score_outfit(o, user, prefs, weather_type),
+        reverse=True
+    )
+
+    return ranked[0] if ranked else None
+
+
+
+def get_suggested_outfit_for_user(user):
+    city = 'Mohali'
+    weather = get_weather_api(city)
+    weather_type = normalize_weather_type(weather)
+
+    outfit = generate_today_outfit(user, weather_type)
+
+    return outfit, weather

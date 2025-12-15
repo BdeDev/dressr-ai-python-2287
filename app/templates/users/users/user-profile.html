@@ -60,6 +60,10 @@
                                         <h6>{% if user.full_name %}{{user.full_name|capfirst}}{% else %} - {% endif %}</h6>
                                     </li>
                                     <li>
+                                        <h4>DOB</h4>
+                                        <h6>{% if user.dob %}{{user.dob}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
                                         <h4>Mobile Number </h4>
                                         <h6>{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}} {% endif %}{{user.mobile_no}}{% else %} - {% endif %}</h6>
                                     </li>

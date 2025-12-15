@@ -1,7 +1,9 @@
-from django.shortcuts import render,get_object_or_404
+from django.shortcuts import render
 from accounts.common_imports import *
 from accounts.utils import *
 from .models import *
+from django.core.files.base import ContentFile
+from api.avatar import *
 
 
 class CategoryList(View):
@@ -715,4 +717,72 @@ class DeleteVirtualTryOn(View):
         messages.success(request,'Virtual Try On Deleted Successfully!')
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     
+class SyncTryOnData(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        try_ons = VirtualTryOn.objects.filter(status=None).order_by('created_on')
+        order_ids = try_ons.values_list('order_id',flat=True)        
+        for order_id in order_ids:
+            
+            try:
+                virtual_try_on = VirtualTryOn.objects.filter(order_id=order_id).first()
+            except Exception as e:
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            if virtual_try_on.order_id:
+                avatar_result = None
+                order_status = check_virtual_tryon_status(virtual_try_on.order_id)
+                try:
+                    if order_status['data']['status'] == 'FAIL':
+                        messages.error(request,order_status['data']['message'])
+                        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+                except:
+                    pass
+                if order_status['data']['body']['status'] == 'failed':
+                    virtual_try_on.status = TRY_ON_PROCESSING
+                    virtual_try_on.error_message = order_status['data']['statusCode']
+                    virtual_try_on.save()
+                    messages.error(request,order_status['data']['message'])
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        
+                body = order_status["data"]["body"]
+                status_data = body.get("status")
+                output = body.get("output")
+
+                if output and status_data in ["active", "success"]:
+                    avatar_result = order_status
+                    break
+
+                if status_data in ["failed", "error"]:
+                    virtual_try_on.status = TRY_ON_FAILED
+                    virtual_try_on.save()
+                    messages.error(request,'Virtual try on generation failed')
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+                if not avatar_result:
+                    messages.error(request,'Virtual try on still processing. Try again later.')
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+                image_url = avatar_result["data"]["body"]["output"]
+                img_response = requests.get(image_url)
+                if img_response.status_code != 200:
+                    messages.error(request,'Failed to download virtual try on image')
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+                file_name = image_url.split("/")[-1]
+                virtual_try_on.output_image.save(file_name, ContentFile(img_response.content))
+                virtual_try_on.status = TRY_ON_SUCCESS
+                virtual_try_on.error_message = order_status['data']['statusCode']
+                virtual_try_on.save()
+
+                send_notification(
+                    created_by=request.user,
+                    created_for=[virtual_try_on.user],
+                    title="New Virtual Try On Generated",
+                    description=f"A new virtual try on is ready for {virtual_try_on.user.full_name}.",
+                    notification_type=ADMIN_NOTIFICATION,
+                    obj_id=str(virtual_try_on.user.id),
+                )
+        messages.success(request,"Virtual Try On Sync Successfully!")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 

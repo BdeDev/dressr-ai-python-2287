@@ -6,17 +6,6 @@ from rest_framework import status
 db_logger = logging.getLogger('db')
 
 
-def generate_otp():
-    '''
-        Generates Unique OTP for user
-    '''
-    generated_otp = random.randint(111111,999999)
-    if User.objects.filter(temp_otp = generated_otp):
-        generate_otp()
-    else:
-        return generated_otp
-    return TEMP_OTP
-
 class RequiredFieldValidations():
     '''
         Validates empty fields for APIs
