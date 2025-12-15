@@ -175,26 +175,6 @@ class ForgotPasswordEmail(View):
             messages.success(request,'A link has been sent on your email to reset your password.')
             return redirect('accounts:login')
 
-
-"""
-Verify Account through email 
-"""
-class VerifyUserAccount(View):
-    def get(self, request, *args, **kwargs):
-        try:
-            user_otp = request.GET.get('otp')
-            token = Token.objects.get(key=self.kwargs.get('token'))
-            user = User.objects.get(id=token.user_id)
-            if user.temp_otp == user_otp:
-                user.is_verified = True
-                user.save()
-                token.delete()
-                return render(request,'frontend/success-verification.html',{"user":user,'protocol': 'https' if USE_HTTPS else 'http','domain':env('SITE_DOMAIN')})
-            token.delete()
-            return render(request,'frontend/failed-verification.html',{'protocol': 'https' if USE_HTTPS else 'http','domain':env('SITE_DOMAIN')})
-        except:
-            return render(request,'frontend/failed-verification.html',{'protocol': 'https' if USE_HTTPS else 'http','domain':env('SITE_DOMAIN')})
-
 """
 Notification Management
 """

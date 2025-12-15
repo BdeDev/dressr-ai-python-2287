@@ -6,6 +6,7 @@ from django.contrib.auth import logout
 from ecommerce.models import AffiliateSettings
 from wardrobe.models import *
 from accounts.stripe_views import *
+import re
 
 @method_decorator(admin_only,name='dispatch')
 class EditAdmin(View):
@@ -38,13 +39,15 @@ class ViewUser(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
         user = User.objects.get(id=self.kwargs['id'])
-        login_history = LoginHistory.objects.filter(Q(user_email=user.email)|Q(mobile_no=user.mobile_no)).order_by('-created_on').only('id')
+        
         if user.role_id == ADMIN:
+            login_history = LoginHistory.objects.filter(user_email=user.email).order_by('-created_on').only('id')
             if not request.user.role_id == ADMIN:
                 return render(request, 'frontend/restrict.html')
             site=Site.objects.first()
             return render(request, 'admin/admin-profile.html', {"user":user,"site":site,"head_title":"Admin Profile"})
         elif user.role_id == CUSTOMER:
+            login_history = LoginHistory.objects.filter(user_email=user.email).order_by('-created_on').only('id')
             device = Device.objects.filter(user=user).last()
             outfits = Outfit.objects.filter(created_by = user).order_by('-created_on')
             return render(request, 'users/users/user-profile.html', {
@@ -53,7 +56,7 @@ class ViewUser(View):
                 "user":user,
                 "device":device,
                 "token":Token.objects.filter(user=user).last(),
-                'loginhistory':get_pagination1(request,login_history,1),
+                'loginhistory':get_pagination(request,login_history),
                 'wardrobe':Wardrobe.objects.filter(user=user).first(),
                 "outfits":get_pagination(request,outfits),
                 "item_count":ClothingItem.objects.filter(wardrobe__user=user).count(),
@@ -62,6 +65,7 @@ class ViewUser(View):
             })
         
         elif user.role_id == AFFILIATE:
+            login_history = LoginHistory.objects.filter(user_email=user.email).order_by('-created_on').only('id')
             return render(request, 'users/affiliate/affiliate-profile.html', {
                 "head_title":"Affiliate Management",
                 "isCustomer":False,

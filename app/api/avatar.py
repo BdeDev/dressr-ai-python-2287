@@ -127,3 +127,47 @@ def check_outfit_status(order_id):
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
+    
+
+###----------remove avatar background-------------------##
+
+def remove_avatar_background(image_url: str):
+
+    url = 'https://api.lightxeditor.com/external/api/v1/remove-background'
+    headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': LIGHTX_API_KEY
+    }
+    payload = {
+        "imageUrl": image_url,
+        "background": "white"
+    }
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        return {"success": True, "data": response.json()} if response.status_code == 200 else {
+            "success": False,
+            "status_code": response.status_code,
+            "error": response.text
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    
+
+
+def background_status_heck(order_id):
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": LIGHTX_API_KEY
+    }
+    status_url = CHECK_STATUS
+    payload = {"orderId": order_id}
+
+    try:
+        response = requests.post(status_url, headers=headers, json=payload)
+        return {"success": True, "data": response.json()} if response.status_code == 200 else {
+            "success": False,
+            "status_code": response.status_code,
+            "error": response.text
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}

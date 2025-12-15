@@ -59,5 +59,6 @@ urlpatterns = [
     re_path(r'^virtual-try-on-list/$', VirtualTryOnList.as_view(), name='virtual_try_on_list'),
     re_path(r'^view-virtual-try-on/(?P<id>[-\w]+)/$', ViewTryOnDetails.as_view(), name='view_virtual_try_on'),
     re_path(r'^delete-virtual-try-on/(?P<id>[-\w]+)/$', DeleteVirtualTryOn.as_view(), name='delete_virtual_try_on'),
+    re_path(r'^sync-virtual-try-on-data/$', SyncTryOnData.as_view(), name='sync_virtual_try_on_data'),
    
 ]
