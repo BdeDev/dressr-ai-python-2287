@@ -140,7 +140,7 @@ def remove_avatar_background(image_url: str):
     }
     payload = {
         "imageUrl": image_url,
-        "background": "white"
+        "background": "#CCCCCC"
     }
     try:
         response = requests.post(url, headers=headers, json=payload)

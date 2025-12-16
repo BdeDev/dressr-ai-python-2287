@@ -19,7 +19,7 @@
         </div>
         <div class="card">
             <div class="card-body">
-                <form onsubmit="Loader(this.id)" id="add-discount" action="{% url 'ecommerce:edit_discount' discount_ad.id %}" method="POST" enctype="multipart/form-data">
+                <form onsubmit="Loader(this.id)" id="edit-discount" action="{% url 'ecommerce:edit_discount' discount_ad.id %}" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-lg-6 col-md-6 col-12">
@@ -90,7 +90,7 @@
     </div>
 </div>
 {% include 'admin-includes/footer.html' %}
-<script src="{% static 'admin-assets/js/customized-js/add-fashion-tip.js' %}"></script>
+<script src="{% static 'admin-assets/js/validations/discount-ads.js' %}"></script>
 <script>
     $('#target_sigment_select').selectize({
         plugins: ['remove_button'],

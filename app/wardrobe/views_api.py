@@ -1595,32 +1595,3 @@ class GetWardrobeDetailsAPI(APIView):
             return Response({"data": data,"meta": meta_data},status=status.HTTP_200_OK)
 
         return Response({"error": "Invalid type. Allowed values: 1 = Items, 2 = Outfits"},status=status.HTTP_400_BAD_REQUEST)
-
-
-class SuggestedOutfitAPI(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = [MultiPartParser]
-
-    @swagger_auto_schema(
-        tags=["WarDrobe management"],
-        operation_id="Today Outfit Suggestion",
-        operation_description="Today Outfit Suggestion",
-        manual_parameters=[],
-    )
-    def get(self, request,*arge,**kwargs):
-        outfit, weather = get_suggested_outfit_for_user(request.user)
-
-        if not outfit:
-            return Response({"message": "No outfit available"},status=404)
-        return Response({"outfit_id": outfit.id,"title": outfit.title,"weather": {"temp": weather["temperature"],"condition": weather["description"]},
-            "items": [
-                {
-                    "id": item.id,
-                    "title": item.title,
-                    "image": item.image.url if item.image else None,
-                    "category": item.cloth_category.name if item.cloth_category else None,
-                    "color": item.color
-                }
-                for item in outfit.items.all()
-            ]
-        })

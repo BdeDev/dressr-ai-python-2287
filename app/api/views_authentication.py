@@ -1083,8 +1083,9 @@ class CreateUserAvatarAPI(APIView):
                 
                 "The output should look like a faithful, realistic digital reconstruction of the original person, "
                 "maintaining true natural appearance with zero stylistic deviations. "
-                "Set the avatar against a clean, pure white background."
+                "Set the avatar against a clean, pure #CCCCCC background."
             )
+            start_time = time.time()
 
             result = create_lightx_avatar(avatar_url, avatar_url, prompt=prompt)
             user.others = prompt
@@ -1199,7 +1200,7 @@ class CreateUserAvatarAPI(APIView):
             file_name = image_url.split("/")[-1]
             user.user_image.save(file_name, ContentFile(img_response.content))
             user.save()
-
+            db_logger.info(f"⏱️ Execution time: {time.time() - start_time} seconds")
             send_notification(
                 created_by=get_admin(),
                 created_for=[user.id],
@@ -1268,6 +1269,7 @@ class CreateVirtualTryOnAPI(APIView):
         virtual_try_on.garment_image.save(file_name, garment_file)
         virtual_try_on.save()
 
+        start_time  = time.time()
         result = lightx_virtual_tryon(avatar_url, garment_image_url, sig_type)
         if result['success'] == True :
             virtual_try_on.response_payload = result['data']
@@ -1335,7 +1337,7 @@ class CreateVirtualTryOnAPI(APIView):
         virtual_try_on.status = TRY_ON_SUCCESS
         virtual_try_on.error_message = result['data']['statusCode']
         virtual_try_on.save()
-
+        db_logger.info(f"⏱️ Execution time: {time.time() - start_time} seconds")
         send_notification(
             created_by=get_admin(),
             created_for=[user.id],
@@ -1344,6 +1346,7 @@ class CreateVirtualTryOnAPI(APIView):
             notification_type=ADMIN_NOTIFICATION,
             obj_id=str(virtual_try_on.id),
         )
+        
         serialized_data = VirtualTryOnSerializer(virtual_try_on, context={"request": request}).data
         return Response({"message": "Virtual Try On Generated Successfully!","data": serialized_data,"status": 200}, status=200)
 
@@ -1434,6 +1437,7 @@ class CreateAIOutFitAPI(APIView):
             notes=prompt,
         )
         avatar_url = request.build_absolute_uri(user.user_image.url)
+        start_time = time.time()
         try:
             result = create_lightx_outfit(avatar_url, prompt)
             try:
@@ -1494,7 +1498,8 @@ class CreateAIOutFitAPI(APIView):
         
         file_name = final_output.split("/")[-1]
         outfit.image.save(file_name, ContentFile(img_response.content))
-
+        db_logger.info(f"⏱️ Execution time: {time.time() - start_time} seconds")
+        
         send_notification(
             created_by=get_admin(),
             created_for=[user.id],
@@ -1503,6 +1508,7 @@ class CreateAIOutFitAPI(APIView):
             notification_type=ADMIN_NOTIFICATION,
             obj_id=str(outfit.id),
         )
+        
         serialized = MyOutFitSerializer(outfit, context={"request": request}).data
         return Response({"status": 200,"message": "Outfit Generated Successfully!","data": serialized}, status=200)
 
