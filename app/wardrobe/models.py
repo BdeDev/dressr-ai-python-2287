@@ -25,6 +25,7 @@ class WardrobePublicShare(CommonInfo):
 
 class ClothCategory(CommonInfo):
     title = models.CharField(max_length=100, blank=True, null=True)
+    gender = models.PositiveIntegerField(choices=GENDER, null=True, blank=True)
     icon = models.FileField(upload_to="wardrobe/icons/",blank=True, null=True)
 
     class Meta:
@@ -51,7 +52,6 @@ class ClothingItem(CommonInfo):
     occasion = models.ForeignKey(Occasion,on_delete=models.SET_NULL, null=True,blank=True)
     accessory = models.ForeignKey(Accessory,on_delete=models.SET_NULL,null=True,blank=True)
     # ai_category = models.CharField(max_length=50, blank=True, null=True)
-    # manual_category = models.CharField(max_length=50,blank=True, null=True)
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
     color = models.CharField(max_length=30,blank=True, null=True)
     price = models.FloatField(default=0.0, null=True, blank=True)
@@ -154,12 +154,3 @@ class VirtualTryOn(CommonInfo):
     class Meta:
         db_table = 'virtual_try_on'
 
-
-class UserStylePreference(CommonInfo):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    preferred_colors = models.JSONField(default=list)
-    preferred_styles = models.JSONField(default=list)  # casual, formal, street
-    body_type = models.CharField(max_length=20, null=True)
-
-    class Meta:
-        db_table = 'style_preference'
