@@ -14,17 +14,6 @@
                     </ol>
                 </nav>
             </div>
-            {% comment %} <div class="page-btn d-flex flex-wrap align-items-baseline">
-                {%  if notifications %}
-                    <a title="Mark All Read" class="btn btn-primary me-1" href="{% url 'accounts:mark_read_notifications' user.id %}">
-                        <i class="fas fa-check-double me-1"></i> Mark All Read
-                    </a>
-                    <a class="btn btn-danger me-1 action_confirm" message="Are you sure you want to clear all notifications?" href="{% url 'accounts:delete_notifications'%}">
-                        <i class="fas fa-trash-alt"></i>
-                    </a>
-                {% endif %}
-                <input type="button" class="btn btn-secondary" value="Back" onclick="goBack()">
-            </div> {% endcomment %}
         </div>
         <div class="row">
             <div class="col-12">
@@ -124,30 +113,26 @@
                                     </div>
                                     <div class="description">
                                         <p style="margin-bottom:0 !important">{{rating.comment|safe}}</p>
-                                        {% comment %} <span>Created By : {{rating.user.full_name|capfirst}}</span> {% endcomment %}
                                     </div>
-                                    
-                                    
-                                    </span>
+                                </span>
                                 <div class="activity-right-content">
                                    <span class="time" style="d-flex flex-direction: column;">
-                                    <span>Created By : {{rating.user.full_name|capfirst}}</span><br>
+                                    <span>Created By : {{ rating.user.full_name|capfirst }}</span><br>
                                     <span>Created On : {{ rating.created_on|naturaltime }}</span>
                                     </span>
                                 </div>
                             </div>
-                            
                         </div>
                     </li>
                     {% endfor %}
                 </ul>
                 <!-- pagination-->
-                {% include "admin-includes/pagination.html" with listing_objects=notifications %}
+                {% include "admin-includes/pagination.html" with listing_objects=ratings %}
                 <!-- pagination end-->
                 {% else %}
                 <ul class="activity-list">
                     <li class="no-activity">
-                        <div class="activity-content">No Notifications Found</div>
+                        <div class="activity-content">No Data Found</div>
                     </li>
                 </ul>
                 {% endif %}
@@ -161,107 +146,3 @@
         window.history.back()
     }
 </script>
-
-
-
-{% comment %} {% include 'admin-includes/header.html' %}
-{% load static %}{% load extras %}
-<div class="page-wrapper">
-    <div class="content">
-        <div class="page-header">
-            <div class="page-title">
-                <h4>Feedbacks</h4>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'ecommerce:feedback_list' %}">Feedbacks</a></li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <div class='d-flex flex-wrap justify-content-between'>
-                    <!-- showing_objects-->
-					{% include "admin-includes/showing_objects.html" with listing_objects=ratings %}
-					<!-- showing_objects end-->
-				</div>
-                <div class="dataview">
-                    <form onsubmit="Loader()" action="" method="GET">
-                        <div class="table-responsive">
-                            <table class="table datatable">
-                                <thead>
-                                    <tr>
-                                        <th>Client Name</th>
-                                        <th>Rating</th>
-                                        <th>Comment</th>
-                                        <th>Product</th>
-                                        <th>Created on</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for rating in ratings %}
-                                    <tr>
-                                        <td class='clickable-row' data-href="{% url 'static_pages:view_testimonial' testimonial.id %}">
-                                            <div class="d-flex align-items-center display-images">
-                                                {% if rating.user.profile_pic %}
-                                                <a href="{{rating.user.profile_pic.url}}" data-fancybox>
-                                                    <img src="{{rating.user.profile_pic.url}}" class="rounded-lg me-2" width="24" alt="">
-                                                </a>
-                                                {% else %}
-                                                <a href="{% static 'admin-assets/images/default.png' %}" data-fancybox>
-                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
-                                                    class="rounded-lg me-2" width="24" alt="">
-                                                </a>
-                                                {% endif %}
-                                                <span class="w-space-no">{{rating.user.full_name|capfirst}}</span>
-                                            </div>  
-                                        </td>
-                                        <td class='clickable-row' data-href="{% url 'static_pages:view_testimonial' testimonial.id %}">
-                                            <div class="d-flex align-items-center display-images">
-                                                {% if rating.item.image %}
-                                                <a href="{{rating.item.image.url}}" data-fancybox>
-                                                    <img src="{{rating.item.image.url}}" class="rounded-lg me-2" width="24" alt="">
-                                                </a>
-                                                {% else %}
-                                                <a href="{% static 'admin-assets/images/default.png' %}" data-fancybox>
-                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
-                                                    class="rounded-lg me-2" width="24" alt="">
-                                                </a>
-                                                {% endif %}
-                                                <span class="w-space-no">{{rating.item.title|capfirst|default:"-"}}</span>
-                                            </div>  
-                                        </td>
-                                        <td>
-                                            {{rating.rating}}
-                                        </td>
-                                        <td>
-                                            {{rating.comment|safe}}
-                                        </td>
-                                        <td>
-                                            <script>
-                                                var d = ConvertDateTime("{{ rating.created_on|date:'Y-m-d' }}", "{{ rating.created_on|time:'H:i' }}");
-                                                document.write(d);
-                                            </script>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex">
-                                                <a title="View detail" href="{% url 'static_pages:view_testimonial' testimonial.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </form>
-                     <!-- pagination-->
-                     {% include "admin-includes/pagination.html" with listing_objects=testimonials %}
-                     <!-- pagination end-->
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% include 'admin-includes/footer.html' %} {% endcomment %}

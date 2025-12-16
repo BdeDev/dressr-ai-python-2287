@@ -675,7 +675,10 @@ class UserFeedBackList(View):
         return render(request, 'ecommerce/user-rating/user-rating-list.html',{
             "head_title":'Feedback Management',
             "item_id":item_id,
-            "ratings":ratings,
+            "ratings":get_pagination(request,ratings),
+            "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
+            "total_objects":ratings.count()
         })
     
 
