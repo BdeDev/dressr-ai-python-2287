@@ -148,7 +148,7 @@ class UserSignupView(APIView):
         # send notification to admin
         send_notification(
             created_by=get_admin(),
-            created_for=[user],
+            created_for=[user.id],
             title=f"New Customer Registered",
             description=f"New Customer registered with email {user.email}",
             notification_type=ADMIN_NOTIFICATION,
@@ -339,7 +339,7 @@ class SocialLogin(APIView):
             # send notification to admin
             send_notification(
                 created_by=get_admin(),
-                created_for=[user],
+                created_for=[user.id],
                 title=f"New Customer Registered",
                 description=f"New Customer registered with email {user.email}",
                 notification_type=ADMIN_NOTIFICATION,
@@ -1162,7 +1162,7 @@ class CreateUserAvatarAPI(APIView):
                 for _ in range(max_attempts):
                     time.sleep(wait_time)
 
-                    image_status_check = background_status_heck(order_id)
+                    image_status_check = check_lightx_order_status(order_id)
                     try:
                         if image_status_check['data']['status'] == 'FAIL':
                             return Response({"message": image_status_check['data']['message'], "error": image_status_check['data']['statusCode']}, status=400)
@@ -1298,7 +1298,7 @@ class CreateVirtualTryOnAPI(APIView):
 
         for _ in range(max_attempts):
             time.sleep(wait_time)
-            status_check = check_virtual_tryon_status(order_id)
+            status_check = check_lightx_order_status(order_id)
             try:
                 if status_check['data']['status'] == 'FAIL':
                     return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
@@ -1427,7 +1427,6 @@ class CreateAIOutFitAPI(APIView):
             "Ensure the final output looks natural, realistic, and seamlessly integrated with the original image."
         )
 
-
         outfit = Outfit.objects.create(
             title=title,
             occasion=occasion,
@@ -1464,7 +1463,7 @@ class CreateAIOutFitAPI(APIView):
 
         for _ in range(max_attempts):
             time.sleep(wait_time)
-            status_check = check_outfit_status(order_id)
+            status_check = check_lightx_order_status(order_id)
             try:
                 if status_check['data']['status'] == 'FAIL':
                     return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)

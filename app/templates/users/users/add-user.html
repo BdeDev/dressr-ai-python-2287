@@ -110,7 +110,6 @@
  
  </script>
 
-
 <script type="text/javascript">
     jQuery.validator.addMethod("is_mobile_no_exists", 
     function(value, element) {
@@ -164,90 +163,6 @@
           });        
         return is_valid
     },'Email already exists!');
-    $("#add-user").validate({
-        rules: {
-            first_name: {
-                required: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                },
-            },
-            last_name: {
-                required: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                },
-            },
-            gender: {
-                required: true,
-            },
-            email: {
-                required: true,
-                email: true,
-                is_email_exists: true,
-                restricted_email: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                }
-            },
-            mobile_no: {
-                required: true,
-                is_mobile_no_exists: true,
-                minlength: 10,
-                normalizer: function (value) {
-                    return $.trim(value);
-                }
-            },
-            address: {
-                required: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                }
-            },
-            password: {
-                required: true,
-                minlength: 8,
-                maxlength: 35,
-                normalizer: function (value) {
-                    return $.trim(value);
-                },
-                strongpassword:"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*]).{8,}$",
-            },
-            profile_pic: {
-                accept: "jpg,png,jpeg,gif"
-            },
-        },
-        messages: {
-            first_name: {
-                required: "Please enter first name",
-            },
-            last_name: {
-                required: "Please enter last name",
-            },
-            gender: {
-                required: "Please select gender",
-            },
-            email: {
-                required: "Please enter email",
-            },
-            address: {
-                required: "Please enter address",
-            },
-            mobile_no: {
-                required: "Please enter mobile no",
-                minlength: "At least 10 numbers required!",
-            },
-            password: {
-                required: "Please enter password",
-                minlength: "At least 8 characters required!",
-                maxlength: "At most 35 characters only!",
-                strongpassword:"Password must have one uppercase, lowercase, special character and number",
-            },
-            profile_pic: {
-                accept: "Please upload file in these format only (jpg, jpeg, png, gif)"
-            },
-        }
-    });    
     function changetype(){
         if ($("#password").attr('type') == "password"){
             document.getElementById("password").type = "text";

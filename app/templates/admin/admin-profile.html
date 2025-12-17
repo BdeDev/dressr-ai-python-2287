@@ -86,7 +86,6 @@
                                     </li> {% endcomment %}
                                 </ul>
                             </div>
-                            
                         </div>
                     </div>
                 </div>
@@ -122,34 +121,3 @@
 </div>
 
 {% include "admin-includes/footer.html" %}
-<script>
-$('.action_confirm').click(function(event) {
-    event.preventDefault();        
-    swal({
-        title: $(this).attr('message'),
-        text: "",
-        icon: "warning",
-        buttons: true,
-    })
-    .then((willDelete) => {
-        if (willDelete) {
-            location.href=$(this).attr('href')
-        }
-    });
-});
-$("#add-message").validate({
-        rules: {
-            message: {
-                required: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                }
-            },
-        },
-        messages: {
-            message: {
-                required: "Please enter message.",
-            },
-        },
-    }); 
-</script>
