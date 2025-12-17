@@ -186,10 +186,10 @@
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
 												<span class="w-space-no">
-												<script>
-													var date = ConvertDateTime("{{ user.created_on|date:'Y-m-d' }}", "{{ user.created_on|time:'H:i' }}");
-													document.write(date);
-												</script>
+                                                    <script>
+                                                        var date = ConvertDateTime("{{ user.created_on|date:'Y-m-d' }}", "{{ user.created_on|time:'H:i' }}");
+                                                        document.write(date);
+                                                    </script>
 												</span>
 											</td>
 											
@@ -207,7 +207,6 @@
 											<td>
 												<div class="d-flex">
 													<a title="View Details" href="{% url 'users:view_user' user.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
-													{% comment %} <a title="Delete" href="{% url 'users:delete_users' user.id %}" class="btn btn-danger shadow btn-xs sharp me-1"><i class="fa fa-trash"></i></a> {% endcomment %}
 												</div>
 											</td>
 										</tr>
