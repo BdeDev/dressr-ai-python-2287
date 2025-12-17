@@ -89,7 +89,7 @@ urlpatterns = [
     re_path(r'^get-trip-api/$', GetMyTripOutfitsAPI.as_view(), name='get_trip_api'),
     re_path(r'^delete-trip-api/$', DeleteTripAPI.as_view(), name='delete_trip_api'),
 
-    ##-----------------------------------admin panel----------------------------------
+    ##-----------------------------------admin panel----------------------------------########
     re_path(r'^wardrobe-list/$', WardrobeList.as_view(), name='wardrobe_list'),
     re_path(r'^view-wardrobe/(?P<id>[-\w]+)/$', WardrobeView.as_view(), name='view_wardrobe'),
     re_path(r'^view-item-details/(?P<id>[-\w]+)/$', ViewItemDetails.as_view(), name='view_item_detais'),

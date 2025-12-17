@@ -47,14 +47,6 @@
                                         <h4>Username</h4>
                                         <h6>{% if user.username %}{{user.username}}{% else %} - {% endif %}</h6>
                                     </li>
-                                    {% comment %} <li>
-                                        <h4>First Name </h4>
-                                        <h6>{% if user.first_name %}{{user.first_name|capfirst}}{% else %} - {% endif %}</h6>
-                                    </li>
-                                    <li>
-                                        <h4>Last Name </h4>
-                                        <h6>{% if user.last_name %}{{user.last_name|capfirst}}{% else %} - {% endif %}</h6>
-                                    </li> {% endcomment %}
                                     <li>
                                         <h4>Full Name </h4>
                                         <h6>{% if user.full_name %}{{user.full_name|capfirst}}{% else %} - {% endif %}</h6>
@@ -222,7 +214,6 @@
                                             {% if device.device_token %}{{device.device_token}}{% else %}-{% endif %}                 
                                         </h6>
                                     </li>
-                                    
                                 </ul>
                                 {% endif %}
                                 {% if user.user_image %}
@@ -243,6 +234,32 @@
                                     </li>
                                 </ul>
                                 {% endif %}
+                                {% comment %} <h5 class="mt-3"><b>Stripe Information</b></h5>
+                                <ul class="product-bar mb-2">
+                                    <li>
+                                        <h4>Stripe Customer ID</h4>
+                                        <h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>{% if user.customer_id %}{{user.customer_id}}{% else %}-{% endif %}</span>
+                                                {% if not user.customer_id %}
+                                                <a onclick="Loader()" href="{% url "users:modify_customer_stripe_account" user.id %}?type=customer" title="Create Customer ID" class="btn btn-sm btn-info">Create Customer ID</a>
+                                                {% endif %}
+                                            </div>
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Stripe Account ID</h4>
+                                        <h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>{% if user.account_id %}{{user.account_id}}{% else %}-{% endif %}</span>
+                                                {% if not user.account_id %}
+                                                <a onclick="Loader()" href="{% url "users:modify_customer_stripe_account" user.id %}?type=account" title="Create Account ID" class="btn btn-sm btn-info">Create Account ID</a>
+                                                {% endif %}
+                                            </div>
+                                        </h6>
+                                    </li>
+                                
+                                </ul> {% endcomment %}
                             </div>
                         </div>
                         <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
@@ -260,7 +277,7 @@
             </div>
             <!-- tabs -->
             <div class="col-lg-12 col-sm-12 mt-5">
-                <div class="row  mt-4">
+                <div class="row mt-4">
                     <div class="bs-example action-tabs">
                         <ul class="nav nav-tabs" id="myTab">
                             <li class="nav-item">
@@ -324,14 +341,12 @@
                                                     <a class='btn btn-primary' href="{% url 'accounts:login_history' %}?email={{user.email}}">View More <i class="fas fa-angle-double-right ms-2"></i></a>
                                                 </div>
                                                 {% endif %}
-                                                {% comment %} <!-- pagination-->
-                                                {% include "admin-includes/pagination.html" with listing_objects=loginhistory %}
-                                                <!-- pagination end--> {% endcomment %}
                                             </div>
                                         </div>
                                     </div>
                                 </section>
                             </div>
+
                             <div id="sectionB" class="tab-pane fade show">
                                 <section id="tab" class="tab-panel">
                                     <div class="card custom-card">
@@ -407,6 +422,7 @@
                                     </div>
                                 </section>
                             </div>
+
                             <div id="sectionC" class="tab-pane fade show">
                                 <section id="tab" class="tab-panel">
                                     <div class="card custom-card">
@@ -423,7 +439,6 @@
                                                                 <th><strong>Colour</strong></th>
                                                                 <th><strong>Brand</strong></th>
                                                                 <th><strong>Created On</strong></th>
-                                                                {% comment %} <th><strong>Actions</strong></th> {% endcomment %}
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -468,11 +483,6 @@
                                                                             document.write(date);
                                                                         </script>
                                                                     </td>
-                                                                    <td>
-                                                                        <div class="d-flex">
-                                                                            {% comment %} <a title="View" href="{% url 'wardrobe:view_outfit_detail' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a> {% endcomment %}
-                                                                        </div>
-                                                                    </td>
                                                                 </tr>
                                                                 {% endfor %}
                                                             {% endif %}
@@ -503,7 +513,6 @@
                                                                 <th><strong>Output Image</strong></th>
                                                                 <th><strong>Sigmentation Type</strong></th>
                                                                 <th><strong>Created On</strong></th>
-                                                                {% comment %} <th><strong>Actions</strong></th> {% endcomment %}
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -567,11 +576,6 @@
                                                                             var date = ConvertDateTime("{{ tryon.created_on|date:'Y-m-d' }}", "{{ tryon.created_on|time:'H:i' }}");
                                                                             document.write(date);
                                                                         </script>
-                                                                    </td>
-                                                                    <td>
-                                                                        <div class="d-flex">
-                                                                            {% comment %} <a title="View" href="{% url 'wardrobe:view_outfit_detail' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a> {% endcomment %}
-                                                                        </div>
                                                                     </td>
                                                                 </tr>
                                                                 {% endfor %}

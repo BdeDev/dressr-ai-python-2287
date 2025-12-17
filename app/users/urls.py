@@ -15,6 +15,7 @@ urlpatterns = [
     re_path(r'^delete-users/(?P<id>[-\w]+)/$',DeleteUsers.as_view(), name='delete_users'),
     re_path(r'^edit-admin/(?P<id>[-\w]+)/$',EditAdmin.as_view(), name='edit_admin'),
     re_path(r'^users-list/$', UsersList.as_view(), name='users_list'),
+    re_path(r'^modify-customer-stripe-account/(?P<id>[-\w]+)/$', ModifyCustomerStipeAccount.as_view(), name='modify_customer_stripe_account'),
 
     ## User Actions
     re_path(r'^deactivate-user/(?P<id>[-\w]+)/$',InactivateUser.as_view(), name='inactivate_user'),

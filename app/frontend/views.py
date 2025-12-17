@@ -37,13 +37,6 @@ class AboutUsview(View):
         about_us = Pages.objects.filter(type_id=ABOUT_US).first()
         return render(request, "frontend/about-us.html",{"data":about_us, "page_title":"About Us"})
     
-# class ContactUsview(View):
-#     def get(self, request, *args, **kwargs):
-#         if request.user.is_authenticated:
-#             return redirect('frontend:index')
-#         contact_us = Pages.objects.filter(type_id=CONTACT_US).first()
-#         return render(request, "frontend/contact-us.html",{"data":contact_us, "page_title":"Contact Us"})
-    
 
 class ContactUsView(View):
     def get(self, request, *args, **kwargs):
