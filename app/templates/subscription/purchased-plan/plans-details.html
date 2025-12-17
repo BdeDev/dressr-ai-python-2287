@@ -81,7 +81,19 @@
                                 <li>
                                     <h4>User</h4>
                                     <h6>
-                                        <a href="{% url "users:view_user" plan.purchased_by.id %}">{{plan.purchased_by.full_name|capfirst|default:"-"}}</a>
+                                        <div class="d-flex align-items-center display-images">
+                                            {% if plan.purchased_by.profile_pic %}
+                                            <a href="{{plan.purchased_by.profile_pic.url}}" data-fancybox>
+                                                <img src="{{plan.purchased_by.profile_pic.url}}" class="rounded-lg me-2" width="24" alt="">
+                                            </a>
+                                            {% else %}
+                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                class="rounded-lg me-2" width="24" alt="">
+                                            </a>
+                                            {% endif %}
+                                            <a class="w-100" href="{% url "users:view_user" plan.purchased_by.id %}">{{plan.purchased_by.full_name|capfirst|default:"-"}}</a>
+                                        </div>
                                     </h6>
                                 </li>
                                 <li>
@@ -110,15 +122,6 @@
                                         {% endif %}
                                     </h6>
                                 </li>
-                                {% if plan.purchased_by.role_id == 4 %}
-                                <li>
-                                    <h4>Customers Count</h4>
-                                    <h6>
-                                        {{plan.number_of_customer}}
-                                    </h6>
-                                </li>
-                                {% endif %}
-                              
                                 <li>
                                     <h4>Description</h4>
                                     <h6>
@@ -137,7 +140,7 @@
                         </div>
                        <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
                             {% if plan.status == 2 %}
-                                <a href="{% url "subscription:activate_plan" plan.id %}" title="Want to activate this plan  ?" message="Note : After activation of this plan , current active plan will be marked expired if have any and customers count data will be add on to your current remaining customers." class="btn btn-info ms-2 action_confirm_2">Activate Now</a>
+                                <a href="{% url "subscription:activate_plan" plan.id %}" title="Want to activate this plan ?" message="Note : After activation of this plan , current active plan will be marked expired if have any and customers count data will be add on to your current remaining customers." class="btn btn-info ms-2 action_confirm_2">Activate Now</a>
                             {% endif %}
                         </div>
                     </div>

@@ -59,7 +59,11 @@ class User(AbstractUser,CommonInfo):
     is_subscription_active = models.BooleanField(default=False)
     plan_activated_on = models.DateTimeField(auto_now=False,null=True,blank=True)
     plan_expire_on = models.DateTimeField(auto_now=False,null=True,blank=True)
-    
+
+    customer_id = models.CharField(max_length=255, null=True, blank=True)
+    account_id = models.CharField(max_length=255, null=True, blank=True)
+
+
     class Meta:
         db_table = 'user'
 

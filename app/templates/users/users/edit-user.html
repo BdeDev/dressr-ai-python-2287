@@ -155,79 +155,7 @@
         return is_valid
     },'Mobile No already exists!');
 
-    $("#edit-profile").validate({
-        rules: {
-            first_name: {
-                required: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                },
-            },
-            last_name: {
-                required: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                },
-            },
-            gender: {
-                required: true,
-            },
-            zipcode: {
-                required: true,
-            },
-            address: {
-                required: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                }
-            },
-            mobile_no: {
-                required: true,
-                is_mobile_no_exists: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                }
-            },
-            email: {
-                required: true,
-                is_email_exists: true,
-                restricted_email: true,
-                normalizer: function (value) {
-                    return $.trim(value);
-                }
-            },
-            profile_pic: {
-                accept: "jpg,png,jpeg,gif"
-            },
-        },
-        messages: {
-            first_name: {
-                required: "Please enter first name",
-            },
-            last_name: {
-                required: "Please enter last name",
-            },
-            address: {
-                required: "Please enter address"
-            },
-            gender: {
-                required: "Please select gender"
-            },
-            zipcode: {
-                required: "Please enter zipcode"
-            },
-            email: {
-                required: "Please enter address"
-            },
-            mobile_no: {
-                required: "Please enter address"
-            },
-            profile_pic: {
-                accept: "Please upload file in these format only (jpg, jpeg, png, gif)"
-            },
-        }
-    });  
-
+   
     $("#address").keyup(function () {
         var autocomplete = new google.maps.places.Autocomplete($("#address")[0], {});
         google.maps.event.addListener(autocomplete, 'place_changed', function () {
@@ -257,6 +185,4 @@
             }
         }
     }
-
-
 </script>

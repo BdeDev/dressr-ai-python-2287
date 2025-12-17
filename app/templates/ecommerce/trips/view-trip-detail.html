@@ -54,9 +54,9 @@
                                 </li>
                                 <li>
                                     <h4> Description </h4>
-                                    <h6>{{trip.description|safe|default:"-"}}</h6>
+                                    <h6>{{trip.description|default:"-"}}</h6>
                                 </li>
-                                {% if paired_items %}
+                                {% if paired_items.all %}
                                 <li>
                                     <h4> Activity & Outfit </h4>
                                     <h6>
@@ -85,8 +85,6 @@
                                         {% endfor %}
                                     </h6>
                                 </li>
-                                {% else %}
-                                    -
                                 {% endif %}
                             </ul>
                         </div>
