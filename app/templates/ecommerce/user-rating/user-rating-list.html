@@ -14,6 +14,9 @@
                     </ol>
                 </nav>
             </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary" href="{% url 'wardrobe:wardrobe_list' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
         </div>
         <div class="row">
             <div class="col-12">
@@ -101,26 +104,29 @@
                         </div>
                         <div class="activity-content">
                             <div class="timeline-content">
-                                <span class="font-700 d-flex" style="flex-direction: column;">
-                                    <div>
-                                        {% for i in "12345" %}
-                                            {% if forloop.counter <= rating.rating %}
-                                                <i class="fa fa-star" style="color: #FFD700;"></i>   <!-- Filled star -->
-                                            {% else %}
-                                                <i class="fa fa-star" style="color: #b8b3b3ff;"></i>   <!-- Empty star -->
-                                            {% endif %}
-                                        {% endfor %}
+                                <span class=" d-flex" style="flex-direction: column;">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= rating.rating %}
+                                                    <i class="fa fa-star" style="color: #FFD700;"></i>   <!-- Filled star -->
+                                                {% else %}
+                                                    <i class="fa fa-star" style="color: #b8b3b3ff;"></i>   <!-- Empty star -->
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <div class="activity-right-content d-flex gap-2">
+                                            <span ><a style="color:#1b378f;" href="{% url "users:view_user" rating.user.id %}">{{ rating.user.full_name|capfirst }}</a></span>
+                                            <span>| 
+                                               {{ rating.created_on|naturaltime }}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div class="description">
                                         <p style="margin-bottom:0 !important">{{rating.comment|safe}}</p>
                                     </div>
                                 </span>
-                                <div class="activity-right-content">
-                                   <span class="time" style="d-flex flex-direction: column;">
-                                    <span>Created By : {{ rating.user.full_name|capfirst }}</span><br>
-                                    <span>Created On : {{ rating.created_on|naturaltime }}</span>
-                                    </span>
-                                </div>
+                                
                             </div>
                         </div>
                     </li>

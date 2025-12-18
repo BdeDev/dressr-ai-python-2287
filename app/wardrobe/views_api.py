@@ -1464,50 +1464,7 @@ class MostWearClothAnalyticsAPI(APIView):
             "recommendations": recommendations,
             
         }
-
         return Response(response, status=200)
-
-
-class OutfitRecommendationAPI(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = [MultiPartParser]
-
-    @swagger_auto_schema(
-        tags=["Trip Management"],
-        operation_id="Item Recommened for trip",
-        operation_description="Item Recommened for trip",
-        manual_parameters=[openapi.Parameter('activity_id', openapi.IN_QUERY,type=openapi.TYPE_STRING,description="Activity ID"),
-        ],
-    )
-    def get(self, request, *args, **kwargs):
-        CustomRequiredFieldsValidator.validate_api_field(self, request, 
-                [{"field_name": "activity_id","method": "get","error_message": "Please enter activity id"},])
-        required_items = []
-        user_activity = get_or_none(ActivityFlag,"Activity flag does not exist!",id=request.query_params.get("activity_id").strip())
-        key = user_activity.name.lower().replace(" ", "_")
-        required_items += ACTIVITY_ITEM_MAP.get(key, [])
-        required_items = list(set(required_items))
-        cloth_items = ClothingItem.objects.filter(wardrobe__user=request.user,cloth_category__title__in=required_items).select_related("cloth_category")
-        
-        # missing_items = [
-        #     item for item in required_items
-        #     if item not in owned_categories
-        # ]
-      
-        # store_items = StoreItem.objects.filter(category__in=missing_items)
-        # for item in store_items:
-        #     Recommendation.objects.create(
-        #         vacation_plan=user_trip,
-        #         recommended_item=item.title,
-        #         category=item.category,
-        #         purchase_link=item.link,
-        #         reason="You don't have this item; recommended for your trip"
-        #     )
-
-        data = ClothItemSerializer(cloth_items,many=True,context = {"request":request}).data
-        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-
-
 
 class ShareWardrobeAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -1563,7 +1520,7 @@ class GetWardrobeDetailsAPI(APIView):
         operation_description="Retrieve wardrobe details or outfits based on type",
         manual_parameters=[
             openapi.Parameter('wardrobe_id', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Wardrobe ID",required=True),
-            openapi.Parameter('type', openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description="1 = Items, 2 = Outfits",required=True),
+            openapi.Parameter('type', openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description="1: Items, 2: Outfits",required=True),
             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
         ],
     )
@@ -1594,4 +1551,4 @@ class GetWardrobeDetailsAPI(APIView):
             data = MyOutFitSerializer(user_outfits[start:end],many=True,context={"request": request}).data
             return Response({"data": data,"meta": meta_data},status=status.HTTP_200_OK)
 
-        return Response({"error": "Invalid type. Allowed values: 1 = Items, 2 = Outfits"},status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Invalid type. Allowed values: 1: Items, 2: Outfits"},status=status.HTTP_400_BAD_REQUEST)
