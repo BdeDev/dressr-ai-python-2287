@@ -183,7 +183,6 @@ class WardrobeList(View):
     def get(self,request,*args,**kwargs):
         wardrobs = Wardrobe.objects.all().order_by('-created_on')
         wardrobs = query_filter_constructer(request,wardrobs,{
-            "name__icontains":"name",
             "user__full_name__icontains":"user",
             "is_shared":"is_shared",
         })
@@ -225,7 +224,7 @@ class WardrobeView(View):
         return render(request,'wardrobe/wardrobs/view-wardrobe.html',{
             "head_title":'Wardrobe Management',
             "wardrobe":wardrobe,
-            "cloth_items":cloth_items,
+            "cloth_items":cloth_items[:12],
             "most_worn":most_worn,
             "least_worn":least_worn,
             "recommendations":recommendations,
@@ -640,3 +639,14 @@ class WardrobeItemsDetails(View):
             "item_feedback":RatingSerializer(item_feedback,many=True,context = {'request':request}).data
         }
         return JsonResponse(data)
+
+
+class ViewItemList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        wardrobe = Wardrobe.objects.get(id=self.kwargs.get('id'))
+        cloth_items = ClothingItem.objects.filter(wardrobe = wardrobe).order_by('-created_on')
+        return render(request,'wardrobe/wardrobs/wardrobe-item-list.html',{
+            "head_title":'Wardrobe Management',
+            "cloth_items":get_pagination(request,cloth_items)
+        })

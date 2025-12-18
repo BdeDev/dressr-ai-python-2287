@@ -4432,3 +4432,52 @@ body {
     height: 100%;
 	object-fit: cover;
 } */
+
+.bg-success-custom {
+	display: inline-block;
+	padding: .35em .65em;
+	font-size: .75em;
+	font-weight: 500;
+	line-height: 1;
+	color: #1b378f;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: baseline;
+	border-radius: .25rem;
+	border: 1px solid #1b378f;
+	background:white !important;
+	text-transform: none !important;
+}
+
+.btn-primary-custom{
+	display: inline-block;
+	padding: .35em .65em;
+	font-size: 1rem;
+	font-weight: 500;
+	line-height: 1;
+	color: #212529;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: baseline;
+	border-radius: .25rem;
+	border: 1px solid #212529;
+	background:white !important;
+	text-transform: none !important;
+}
+
+.hover-box {
+	position: relative;
+	display: inline-block;
+}
+
+.hover-box .hover-btn {
+	display: none;
+}
+
+.hover-box:hover .text {
+	display: none;
+}
+
+.hover-box:hover .hover-btn {
+	display: inline-block;
+}

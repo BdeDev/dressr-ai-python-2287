@@ -8,7 +8,6 @@ function GetGraphData(){
         },
         success: function (data) {
             Highcharts.chart("chart-container", data['users']);
-            Highcharts.chart('chart-container-pie', data['pie_chart']);
             $('#selected_year').text(data['selected_year']);
             $('#selected_month').text(data['month_name']);
             $("#years option[value='"+data['selected_year']+"']").attr("selected","selected");
@@ -39,8 +38,7 @@ function GetGraphDataAffiliate(){
             'year': $('#years').val(),
         },
         success: function (data) {
-            Highcharts.chart("chart-container", data['users']);
-            Highcharts.chart('chart-container-pie', data['pie_chart']);
+            Highcharts.chart("affiliate-chart-container", data['users']);
             $('#selected_year').text(data['selected_year']);
             $('#selected_month').text(data['month_name']);
             $("#years option[value='"+data['selected_year']+"']").attr("selected","selected");
