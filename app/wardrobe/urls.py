@@ -84,7 +84,6 @@ urlpatterns = [
 
     re_path(r'^add-trip-api/$', AddTripAPI.as_view(), name='add_trip_api'),
     re_path(r'^edit-trip-api/$', EditTripDetailAPI.as_view(), name='edit_trip_api'),
-    re_path(r'^item-recommendation-for-trip-api/$', OutfitRecommendationAPI.as_view(), name='item_recommendation_for_trip_api'),
     re_path(r'^get-trip-list-api/$', GetMyAllTripAPI.as_view(), name='get_trip_list_api'),
     re_path(r'^get-trip-api/$', GetMyTripOutfitsAPI.as_view(), name='get_trip_api'),
     re_path(r'^delete-trip-api/$', DeleteTripAPI.as_view(), name='delete_trip_api'),
@@ -94,6 +93,7 @@ urlpatterns = [
     re_path(r'^view-wardrobe/(?P<id>[-\w]+)/$', WardrobeView.as_view(), name='view_wardrobe'),
     re_path(r'^view-item-details/(?P<id>[-\w]+)/$', ViewItemDetails.as_view(), name='view_item_detais'),
     re_path(r'^item-details-ajax/$', WardrobeItemsDetails.as_view(), name='wardrobe_item_details'),
+    re_path(r'^wardrobe-item-list/(?P<id>[-\w]+)/$', ViewItemList.as_view(), name='wardrobe_item_list'),
     
     ##-----------------------------------Item Wear Logs----------------------------########
     re_path(r'^wear-log-api/$', WearLogAPI.as_view(), name='wear_log_api'),

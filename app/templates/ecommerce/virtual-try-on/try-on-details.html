@@ -52,7 +52,7 @@
                                     </h6>
                                 </li>
                                 <li>
-                                    <h4> Sigmentation Type</h4>
+                                    <h4>Sigmentation Type</h4>
                                     <h6>
                                         {% if virtual_try_on.sigmentation_type == 0 %}
                                             <span class="badge bg-success">UPPER BODY</span>
@@ -66,7 +66,7 @@
                                 </li>
 
                                 <li>
-                                    <h4> Status</h4>
+                                    <h4>Status</h4>
                                     <h6>
                                         {% if virtual_try_on.status == 1 %}
                                             <span class="badge bg-primary">PENDING</span>
@@ -181,7 +181,7 @@
                                                             {% if ratings %}
                                                                 {% for rating in ratings %}
                                                                 <tr>
-                                                                    <td>{{rating.user.full_name|default:'-'}}</td>
+                                                                    <td>{{rating.user.full_name|capfirst|default:'-'}}</td>
                                                                     <td>{{rating.rating|default:'-'}}</td>
                                                                     <td>{{rating.comment|default:'-'}}</td>
                                                                     <td>
@@ -199,14 +199,9 @@
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                {% if ratings|length > 10 %}
-                                                <div class='text-left mt-2' >
-                                                    <a class='btn btn-primary' href="{% url 'accounts:login_history' %}">View More <i class="fas fa-angle-double-right ms-2"></i></a>
-                                                </div>
-                                                {% endif %}
-                                                {% comment %} <!-- pagination-->
-                                                {% include "admin-includes/pagination.html" with listing_objects=loginhistory %}
-                                                <!-- pagination end--> {% endcomment %}
+                                                <!-- pagination-->
+                                                {% include "admin-includes/pagination.html" with listing_objects=ratings %}
+                                                <!-- pagination end-->
                                             </div>
                                         </div>
                                     </div>

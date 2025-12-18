@@ -66,55 +66,16 @@ class UserGraph(View):
             for key in data.keys():
                 if isinstance(data[key], list):
                     data[key] = [counts[key].get(day, 0) for day in days]
-
         else:
             months = range(1, 13)
             data["data"] = [calendar.month_abbr[m] for m in months]
-
             counts = get_counts(base_qs, "month")
-
             for key in ["customers_count", "active_customers_count", "inactive_customers_count", "deleted_customers_count"]:
                 data[key] = [counts[key].get(month, 0) for month in months]
 
         # Chart Y-Axis max
         max_count = max(data["customers_count"] or [0])
         y_max = max(max_count + 10, 5)
-
-        total_customers = User.objects.filter(role_id=CUSTOMER).count()
-
-        free_subscribers = UserPlanPurchased.objects.filter(
-            status=USER_PLAN_ACTIVE,
-            subscription_plan__is_free_plan=True
-        ).values_list("purchased_by", flat=True).distinct().count()
-
-        premium_subscribers = UserPlanPurchased.objects.filter(
-            status=USER_PLAN_ACTIVE,
-            subscription_plan__is_free_plan=False
-        ).values_list("purchased_by", flat=True).distinct().count()
-
-        total_subscribers = free_subscribers + premium_subscribers
-
-        pie_chart = {
-            "chart": {"type": "pie"},
-            "title": {"text": "Subscribers Overview"},
-            "colors": ["#0d6efd", "#198754"],
-            "series": [
-                {
-                    "name": "Subscribers",
-                    "data": [
-                        {
-                            "name": f"Free Subscribers ({(free_subscribers / total_subscribers * 100) if total_subscribers else 0:.1f}%)",
-                            "y": free_subscribers,
-                        },
-                        {
-                            "name": f"Premium Subscribers ({(premium_subscribers / total_subscribers * 100) if total_subscribers else 0:.1f}%)",
-                            "y": premium_subscribers,
-                        },
-                    ],
-                }
-            ],
-        }
-
 
         chart = {
             'title': {'text': ''},
@@ -135,6 +96,5 @@ class UserGraph(View):
 
         return JsonResponse({
             "users": chart,
-            "pie_chart": pie_chart,
             "selected_year": selected_year
         })

@@ -673,7 +673,7 @@ class UserFeedBackList(View):
         item_id = ClothingItem.objects.get(id = self.kwargs.get('id'))
         ratings = Rating.objects.filter(item=item_id).order_by('-created_on')
         return render(request, 'ecommerce/user-rating/user-rating-list.html',{
-            "head_title":'Feedback Management',
+            "head_title":'Wardrobe Management',
             "item_id":item_id,
             "ratings":get_pagination(request,ratings),
             "scroll_required":True if request.GET else False,
@@ -731,40 +731,15 @@ class SyncTryOnData(View):
             except Exception as e:
                 return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
             if virtual_try_on.order_id:
-                avatar_result = None
                 order_status = check_lightx_order_status(virtual_try_on.order_id)
-                try:
-                    if order_status['data']['status'] == 'FAIL':
-                        messages.error(request,order_status['data']['message'])
-                        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-                except:
-                    pass
-                if order_status['data']['body']['status'] == 'failed':
-                    virtual_try_on.status = TRY_ON_PROCESSING
-                    virtual_try_on.error_message = order_status['data']['statusCode']
-                    virtual_try_on.save()
-                    messages.error(request,order_status['data']['message'])
-                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        
-                body = order_status["data"]["body"]
-                status_data = body.get("status")
-                output = body.get("output")
 
-                if output and status_data in ["active", "success"]:
-                    avatar_result = order_status
-                    break
-
-                if status_data in ["failed", "error"]:
+                if order_status["data"]["body"]["output"] is None:
                     virtual_try_on.status = TRY_ON_FAILED
                     virtual_try_on.save()
                     messages.error(request,'Virtual try on generation failed')
                     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-                if not avatar_result:
-                    messages.error(request,'Virtual try on still processing. Try again later.')
-                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-                image_url = avatar_result["data"]["body"]["output"]
+                image_url = order_status["data"]["body"]["output"]
                 img_response = requests.get(image_url)
                 if img_response.status_code != 200:
                     messages.error(request,'Failed to download virtual try on image')
@@ -841,3 +816,16 @@ class SyncVirtualTryOnOutput(View):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
+class FavouriteItemList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        wardrobe_id = Wardrobe.objects.get(id = self.kwargs.get('id'))
+        items = ClothingItem.objects.filter(wardrobe = wardrobe_id).order_by('-created_on')
+        favourite_items = wardrobe_id.user.favourite_item.all()
+        return render(request,'wardrobe/wardrobs/favourite-item-list.html',{
+            "head_title":'Wardrobe Management',
+            "wardrobe":wardrobe_id,
+            "items":items,
+            "favourite_items":get_pagination(request,favourite_items),
+
+        })

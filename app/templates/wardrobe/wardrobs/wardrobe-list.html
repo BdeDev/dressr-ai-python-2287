@@ -28,8 +28,8 @@
 								<thead>
 									<tr>
                                         <th><strong>User Name</strong></th>
-										<th><strong>Name</strong></th>
-										<th><strong>Is Shared</strong></th>
+										<th><strong>Total Items</strong></th>
+										<th><strong>Favourite Items Count ( <i class="fa fa-heart text-danger"></i> )</strong></th>
 										<th><strong>Created On</strong></th>
 										<th><strong>Actions </strong></th>
 									</tr>
@@ -37,14 +37,8 @@
 								<thead>
 									<tr class="search-row">
                                         <td><input type="text" value="{{search_filters.user}}" class="form-control" name="user" maxlength="20"></td>
-										<td><input type="text" value="{{search_filters.name}}" class="form-control" name="name" maxlength="20"></td>
-										<td>
-											<select class="form-control" name="is_shared" onchange="this.form.submit()">
-												<option  value=""></option>
-												<option {% if search_filters.is_shared == '0' %} selected {% endif %} value="0">No</option>
-												<option {% if search_filters.is_shared == '1' %} selected {% endif %} value="1">Yes</option>
-											</select>
-										</td>
+										<td><input readonly type="text" value="{{search_filters.name}}" class="form-control" name="name" maxlength="20"></td>
+										<td><input readonly type="text" value="{{search_filters.name}}" class="form-control" name="name" maxlength="20"></td>
 										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
 									</tr>
@@ -54,15 +48,14 @@
 										{% for wardrob in wardrobs %}
 										<tr>
                                             <td class='clickable-row' data-href="{% url 'wardrobe:view_wardrobe' wardrob.id %}"> {{wardrob.user.full_name|capfirst|default:"-"}}</td>
-											<td class='clickable-row' data-href="{% url 'wardrobe:view_wardrobe' wardrob.id %}"> {{wardrob.name|default:"-"}}</td>
+											<td class='clickable-row' data-href="{% url 'wardrobe:view_wardrobe' wardrob.id %}"> {{wardrob.items.all.count}}</td>
 											<td class='clickable-row' data-href="{% url 'wardrobe:view_wardrobe' wardrob.id %}">
-												{% if discount.is_shared %}
-													<span class="badge bg-success">Yes</span>
+												{% if wardrob.user.favourite_item.all.count == 0 %}
+												<i class="fa fa-heart not-favourite"></i> {{wardrob.user.favourite_item.all.count}}
 												{% else %}
-													<span class="badge bg-warning">No</span>
+											    <i class="fa fa-heart text-danger"></i>  {{wardrob.user.favourite_item.all.count}}
 												{% endif %}
 											</td>
-											
 											<td class='clickable-row' data-href="{% url 'wardrobe:view_wardrobe' wardrob.id %}">
 												<script>
 													var date = ConvertDateTime("{{ wardrob.created_on|date:'Y-m-d' }}", "{{ wardrob.created_on|time:'H:i' }}");

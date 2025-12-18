@@ -7,9 +7,7 @@ from .views_exports import *
 admin.autodiscover()
 app_name = 'users'
 
-
 urlpatterns = [
-
     ## Users
     re_path(r'^view-profile/(?P<id>[-\w]+)/$',ViewUser.as_view(), name='view_user'),
     re_path(r'^delete-users/(?P<id>[-\w]+)/$',DeleteUsers.as_view(), name='delete_users'),
