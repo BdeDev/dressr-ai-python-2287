@@ -8,10 +8,12 @@ class ClothItemSerializer(ModelSerializer):
     cloth_category = SerializerMethodField()
     is_favourite = SerializerMethodField()
     feedback = SerializerMethodField()
+    thumbnail = SerializerMethodField()
+    image = SerializerMethodField()
     
     class Meta:
         model = ClothingItem
-        fields = ['id','title','wardrobe','image','cloth_category','occasion',
+        fields = ['id','title','wardrobe','image','cloth_category','occasion','thumbnail',
                   'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','is_favourite','feedback']
 
     def get_cloth_category(self,obj):
@@ -26,6 +28,25 @@ class ClothItemSerializer(ModelSerializer):
         if not feedback.exists():
             return None
         return RatingSerializer(feedback, many=True,context=self.context).data
+    
+    def get_thumbnail(self, obj):
+        try:
+            url=self.context.get('request').build_absolute_uri(obj.thumbnail.url)  
+            if url:
+                url=url.split('://')[1]
+            return  'https://'+url if USE_HTTPS else 'http://' + url 
+        except:
+            return None
+        
+
+    def get_image(self, obj):
+        try:
+            url=self.context.get('request').build_absolute_uri(obj.image.url)  
+            if url:
+                url=url.split('://')[1]
+            return  'https://'+url if USE_HTTPS else 'http://' + url 
+        except:
+            return None
 
 
 class WardrobeSerializer(ModelSerializer):
@@ -65,25 +86,43 @@ class MyOutFitSerializer(ModelSerializer):
     items = SerializerMethodField(read_only=True)
     is_favourite = SerializerMethodField()
     feedback = SerializerMethodField()
+    image = SerializerMethodField()
 
     class Meta:
         model = Outfit
         fields = ['id','title','items','occasion','weather_type','created_by','color','notes','image','is_favourite','feedback']
 
     def get_items(self, obj):
-        items = obj.items.all()
-        return [
-            {
+        request = self.context.get('request')
+        items = obj.items.select_related('cloth_category')
+
+        result = []
+
+        for item in items:
+            image = None
+            if item.image:
+                url = request.build_absolute_uri(item.image.url)
+                url = url.split('://')[1]
+                image = 'https://'+url if USE_HTTPS else 'http://' + url 
+
+            result.append({
                 "id": item.id,
                 "title": item.title,
-                "image": self.context.get('request').build_absolute_uri(item.image.url) if USE_HTTPS else self.context.get('request').build_absolute_uri(item.image.url),
-                "category_title": item.cloth_category.title
-            }
-            for item in items
-        ]
+                "image": image,
+                "category_title": item.cloth_category.title if item.cloth_category else None
+            })
+
+        return result
 
     def get_image(self,obj):
-        return  self.context.get('request').build_absolute_uri(obj.image.url) if USE_HTTPS else self.context.get('request').build_absolute_uri(obj.image.url),
+        try:
+            url=self.context.get('request').build_absolute_uri(obj.image.url)  
+            if url:
+                url=url.split('://')[1]
+            return  'https://'+url if USE_HTTPS else 'http://' + url 
+        except:
+            return None
+      
 
     def get_is_favourite(self, obj):
         user = self.context.get("request").user
@@ -106,15 +145,22 @@ class TripsSerializer(ModelSerializer):
 
     def get_outfit(self, obj):
         request = self.context.get("request")
+        result = []
+        for trip_outfit in obj.outfit.all():
+            image = None
+            if trip_outfit.image:
+                url = request.build_absolute_uri(trip_outfit.image.url)
+                url = url.split('://')[1]
+                image = 'https://'+url if USE_HTTPS else 'http://' + url 
 
-        return [
-            {
+            result.append({
                 "id": trip_outfit.id,
                 "title": trip_outfit.title,
-                "image": request.build_absolute_uri(trip_outfit.image.url) if trip_outfit.image else None
-            }
-            for trip_outfit in obj.outfit.all()
-        ]
+                "image": image
+            })
+
+        return result
+
 
     def get_activity_flag(self,obj):
 
@@ -133,6 +179,7 @@ class ActivityFlagSerializer(ModelSerializer):
         model = ActivityFlag
         fields = ('__all__')
 
+
 class WearHistorySerializer(ModelSerializer):
     item = SerializerMethodField(read_only=True)
     class Meta:
@@ -140,11 +187,15 @@ class WearHistorySerializer(ModelSerializer):
         fields = ('__all__')
 
     def get_item(self, obj):
-        request = self.context.get("request")
+        url=self.context.get('request').build_absolute_uri(obj.item.image.url)  
+        if url:
+            url=url.split('://')[1]
+        image = 'https://'+url if USE_HTTPS else 'http://' + url 
+
         return {
                 "id": obj.item.id,
                 "title": obj.item.title,
-                "image": request.build_absolute_uri(obj.item.image.url) if USE_HTTPS else request.build_absolute_uri(obj.item.image.url),
+                "image": image,
                 "category_title": obj.item.cloth_category.title,
                 "brand":obj.item.brand
             }
@@ -158,14 +209,20 @@ class RecentSearchSerializer(ModelSerializer):
 
 class ItemUsageFrequencySerializer(ModelSerializer):
     is_favourite = SerializerMethodField()
+    image = SerializerMethodField()
 
     class Meta:
         model = ClothingItem
         fields = ['id','title','wardrobe','image','cloth_category','occasion', 'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','is_favourite']
 
     def get_image(self, obj):
-        request = self.context.get("request")
-        return request.build_absolute_uri(obj.image.url) if USE_HTTPS else request.build_absolute_uri(obj.image.url),
+        try:
+            url=self.context.get('request').build_absolute_uri(obj.image.url)  
+            if url:
+                url=url.split('://')[1]
+            return  'https://'+url if USE_HTTPS else 'http://' + url 
+        except:
+            return None
 
     def get_is_favourite(self, obj):
         user = self.context.get("request").user

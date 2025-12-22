@@ -2,6 +2,9 @@ import uuid
 from django.db import models
 from accounts.common_imports import *
 from accounts.models import CommonInfo,User
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 class Wardrobe(CommonInfo):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wardrobes",blank=True,null=True)
@@ -47,7 +50,8 @@ class Accessory(CommonInfo):
 class ClothingItem(CommonInfo):
     title = models.CharField(max_length=200,blank=True, null=True)
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="items",blank=True, null=True)
-    image = models.FileField(upload_to="wardrobe/items/",blank=True, null=True)
+    image = models.ImageField(upload_to="wardrobe/items/",blank=True, null=True)
+    thumbnail = models.ImageField(upload_to="wardrobe/items/thumbnails/", blank=True, null=True)
     cloth_category = models.ForeignKey(ClothCategory,on_delete=models.SET_NULL, null=True,blank=True)
     occasion = models.ForeignKey(Occasion,on_delete=models.SET_NULL, null=True,blank=True)
     accessory = models.ForeignKey(Accessory,on_delete=models.SET_NULL,null=True,blank=True)
@@ -69,6 +73,25 @@ class ClothingItem(CommonInfo):
         if self.price and self.wear_count > 0:
             return round(self.price / self.wear_count, 2)
         return None
+    
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image and not self.thumbnail:
+            img = Image.open(self.image)
+            img = img.convert("RGB")
+            img.thumbnail((300, 300))
+
+            thumb_io = BytesIO()
+            img.save(thumb_io, format='JPEG', quality=70)
+
+            thumb_name = self.image.name.split('/')[-1]
+            self.thumbnail.save(
+                f"thumb_{thumb_name}",
+                ContentFile(thumb_io.getvalue()),
+                save=False
+            )
+            super().save(update_fields=['thumbnail'])
 
 class Outfit(CommonInfo):
     title = models.CharField(max_length=200,blank=True, null=True)

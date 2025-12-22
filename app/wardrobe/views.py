@@ -380,8 +380,6 @@ class DeleteOutfit(View):
         outfit = Outfit.objects.get(id=self.kwargs['id']).delete()
         messages.success(request,'Outfit Deleted Successfully!')
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-    
-
 
 class HairColorList(View):
     @method_decorator(admin_only)

@@ -1236,7 +1236,6 @@ class CreateVirtualTryOnAPI(APIView):
                 {"field_name": "garment_image", "method": "post", "error_message": "Please upload garment image"},
             ]
         )
-
         user = request.user
         garment_image_url = request.data.get("garment_image")
         file_name = os.path.basename(urlparse(garment_image_url).path)
