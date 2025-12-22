@@ -412,18 +412,18 @@ class BannersList(View):
                 return redirect('accounts:banners_list')
             if request.POST.get('title'):
                 banner.title = request.POST.get('title').strip()
-            if request.FILES.get('image'):
-                banner.image = request.FILES.get('image')
+            if request.FILES.get('media'):
+                banner.image = request.FILES.get('media')
             banner.save()
             messages.success(request, "Banner updated successfully!")
         else:
             if Banners.objects.filter(title=request.POST.get('title')).exists():
                 messages.error(request, "Banner already exists!")
                 return redirect('accounts:banners_list')
-            if request.FILES.get('image'):
+            if request.FILES.get('media'):
                 Banners.objects.create(
                     title = request.POST.get('title'),
-                    image = request.FILES.get('image',None),
+                    image = request.FILES.get('media',None),
                     is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
                 )
                 messages.success(request, "Banner added successfully!")

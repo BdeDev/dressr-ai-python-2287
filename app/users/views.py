@@ -272,6 +272,26 @@ class EditAffiliate(View):
         user.save()
         messages.success(request, 'Profile updated successfully.')
         return redirect('users:view_user', id=user.id)
+    
+
+class DeleteAffiliate(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        user = User.objects.get(id=self.kwargs['id'])
+        if request.user == user:
+            return render(request, 'frontend/restrict.html')
+        
+        user.status = DELETED
+        Token.objects.filter(user=user).delete()
+        if user.username:
+            user.username = user.username + str(user.id)
+        user.save()
+
+        messages.success(request,'Affiliate deleted successfully!')
+        bulk_send_user_email(request, user, 'EmailTemplates/AccountStatus.html', 'Account Deleted', user.email, "", "Your account has been deleted. Please contact admin to activate your account.", 'Account Deleted', "",assign_to_celery=False)
+        return redirect('users:view_user',id=user.id)
+    
+
 
 class UpdateAffiliateCommission(View):
     @method_decorator(admin_only)

@@ -13,13 +13,12 @@ $("#add-banners").validate({
 			required: "Please Enter Name",
 			},
 
-		image: {
-			required: "Please upload image",
-            accept: "jpg,png,jpeg",
+		media: {
+			required: "Please upload media",
+            accept: "jpg,png,jpeg,mp4",
 			},
 		},
 	});  
-
 
 $("#edit-banners").validate({
 	ignore: [],
@@ -36,9 +35,9 @@ $("#edit-banners").validate({
 			required: "Please Enter Name",
 			},
 
-		image: {
-			required: "Please upload image",
-            accept: "Please upload file in these format only (jpg, jpeg, png)"
+		media: {
+			required: "Please upload media",
+            accept: "Please upload file in these format only (jpg, jpeg, png,mp4)"
 			},
 		},
 })

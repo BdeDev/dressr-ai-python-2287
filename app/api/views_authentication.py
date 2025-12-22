@@ -1212,6 +1212,9 @@ class CreateUserAvatarAPI(APIView):
         serialized_data = UserSerializer(user, context={"request": request}).data
         return Response({"message": "Avatar created successfully!", "data": serialized_data, "status": 200},status=200)
 
+import os
+from urllib.parse import urlparse
+
 class CreateVirtualTryOnAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser, FormParser]
@@ -1236,6 +1239,8 @@ class CreateVirtualTryOnAPI(APIView):
 
         user = request.user
         garment_image_url = request.data.get("garment_image")
+        file_name = os.path.basename(urlparse(garment_image_url).path)
+        file_name_without_ext = os.path.splitext(file_name)[0]
         try:
             img_response = requests.get(garment_image_url)
             img_response.raise_for_status()
@@ -1246,16 +1251,14 @@ class CreateVirtualTryOnAPI(APIView):
         if not file_ext:
             file_ext = ".jpg"
 
-        file_name = f"garment_{uuid.uuid4()}{file_ext}"
-        garment_file = ContentFile(img_response.content, name=file_name)
+        garment_file = ContentFile(img_response.content, name=file_name_without_ext)
         sig_type = int(request.data.get("sigment_type"))
         avatar_url = request.build_absolute_uri(user.user_image.url)
-        existing_tryon = VirtualTryOn.objects.filter(user=user,sigmentation_type=sig_type,garment_image__icontains=garment_file.name,source_image=user.user_image).first()
+        existing_tryon = VirtualTryOn.objects.filter(user=user,sigmentation_type=sig_type,garment_image__icontains=file_name).last()
 
         if existing_tryon and existing_tryon.output_image:
             serialized_data = VirtualTryOnSerializer(existing_tryon, context={"request": request}).data
-            return Response({"message": "Existing Virtual Try On Found!","data": serialized_data,"status": 200}, status=200)
-        
+            return Response({"message": "Virtual Try On Generated Successfully!","data": serialized_data,"status": 200}, status=200)
         response = urlopen(avatar_url)
         image_bytes = response.read()
         source_image_file = ContentFile(image_bytes, name=f"{user.id}_source.png")
@@ -1268,14 +1271,12 @@ class CreateVirtualTryOnAPI(APIView):
         virtual_try_on.garment_url = garment_image_url
         virtual_try_on.garment_image.save(file_name, garment_file)
         virtual_try_on.save()
-
         start_time  = time.time()
         result = lightx_virtual_tryon(avatar_url, garment_image_url, sig_type)
         if result['success'] == True :
             virtual_try_on.response_payload = result['data']
         else:
             virtual_try_on.response_payload = result['error']
-
         try:
             if result['data']['status'] == 'FAIL':
                 return Response({"message": result['data']['message'], "error": result['data']['statusCode']}, status=400)
@@ -1512,3 +1513,18 @@ class CreateAIOutFitAPI(APIView):
         return Response({"status": 200,"message": "Outfit Generated Successfully!","data": serialized}, status=200)
 
 
+class VirtualTryOnListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser, FormParser]
+
+    @swagger_auto_schema(
+        tags=["Virtual Try On Management"],
+        operation_id="Get Virtual Try On List",
+        operation_description="Get Virtual Try On List",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        virtual_try_on = VirtualTryOn.objects.filter(user=request.user)
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None),virtual_try_on)
+        data = VirtualTryOnSerializer(virtual_try_on[start : end],many=True,context={"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)

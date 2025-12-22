@@ -91,7 +91,6 @@
                     {% include "admin-includes/showing_objects.html" with listing_objects=ratings %}
                     <!-- showing_objects end-->
                 </div>
-                {% if ratings %}
                 <ul class="activity-list">
                     {% for rating in ratings %}
                     <li class="d-flex">
@@ -103,45 +102,41 @@
                             {% endif %}
                         </div>
                         <div class="activity-content">
-                            <div class="timeline-content">
-                                <span class=" d-flex" style="flex-direction: column;">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            {% for i in "12345" %}
-                                                {% if forloop.counter <= rating.rating %}
-                                                    <i class="fa fa-star" style="color: #FFD700;"></i>   <!-- Filled star -->
-                                                {% else %}
-                                                    <i class="fa fa-star" style="color: #b8b3b3ff;"></i>   <!-- Empty star -->
-                                                {% endif %}
-                                            {% endfor %}
-                                        </div>
-                                        <div class="activity-right-content d-flex gap-2">
-                                            <span ><a style="color:#1b378f;" href="{% url "users:view_user" rating.user.id %}">{{ rating.user.full_name|capfirst }}</a></span>
-                                            <span>| 
-                                               {{ rating.created_on|naturaltime }}
-                                            </span>
-                                        </div>
+                            <span class=" d-flex" style="flex-direction: column;">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= rating.rating %}
+                                                <i class="fa fa-star" style="color: #FFD700;"></i>   <!-- Filled star -->
+                                            {% else %}
+                                                <i class="fa fa-star" style="color: #b8b3b3ff;"></i>   <!-- Empty star -->
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
-                                    <div class="description">
-                                        <p style="margin-bottom:0 !important">{{rating.comment|safe}}</p>
+                                    <div class="activity-right-content d-flex gap-2">
+                                        <span ><a style="color:#1b378f;" href="{% url "users:view_user" rating.user.id %}">{{ rating.user.full_name|capfirst }}</a></span>
+                                        <span>| 
+                                            {{ rating.created_on|naturaltime }}
+                                        </span>
                                     </div>
-                                </span>
-                                
-                            </div>
+                                </div>
+                                <div class="description">
+                                    <p style="margin-bottom:0 !important">{{rating.comment|safe}}</p>
+                                </div>
+                            </span>
                         </div>
                     </li>
+                    {% empty %}
+                    <ul class="activity-list">
+                        <li class="no-activity">
+                            <div class="activity-content">No Data Found</div>
+                        </li>
+                    </ul>
                     {% endfor %}
                 </ul>
                 <!-- pagination-->
                 {% include "admin-includes/pagination.html" with listing_objects=ratings %}
                 <!-- pagination end-->
-                {% else %}
-                <ul class="activity-list">
-                    <li class="no-activity">
-                        <div class="activity-content">No Data Found</div>
-                    </li>
-                </ul>
-                {% endif %}
             </div>
         </div>
     </div>

@@ -148,6 +148,7 @@ class PluchasedPlanList(View):
                 "plan_id__icontains":"plan_id",
                 "final_amount":"final_amount",
                 "status":"status",
+                "subscription_plan__is_free_plan":"is_free_plan",
                 "created_on__date":"created_on",
                 "purchased_by_id":"to_user"
             }

@@ -204,3 +204,8 @@ SIGMENT_TYPE = ((0,"Upper Body"),(1,"Lower Body"),(2,"Full Body"))
 UPPER_BODY = 0
 LOWER_BODY = 1
 FULL_BODY = 2
+
+INTEGRATION_TYPE = ((1,"API"),(2,"FEED"),(3,"MANUAL"))
+API = 1
+FEED = 2
+MANUAL = 3

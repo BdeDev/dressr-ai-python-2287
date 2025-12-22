@@ -83,9 +83,11 @@
                                                 <i class="fa fa-heart not-favourite"></i>  {{favourite_items}}
                                             </span>
                                             {% endif %}
+                                            {% if favourite_items > 0 %}
                                             <a href="{% url 'ecommerce:wardrobe_favourite_items'  wardrobe.id %}">
                                                 <span class="badge bg-success-custom"><i class="fa fa-eye me-1"></i>View</span>
                                             </a>
+                                            {% endif %}
                                         </div>
                                     </h6>
                                 </li>
@@ -144,7 +146,9 @@
             <div class="row gap-3">
                 <div class="card-body" id="card_body_div">
                     <div class="swiper mySwiper">
+                        {% if wardrobe.items.count > 4  %}
                         <div class="text-end mb-2"><a href="{% url 'wardrobe:wardrobe_item_list' wardrobe.id %}" class="btn btn-primary-custom">View All<a></div>
+                        {% endif %}
                         <div class="swiper-wrapper">
                             {% for item in cloth_items %}
                                 {% is_favourite item.wardrobe.user item as item_is_favourite %}
@@ -167,7 +171,6 @@
                                             <div class="d-flex justify-content-between">
                                                 <div class="hover-box">
                                                     <span class="text">{{ item.title|capfirst|default:"-" }}</span>
-
                                                     <button class="btn hover-btn" style="padding:0 !important; font-size:.8rem !important">
                                                         <span class="badge bg-success-custom">
                                                             <i class="fa fa-eye me-1"></i> View
@@ -180,7 +183,7 @@
                                             <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
                                                 <small>
                                                     <a href="{% url 'ecommerce:feedback_list' item.id %}">
-                                                        <span class="badge bg-success-custom"><i class="fa fa-eye me-1"></i>View Feedback: {{item.rating_set.count}}</span>
+                                                        <span class="badge bg-success-custom">{% if item.rating_set.count > 0  %} <i class="fa fa-eye me-1"></i>View Feedback: {% else %} Feedback: {% endif %}{{item.rating_set.count}}</span>
                                                     </a>
                                                 </small>
                                             </div>

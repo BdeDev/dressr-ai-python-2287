@@ -132,7 +132,7 @@
 									<tr>
 										<th>Full Name</th>
 										<th>Email</th>
-										<th>Mobile Number</th>
+										<th>Username</th>
 										<th>Created on</th>
 										<th>Status </th>
 										<th>Actions</th>
@@ -142,7 +142,7 @@
 									<tr class="search-row">
 										<td><input type="text" value="{{request.GET.full_name}}" class="form-control" name="full_name" maxlength="20"></td>
 										<td><input type="text" value="{{request.GET.email}}" class="form-control" name="email" maxlength="40"></td>
-										<td><input type="text" value="{{request.GET.mobile_no}}" onkeypress="return /[0-9+\Enter]/i.test(event.key)" class="form-control" name="mobile_no" maxlength="20"></td>
+										<td><input type="text" value="{{request.GET.username}}" class="form-control" name="username" maxlength="50"></td>
 										<td><input type="date" onkeydown="return false" value="{{request.GET.created_on}}" class="position-relative form-control" name="created_on" onchange="this.form.submit()"></td>
 										<td>
 											<select class="form-control" name="status" onchange="this.form.submit()">
@@ -182,7 +182,7 @@
 												{% if user.email %}{{ user.email }}{% else %}-{% endif %}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
-												{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %} {{ user.mobile_no }}{% else %}-{% endif %}
+												{{ user.username|default:"-" }}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
 												<span class="w-space-no">
@@ -227,5 +227,5 @@
 {% include "admin-includes/footer.html" %}
 <script src="{% static 'admin-assets/js/customized-js/graph.js' %}"></script>
 <script>
-    GetGraphData() // user graph
+    GetGraphData(); // user graph
 </script>

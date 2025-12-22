@@ -57,10 +57,25 @@ class BannersListAPI(APIView):
         ],
     )
     def get(self, request, *args, **kwargs):
-        banners = Banners.objects.filter(is_active = True)
-        start, end, meta_data = get_pages_data(request.query_params.get('page'), banners)
-        data = BannerSerializer(banners[start:end],many=True,context={"request": request}).data
-        return Response({"data": data, "meta": meta_data, "status": status.HTTP_200_OK},status=status.HTTP_200_OK)
+
+        image_banners = Banners.objects.filter(is_active=True).exclude(
+            Q(image__iendswith='.mp4') |
+            Q(image__iendswith='.webm') |
+            Q(image__iendswith='.mov') |
+            Q(image__iendswith='.avi')
+        )
+
+        video_banners = Banners.objects.filter(is_active=True).filter(
+            Q(image__iendswith='.mp4') |
+            Q(image__iendswith='.webm') |
+            Q(image__iendswith='.mov') |
+            Q(image__iendswith='.avi')
+        )
+
+        start, end, meta_data = get_pages_data(request.query_params.get('page'),image_banners)
+        image_data = BannerSerializer(image_banners[start:end], many=True, context={"request": request}).data
+        video_data = BannerSerializer(video_banners, many=True, context={"request": request}).data
+        return Response({"data": {"images": image_data,"videos": video_data,},"meta": meta_data,"status": status.HTTP_200_OK},status=status.HTTP_200_OK)
     
 class PartnerStoresAPI(APIView):
     permission_classes = (permissions.AllowAny,)

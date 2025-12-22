@@ -9,6 +9,7 @@ class FashionTipSerializer(ModelSerializer):
         fields = ('__all__')
 
 class BannerSerializer(ModelSerializer):
+    
     class Meta:
         model = Banners
         fields = ('__all__')
