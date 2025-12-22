@@ -4,6 +4,7 @@ from .serializer import *
 from .healper import *
 from accounts.management.commands.default_data import ACTIVITY_ITEM_MAP
 
+
 class GetWardrobeAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
@@ -121,103 +122,106 @@ class AddItemInWardrobeAPI(APIView):
 class AddMultipleItemInWardrobeAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
-
+    
     @swagger_auto_schema(
         tags=["WarDrobe management"],
         operation_id="Add Multiple Item in Wardrobe",
         operation_description="Add Multiple Item in Wardrobe",
         manual_parameters=[
-            openapi.Parameter(
-                'items',
-                openapi.IN_FORM,
-                type=openapi.TYPE_STRING,
-                description='Example: '
-                            '[{"title":"White Shirt","category_id":"...","image_key":0},'
-                            '{"title":"Black Jeans","category_id":"...","image_key":1}]'
-            ),
             openapi.Parameter('images',openapi.IN_FORM,type=openapi.TYPE_ARRAY,items=openapi.Items(type=openapi.TYPE_FILE),description="Upload images in array order: image[0], image[1], ..."),
         ],
     )
     def post(self, request, *args, **kwargs):
         user = request.user
-        wardrobe = get_or_none(Wardrobe, "User wardrobe does not exist !", user=user)
-        raw_items = request.data.get("items")
-        if not raw_items:
-            return Response({"message": "Items list missing!", "status": 400}, status=400)
+        wardrobe = get_or_none(Wardrobe, "User wardrobe does not exist!", user=user)
+        if not wardrobe:
+            return Response({"message": "User wardrobe does not exist!", "status": 400}, status=400)
 
-        try:
-            items = json.loads(raw_items)
-        except:
-            return Response({"message": "Invalid JSON format for items.", "status": 400}, status=400)
+        images = request.FILES.getlist("images")
+        if not images:
+            return Response({"message": "No images uploaded.", "status": 400}, status=400)
 
-        if not isinstance(items, list) or not items:
-            return Response({"message": "Items must be a non-empty list.", "status": 400}, status=400)
-
-        incoming_count = len(items)
+        # Plan check
         wardrobe_item_count = ClothingItem.objects.filter(wardrobe=wardrobe).count()
+        purchased_plan = UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE, purchased_by=user).first()
+        if not purchased_plan or purchased_plan.expire_on <= datetime.now():
+            return Response({"message": "Your plan has expired.", "status": 400}, status=400)
 
-        # Free plan validation
-        purchased_plan = UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE,purchased_by=request.user).first()
-        if purchased_plan.expire_on <= datetime.now():
-            return Response({"message": "Your free plan has expired.", "status": 400}, status=400)
-
-        max_uploads = purchased_plan.subscription_plan.max_uploads
-        remaining = max_uploads - wardrobe_item_count
-
+        remaining = purchased_plan.subscription_plan.max_uploads - wardrobe_item_count
         if remaining <= 0:
             return Response({"message": "Upload limit reached.", "status": 400}, status=400)
-
-        if incoming_count > remaining:
+        if len(images) > remaining:
             return Response({"message": f"You can upload only {remaining} items.", "status": 400}, status=400)
-      
+
         created_items = []
-        images = request.FILES.getlist("images")
+        errors = []
 
-        for idx, item in enumerate(items):
-            category = ClothCategory.objects.filter(id=item.get("category_id")).first()
-            if not category:
-                return Response({"message": "Invalid category ID", "status": 400}, status=400)
-            occasion = None
-            if item.get("occasion_id"):
-                occasion = Occasion.objects.filter(id=item.get("occasion_id")).first()
-                if not occasion:
-                    return Response({"message": "Invalid occasion ID", "status": 400}, status=400)
+        for img_file in images:
+            ai_result = analyze_clothing_image(img_file)
                 
-            accessory = None
-            if item.get("accessory_id"):
-                accessory = Accessory.objects.filter(id=item.get("accessory_id")).first()
-                if not accessory:
-                    return Response({"message": "Invalid accessory ID", "status": 400}, status=400)
+            if not ai_result:
+                errors.append(f"AI failed for {img_file.name}")
+                continue
 
-            if int(item.get("weather_type")) not in [1, 2, 3, 4, 5]:
-                return Response({"message": "Invalid weather type", "status": 400}, status=400)
+            # If AI returns a list, take the first item
+            if isinstance(ai_result, list):
+                ai_result = ai_result[0]
 
-            image_file = None
-            image_index = item.get("image_key")
-            if image_index is not None:
-                try:
-                    image_file = images[int(image_index)]
-                except:
-                    image_file = None
+            # Normalize list-based values
+            parsed_json = normalize_ai_result(ai_result)
+
+            db_logger.info(f"------parsed_json--{parsed_json}")
+
+            # Category
+            category_name = parsed_json.get('category','Uncategorized')
+            category, _ = ClothCategory.objects.get_or_create(
+                title__iexact=category_name,
+                defaults={'title': category_name}
+            )
+
+            # Occasion
+            occasion_name = parsed_json.get('occasion')
+            occasion = None
+            if occasion_name:
+                occasion, _ = Occasion.objects.get_or_create(
+                    title__iexact=occasion_name,
+                    defaults={'title': occasion_name}
+                )
+
+            # Weather type
+            WEATHER_TYPE_MAP = {
+                "summer": 1,
+                "winter": 2,
+                "rainy": 3,
+                "spring": 4,
+                "all weather": 5,
+                "all seasons": 5
+            }
+            weather_type_str = parsed_json.get('weather_type', '').lower()
+            weather_type_id = WEATHER_TYPE_MAP.get(weather_type_str, 5)
+
+            # Color
+            color = parsed_json.get('color', 'Unknown')
+
+            # Create ClothingItem
             cloth_item = ClothingItem.objects.create(
-                title=item.get("title"),
+                title=category_name,
                 wardrobe=wardrobe,
                 cloth_category=category,
                 occasion=occasion,
-                accessory=accessory,
-                weather_type=int(item.get("weather_type")),
-                color=item.get("color"),
-                brand=item.get("brand"),
-                image=image_file,
+                color=color,
+                weather_type=weather_type_id,
+                image=img_file,
                 date_added=datetime.now()
             )
 
-            if item.get("item_url"):
-                cloth_item.item_url = item.get("item_url")
-            cloth_item.save()
             created_items.append(cloth_item.id)
 
-        return Response({"message": "Items added successfully!","created_item_ids": created_items,"status": 201}, status=201)
+        return Response({
+            "message": "Items added successfully!",
+            "created_item_ids": created_items,
+            "status": 201
+        }, status=201)
 
 class RemoveItemFromWardrobeAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]

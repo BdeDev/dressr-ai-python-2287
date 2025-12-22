@@ -15,11 +15,11 @@ class CommonInfo(models.Model):
     class Meta:
         abstract = True
 
-class Image(CommonInfo):
-    image = models.ImageField(upload_to='images/',null=True,blank=True)
-    class Meta:
-        managed = True
-        db_table = 'images'
+# class Image(CommonInfo):
+#     image = models.ImageField(upload_to='images/',null=True,blank=True)
+#     class Meta:
+#         managed = True
+#         db_table = 'images'
 
 class User(AbstractUser,CommonInfo):
     username = models.CharField(max_length=255,blank=True, null=True, unique=True)

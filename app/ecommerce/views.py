@@ -340,8 +340,8 @@ class AddDiscountAd(View):
             segment = SubscriptionPlans.objects.get(id=seg_id)
             discount_ad.target_segments.add(segment)
             
-        for img in request.FILES.getlist('image'):
-            discount_ad.image.add(Image.objects.create(image=img))
+        # for img in request.FILES.getlist('image'):
+        #     discount_ad.image.add(Image.objects.create(image=img))
 
         discount_ad.save()
         messages.success(request, "Discount ads added successfully!")
@@ -382,9 +382,9 @@ class EditDiscountAd(View):
             discount_ad.end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d')
         if request.POST.getlist('target_sigment'):
             discount_ad.target_segments.set(target_segment_ids)
-        if request.FILES.getlist('image'):
-            for img in request.FILES.getlist('image'):
-                discount_ad.image.add(Image.objects.create(image=img))
+        # if request.FILES.getlist('image'):
+        #     for img in request.FILES.getlist('image'):
+        #         discount_ad.image.add(Image.objects.create(image=img))
         discount_ad.save()
         messages.success(request, "Discount ad updated successfully!")
         return redirect('ecommerce:view_discount', discount_ad.id)

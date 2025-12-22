@@ -189,7 +189,7 @@ class PartnerStore(CommonInfo):
 class DiscountAd(CommonInfo):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    image = models.ManyToManyField(Image)
+    # image = models.ManyToManyField(Image)
     discount_code = models.CharField(max_length=50, blank=True, null=True)
     partner_store = models.ForeignKey(PartnerStore, on_delete=models.CASCADE, related_name="discount_ads")
     target_segments = models.ManyToManyField(SubscriptionPlans, blank=True, related_name="discount_ads") #'Students', 'Premium Users', 'First-time Buyers'
