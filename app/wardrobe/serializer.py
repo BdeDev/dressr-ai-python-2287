@@ -227,3 +227,34 @@ class ItemUsageFrequencySerializer(ModelSerializer):
     def get_is_favourite(self, obj):
         user = self.context.get("request").user
         return 1 if obj.favourite.filter(id=user.id).exists() else 0
+
+
+class OutfitSiggestionSerializer(ModelSerializer):
+    items = SerializerMethodField()
+    
+    class Meta:
+        model = OutfitSiggestion
+        fields = '__all__'
+
+    def get_items(self, obj):
+        request = self.context.get('request')
+        use_https = True
+
+        result = []
+        for item in obj.items.all():
+            if item.image:
+                url = request.build_absolute_uri(item.image.url)
+                if url:
+                    url = url.split('://')[1]
+                image = 'https://' + url if use_https else 'http://' + url
+            else:
+                image = None
+
+            result.append({
+                "id": item.id,
+                "title": item.title,
+                "image": image,
+                "category_title": item.cloth_category.title if item.cloth_category else None,
+                "brand": item.brand
+            })
+        return result

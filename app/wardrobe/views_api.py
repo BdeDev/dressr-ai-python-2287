@@ -163,23 +163,17 @@ class AddMultipleItemInWardrobeAPI(APIView):
                 errors.append(f"AI failed for {img_file.name}")
                 continue
 
-            # If AI returns a list, take the first item
             if isinstance(ai_result, list):
                 ai_result = ai_result[0]
 
-            # Normalize list-based values
             parsed_json = normalize_ai_result(ai_result)
 
-            db_logger.info(f"------parsed_json--{parsed_json}")
-
-            # Category
             category_name = parsed_json.get('category','Uncategorized')
             category, _ = ClothCategory.objects.get_or_create(
                 title__iexact=category_name,
                 defaults={'title': category_name}
             )
 
-            # Occasion
             occasion_name = parsed_json.get('occasion')
             occasion = None
             if occasion_name:
@@ -215,13 +209,24 @@ class AddMultipleItemInWardrobeAPI(APIView):
                 date_added=datetime.now()
             )
 
-            created_items.append(cloth_item.id)
+            # ✅ Manual response object
+            created_items.append({
+                "id": cloth_item.id,
+                "title": cloth_item.title,
+                "color": cloth_item.color,
+                "weather_type": cloth_item.weather_type
+            })
 
-        return Response({
-            "message": "Items added successfully!",
-            "created_item_ids": created_items,
-            "status": 201
-        }, status=201)
+        return Response(
+            {
+                "message": "Items added successfully!",
+                "data": created_items,
+                "errors": errors,
+                "count": len(created_items),
+                "status": status.HTTP_201_CREATED
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 class RemoveItemFromWardrobeAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
@@ -1556,3 +1561,102 @@ class GetWardrobeDetailsAPI(APIView):
             return Response({"data": data,"meta": meta_data},status=status.HTTP_200_OK)
 
         return Response({"error": "Invalid type. Allowed values: 1: Items, 2: Outfits"},status=status.HTTP_400_BAD_REQUEST)
+
+
+class TodayOutfitSuggestion(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Outfit Management'],
+        operation_id="Today Outfit Suggestion",
+        operation_description="Today Outfit Suggestion",
+        manual_parameters=[
+            openapi.Parameter('temprature', openapi.IN_FORM, type=openapi.TYPE_STRING,description="temprature"),
+            openapi.Parameter('outfit_image', openapi.IN_FORM, type=openapi.TYPE_FILE,description="outfit_image"),
+            openapi.Parameter('humidity', openapi.IN_FORM, type=openapi.TYPE_STRING,description="humidity"),
+            openapi.Parameter('condition', openapi.IN_FORM, type=openapi.TYPE_STRING,description="condition"),
+            openapi.Parameter('city', openapi.IN_FORM, type=openapi.TYPE_STRING,description="city"),
+            ],
+    )
+    def post(self, request, *args, **kwargs):
+        wardrobe = get_or_none(Wardrobe,'Wardrobe does not exist !',user=request.user)
+        wardrobe_items = ClothingItem.objects.filter(wardrobe=wardrobe)
+        city = request.data.get('city')
+        temprature = request.data.get('temprature')
+        humidity = request.data.get('humidity')
+        condition = request.data.get('condition')
+        ai_response = suggest_outfit(
+            city, temprature, humidity, condition, wardrobe_items
+        )
+
+        suggestions = ai_response.get("suggestions", [])
+
+        if not suggestions:
+            return Response(
+                {"message": "No outfit suggestions found"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        suggestions = ai_response.get("suggestions", [])
+
+        if not suggestions:
+            return Response(
+                {"message": "No suggestions generated"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        saved_outfits = []
+        for suggestion in suggestions:
+            occasion = suggestion.get("occasion")
+            explanation = suggestion.get("explanation")
+            outfit_ids = suggestion.get("outfit_ids", [])
+
+            selected_items = wardrobe_items.filter(
+                id__in=outfit_ids
+            )
+
+            outfit_obj, _ = OutfitSiggestion.objects.get_or_create(
+                user=request.user,
+                occasion=occasion
+            )
+
+            if request.FILES.get("outfit_image"):
+                outfit_obj.today_outfit = request.FILES.get("outfit_image")
+
+            outfit_obj.explanation = explanation
+            outfit_obj.items.set(selected_items)
+            outfit_obj.save()
+
+            saved_outfits.append(outfit_obj)
+
+        return Response({
+            "message": "All outfit suggestions saved successfully",
+            "outfits": OutfitSiggestionSerializer(
+                saved_outfits,
+                many=True,
+                context={"request": request}
+            ).data,
+           
+        }, status=status.HTTP_200_OK)
+        
+        
+
+class TodayOutfitSuggestionAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Outfit Management"],
+        operation_description="Today Outfit Suggestion API",
+        operation_id="Today Outfit Suggestion API",
+        manual_parameters=[],
+    )
+    def get(self, request, *args, **kwargs):
+        try:
+            today_suggestions = OutfitSiggestion.objects.filter(user=request.user)
+        except:
+            return Response({"message":'Suggestion does not exist !',"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+        start, end, meta_data = get_pages_data(request.query_params.get("page"),today_suggestions)
+        data = OutfitSiggestionSerializer(today_suggestions[start:end],many=True,context={"request": request}).data
+        return Response({"data":data,"meta_data":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)  

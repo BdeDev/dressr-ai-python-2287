@@ -1,11 +1,7 @@
 import uuid
 from .constants import *
 from django.db import models
-from django.contrib.auth.models import AbstractUser,Permission
-import environ
-
-env = environ.Env()
-environ.Env.read_env()
+from django.contrib.auth.models import AbstractUser
 
 class CommonInfo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -63,12 +59,9 @@ class User(AbstractUser,CommonInfo):
     customer_id = models.CharField(max_length=255, null=True, blank=True)
     account_id = models.CharField(max_length=255, null=True, blank=True)
 
-
     class Meta:
         db_table = 'user'
 
-    def __str__(self):
-        return str(self.first_name)
 
 class SkinTone(CommonInfo):
     title = models.CharField(max_length=50, null=True,blank=True)

@@ -156,7 +156,7 @@
                                     <div class="card" style="width: 18rem; position: relative;">
                                         {% if item.image %}
                                         <a href="{{ item.image.url }}" data-fancybox>
-                                            <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
+                                            <img src="{{ item.image.url }}" style="height:350px !important;" class="card-img-top" alt="">
                                         </a>
                                         <span class="heart-icon" onclick="toggleFavorite('{{ item.id }}')">
                                             {% if item_is_favourite %}
@@ -170,7 +170,7 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between">
                                                 <div class="hover-box">
-                                                    <span class="text">{{ item.title|capfirst|default:"-" }}</span>
+                                                    {% comment %} <span class="text">{{ item.title|capfirst|default:"-" }}</span> {% endcomment %}
                                                     <button class="btn hover-btn" style="padding:0 !important; font-size:.8rem !important">
                                                         <span class="badge bg-success-custom">
                                                             <i class="fa fa-eye me-1"></i> View
@@ -219,10 +219,10 @@
                                                     <h4>Id </h4>
                                                     <h6><span id="item_id"></span></h6>
                                                 </li>
-                                                <li>
+                                                {% comment %} <li>
                                                     <h4> Title </h4>
                                                     <h6><span id="item_title"></span></h6>
-                                                </li>
+                                                </li> {% endcomment %}
                                                 <li>
                                                     <h4> Category </h4>
                                                     <h6><span id="item_category"></span></h6>
@@ -277,6 +277,16 @@
     </div>
 </div>
 {% include "admin-includes/footer.html" %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
 
 <script>
     function getWardrobeItemDetails(itemId) {
@@ -287,11 +297,28 @@
             success: function(response) {
                 let item = response.items_data;
                 $("#item_id").text(item.id);
-                $("#item_title").text(item.title);
-                $("#item_category").text(item.cloth_category);
-                $("#item_wear_count").text(item.wear_count);
-                $("#item_color").text(item.color);
-                $("#item_brand").text(item.brand);
+                if (item.cloth_category) {
+                    $("#item_category").text(item.cloth_category);
+                }else{
+                     $("#item_category").text("-");
+                }
+                if (item.wear_count) {
+                    $("#item_wear_count").text(item.wear_count);
+                }else{
+                     $("#item_wear_count").text("0");
+                }
+                if (item.color) {
+                    $("#item_color").text(item.color);
+                }else{
+                     $("#item_color").text("-");
+                }
+                // $("#item_title").text(item.title);
+                
+                if (item.brand) {
+                    $("#item_brand").text(item.brand);
+                }else{
+                     $("#item_brand").text("-");
+                }
                 $("#item_occasion").text(item.occasion);
                 $("#item_addedd_on").text(item.created_on);
                 $("#item_image_img").attr("src", item.image_url);
