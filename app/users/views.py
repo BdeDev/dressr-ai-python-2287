@@ -392,8 +392,25 @@ class AIOutfitSuggestionsView(View):
         if not outfit_suggestions and request.GET:
             messages.error(request, 'No Data Found')
         return render(request, 'wardrobe/wardrobs/outfit-suggestions.html', {
-            "head_title":"AI Suggestions Management",
+            "head_title":"Styling Suggestions Management",
             "outfit_suggestions": get_pagination(request, outfit_suggestions),
             "search_filters":request.GET.copy(),
             "total_objects": outfit_suggestions.count(),
+        })
+    
+class DeleteOutfitSuggestion(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        OutfitSiggestion.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Suggestion Deleted Successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+class GetOutfitSuggestion(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        suggestion = OutfitSiggestion.objects.get(id=self.kwargs['id'])
+        return render(request, 'wardrobe/wardrobs/suggestion-detail.html', {
+            "head_title": "Styling Suggestions Management",
+            "suggestion": suggestion,
         })

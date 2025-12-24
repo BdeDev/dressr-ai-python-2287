@@ -118,6 +118,7 @@ CRONJOBS = [
     ('0 0 * * 7', 'accounts.cron.WeeklyDataBaseBackup'),
     ('0 0 */10 * *', 'accounts.cron.DeleteUnnecessaryData'),
     ('0 0 */10 * *', 'accounts.cron.SendEmailForSubscriptionPurchase'),
+    ('0 0 * * *', 'accounts.cron.DailyFreeSubscriptionRenewal'),
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

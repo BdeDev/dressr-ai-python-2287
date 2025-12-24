@@ -38,4 +38,6 @@ urlpatterns = [
     re_path(r'^edit-affiliate-commission/(?P<id>[-\w]+)/$', UpdateAffiliateCommission.as_view(), name='edit_affiliate_commission'),
 
     re_path(r'^outfit-suggestions/$', AIOutfitSuggestionsView.as_view(), name='outfit_suggestions'),
+    re_path(r'^delete-suggestion/(?P<id>[-\w]+)/$', DeleteOutfitSuggestion.as_view(), name='delete_suggestion'),
+    re_path(r'^view-suggestion/(?P<id>[-\w]+)/$', GetOutfitSuggestion.as_view(), name='view_suggestion'),
 ]

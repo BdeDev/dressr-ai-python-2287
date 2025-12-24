@@ -25,9 +25,9 @@
             </div>
             <div class="page-btn d-flex flex-wrap align-items-baseline">
                 {%  if notifications %}
-                    <a title="Mark All Read" class="btn btn-primary me-1" href="{% url 'accounts:mark_read_notifications' user.id %}">
+                    {% comment %} <a title="Mark All Read" class="btn btn-primary me-1" href="{% url 'accounts:mark_read_notifications' user.id %}">
                         <i class="fas fa-check-double me-1"></i> Mark All Read
-                    </a>
+                    </a> {% endcomment %}
                     <a class="btn btn-danger me-1 action_confirm" message="Are you sure you want to clear all notifications?" href="{% url 'accounts:delete_notifications'%}">
                         <i class="fas fa-trash-alt"></i>
                     </a>
@@ -95,8 +95,8 @@
                 {% if notifications %}
                 <ul class="activity-list">
                     {% for notification in notifications %}
-                    <li>
-                        <a 
+                    <li class="d-flex">
+                        {% comment %} <a 
                             {% if notification.notification_type == 1 and notification.obj_id  %}
                                 href="{% url "users:view_user" notification.obj_id %}?n_id={{notification.id}}"
                             {% elif notification.notification_type == 2 and notification.obj_id %}
@@ -106,7 +106,7 @@
                             {% else %}
                                 href="?n_id={{notification.id}}"
                             {% endif %} 
-                        >
+                        > {% endcomment %}
                             <div class="activity-user">
                                 {% if notification.created_by.profile_pic %}
                                 <img alt="Lesley Grauer" src="{{notification.created_by.profile_pic.url}}" class=" img-fluid">
@@ -137,7 +137,7 @@
                                     </span>
                                 </div>
                             </div>
-                        </a>
+                        {% comment %} </a> {% endcomment %}
                     </li>
                     {% endfor %}
                 </ul>
