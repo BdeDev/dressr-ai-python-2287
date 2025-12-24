@@ -4487,3 +4487,56 @@ body {
 .hover-box:hover .hover-btn {
 	display: inline-block;
 }
+
+
+.outfit-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #f6f8fc;
+    border-radius: 16px;
+    width: fit-content;
+}
+
+.outfit-main-card {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    background: #cfd7ee;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.outfit-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: #333;
+    font-weight: 600;
+    text-align: center;
+    pointer-events: none;
+}
+
+
+.outfit-main-image {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.outfit-items {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.outfit-item-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}

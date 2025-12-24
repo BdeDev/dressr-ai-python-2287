@@ -1250,10 +1250,18 @@ class CreateVirtualTryOnAPI(APIView):
         if not file_ext:
             file_ext = ".jpg"
 
+
+        ## avtar file name to save on virtual try on and filter for ame outfit
+        avtar_file_name = user.user_image.name.split('/')[1]
         garment_file = ContentFile(img_response.content, name=file_name_without_ext)
         sig_type = int(request.data.get("sigment_type"))
         avatar_url = request.build_absolute_uri(user.user_image.url)
-        existing_tryon = VirtualTryOn.objects.filter(user=user,sigmentation_type=sig_type,garment_image__icontains=file_name).last()
+        existing_tryon = VirtualTryOn.objects.filter(
+            user=user,
+            sigmentation_type=sig_type,
+            garment_url= garment_image_url,
+            avtar_file_name = avtar_file_name
+            ).last()
 
         if existing_tryon and existing_tryon.output_image:
             serialized_data = VirtualTryOnSerializer(existing_tryon, context={"request": request}).data
@@ -1268,6 +1276,7 @@ class CreateVirtualTryOnAPI(APIView):
             source_image=source_image_file,
         )
         virtual_try_on.garment_url = garment_image_url
+        virtual_try_on.avtar_file_name = avtar_file_name
         virtual_try_on.garment_image.save(file_name, garment_file)
         virtual_try_on.save()
         start_time  = time.time()

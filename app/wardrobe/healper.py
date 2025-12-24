@@ -91,30 +91,40 @@ def suggest_outfit(city, temp, humidity, condition, wardrobe_items):
                 )
 
     prompt = f"""
-        Weather for {city}: {temp}°C, {humidity}% humidity, {condition}.
+        Role: Act as a professional Personal Stylist with expertise in color theory and seasonal dressing.
         
-        Task: Provide 3 different outfit suggestions from the provided images.
-        1. Casual: Comfortable for daily wear in this weather.
-        2. Semi-Formal/Work: Polished but weather-appropriate.
-        3. Stylized/Color-Focused: A bold combination based on complementary colors.
+        Current Context:
+        - City: {city}
+        - Current Weather: {temp}°C, {humidity}% humidity, {condition}
+        - Goal: Create 3 distinct outfits from the user's uploaded images that prioritize comfort, occasion-appropriateness, and visual harmony.
 
-        Return ONLY a JSON object with this structure:
+        Styling Logic:
+        1. Weather Suitability: Select fabrics and layers appropriate for {temp}°C. If {condition} involves rain or wind, prioritize functional outerwear.
+        2. Color Matching: Use the 60-30-10 rule for color balance. Ensure the "Stylized" option uses high-contrast complementary colors (e.g., Blue/Orange, Purple/Yellow).
+        3. Harmony: Ensure shoes and accessories coordinate with the primary outfit color.
+
+        Task: Return a JSON object containing 3 outfit suggestions:
+        1. "Casual": Optimized for movement and comfort for a day out in {city}.
+        2. "Work/Semi-Formal": A polished "smart-casual" or professional look that respects the current {temp}°C (e.g., blazer or knitwear if cool).
+        3. "Color-Focused": A bold, high-fashion combination using complementary or triadic color schemes to make a statement.
+
+        Output Format (STRICT JSON ONLY):
         {{
             "suggestions": [
                 {{
                     "occasion": "Casual",
-                    "explanation": "why this works",
-                    "outfit_ids": [ids]
+                    "explanation": "Briefly explain why these pieces suit {temp}°C and the chosen color palette.",
+                    "outfit_ids": ["id1", "id2", "id3"]
                 }},
                 {{
                     "occasion": "Work",
-                    "explanation": "why this works",
-                    "outfit_ids": [ids]
+                    "explanation": "Explain the professional appeal and weather-readiness.",
+                    "outfit_ids": ["id4", "id5"]
                 }},
                 {{
                     "occasion": "Color-focused",
-                    "explanation": "why this works",
-                    "outfit_ids": [ids]
+                    "explanation": "Identify the specific color theory used (e.g., complementary) and why it's visually striking.",
+                    "outfit_ids": ["id6", "id7"]
                 }}
             ]
         }}
