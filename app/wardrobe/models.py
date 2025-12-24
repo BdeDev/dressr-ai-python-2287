@@ -177,3 +177,13 @@ class VirtualTryOn(CommonInfo):
     class Meta:
         db_table = 'virtual_try_on'
 
+
+class OutfitSiggestion(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="today_suggestion")
+    occasion = models.CharField(max_length=50,blank=True, null=True)  # Casual / Work / Color-focused
+    explanation = models.TextField(blank=True, null=True)
+    today_outfit = models.ImageField(upload_to="suggestion/outfit/", blank=True, null=True)
+    items = models.ManyToManyField(ClothingItem)
+
+    class Meta:
+        db_table = 'outfit_suggestion'

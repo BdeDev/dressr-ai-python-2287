@@ -58,6 +58,7 @@ class ViewUser(View):
                 "token":Token.objects.filter(user=user).last(),
                 'loginhistory':get_pagination(request,login_history),
                 'wardrobe':Wardrobe.objects.filter(user=user).first(),
+                'ai_suggestions':OutfitSiggestion.objects.filter(user=user).first(),
                 "outfits":get_pagination(request,outfits),
                 "item_count":ClothingItem.objects.filter(wardrobe__user=user).count(),
                 "favourite_items":get_pagination(request,user.favourite_item.all()),
@@ -372,3 +373,27 @@ class ModifyCustomerStipeAccount(View):
             messages.error(request, 'Stripe ID already exists')
 
         return redirect(request.META.get('HTTP_REFERER'))
+    
+
+class AIOutfitSuggestionsView(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        outfit_suggestions = OutfitSiggestion.objects.all().order_by('-created_on')
+        outfit_suggestions = query_filter_constructer(
+            request, outfit_suggestions,
+            {
+                "user__full_name__icontains": "full_name",
+                "occasion__icontains": "occasion",
+                "explanation__icontains": "explanation",
+                "user__email__icontains": "email",
+                "created_on__date": "created_on",
+            })
+
+        if not outfit_suggestions and request.GET:
+            messages.error(request, 'No Data Found')
+        return render(request, 'wardrobe/wardrobs/outfit-suggestions.html', {
+            "head_title":"AI Suggestions Management",
+            "outfit_suggestions": get_pagination(request, outfit_suggestions),
+            "search_filters":request.GET.copy(),
+            "total_objects": outfit_suggestions.count(),
+        })
