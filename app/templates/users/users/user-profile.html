@@ -234,6 +234,23 @@
                                     </li>
                                 </ul>
                                 {% endif %}
+
+                                {% if ai_suggestions %}
+                                <ul class="product-bar mb-2">
+                                    <li>
+                                        <h4>Today Suggestion </h4>
+                                        <h6>
+                                            <div class="d-flex align-items-center display-images" style="overflow-x:scroll;">
+                                                {% for img in ai_suggestions.items.all %}
+                                                    <a href="{{img.image.url}}" data-fancybox>
+                                                        <img src="{{img.image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                        </h6>
+                                    </li>
+                                </ul>
+                                {% endif %}
                                 {% comment %} <h5 class="mt-3"><b>Stripe Information</b></h5>
                                 <ul class="product-bar mb-2">
                                     <li>
