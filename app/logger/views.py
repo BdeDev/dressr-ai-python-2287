@@ -141,7 +141,7 @@ class SendCustomEmail(View):
         description = request.POST.get('content').strip()
         full_name = request.POST.get('full_name').strip()
         # send email
-        send_email_with_template_html.apply_async(args=(user,subject,to_email,description))
+        # send_email_with_template_html.apply_async(args=(user,subject,to_email,description))
         # bulk_send_user_email(
         #     request = request,
         #     user = None,

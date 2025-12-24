@@ -104,7 +104,6 @@ urlpatterns = [
     re_path(r'^view-item-wear-calender/(?P<id>[-\w]+)/$', ViewItemWearCalender.as_view(), name='view_item_wear_calender'),
     re_path(r'^calendar-data-ajax/$', CalenderDataAjax.as_view(), name='calender_data_ajax'),
 
-
     re_path(r'^outfit-suggestions-api/$', TodayOutfitSuggestion.as_view(), name='outfit_suggestion_api'),
     re_path(r'^today-suggestions-api/$', TodayOutfitSuggestionAPI.as_view(), name='today_outfit_suggestion_api'),
 

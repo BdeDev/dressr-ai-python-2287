@@ -5,6 +5,9 @@ from .healper import *
 from accounts.management.commands.default_data import ACTIVITY_ITEM_MAP
 
 
+today = datetime.now().date()
+
+
 class GetWardrobeAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
@@ -167,21 +170,23 @@ class AddMultipleItemInWardrobeAPI(APIView):
                 ai_result = ai_result[0]
 
             parsed_json = normalize_ai_result(ai_result)
-
             category_name = parsed_json.get('category','Uncategorized')
-            category, _ = ClothCategory.objects.get_or_create(
-                title__iexact=category_name,
-                defaults={'title': category_name}
-            )
-
-            occasion_name = parsed_json.get('occasion')
-            occasion = None
-            if occasion_name:
-                occasion, _ = Occasion.objects.get_or_create(
-                    title__iexact=occasion_name,
-                    defaults={'title': occasion_name}
+            
+            if category_name:
+                category_name = category_name.strip().capitalize()
+                category, _ = ClothCategory.objects.get_or_create(
+                    title__iexact=category_name,
+                    defaults={'title': category_name}
                 )
-
+            occasion_name = parsed_json.get('occasion')
+            if occasion_name:
+                occasion_name = occasion_name.strip().capitalize()
+                occasion = None
+                if occasion_name:
+                    occasion, _ = Occasion.objects.get_or_create(
+                        title__iexact=occasion_name,
+                        defaults={'title': occasion_name}
+                    )
             # Weather type
             WEATHER_TYPE_MAP = {
                 "summer": 1,
@@ -195,7 +200,7 @@ class AddMultipleItemInWardrobeAPI(APIView):
             weather_type_id = WEATHER_TYPE_MAP.get(weather_type_str, 5)
 
             # Color
-            color = parsed_json.get('color', 'Unknown')
+            color = parsed_json.get('color', 'Unknown').strip().capitalize()
 
             # Create ClothingItem
             cloth_item = ClothingItem.objects.create(
@@ -292,10 +297,11 @@ class GetItemsAPI(APIView):
         tags=["WarDrobe management"],
         operation_id="Get All Cloth",
         operation_description="Get All Cloth",
-        manual_parameters=[],
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
     )
     def get(self, request, *args, **kwargs):
-        # wardrobe = get_or_none(Wardrobe, "Invalid wardrobe id",user=request.user)
         cloth_item = ClothingItem.objects.filter(wardrobe__user = request.user)
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item)
         data = ClothItemSerializer(cloth_item[start : end],many=True,context = {"request":request}).data
@@ -933,8 +939,6 @@ class AddTripAPI(APIView):
         if outfit_ids:
             trip.outfit.add(*outfit_ids)
         return Response({"message": "Trip created successfully!","status":status.HTTP_201_CREATED},status=status.HTTP_201_CREATED)
-    
-
 
 class EditTripDetailAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -1087,6 +1091,7 @@ class FavouriteItemListAPI(APIView):
         operation_id="Favourite Item List API",
         manual_parameters=[
             openapi.Parameter('category_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Category id"),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
         ],
     )
     def get(self, request, *args, **kwargs):
@@ -1094,8 +1099,11 @@ class FavouriteItemListAPI(APIView):
         if request.query_params.get('category_id'):
             category = get_or_none(ClothCategory,'Category does not exist !',id = request.query_params.get('category_id').strip() )
             favourite_items = favourite_items.filter(cloth_category=category)
-        data = ClothItemSerializer(favourite_items,many=True,context = {"request":request}).data
-        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)    
+
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), favourite_items)
+        data = ClothItemSerializer(favourite_items[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+      
 
 class MarkOutfitFavouriteAPI(APIView):
     permission_classes = [permissions.IsAuthenticated,]
@@ -1134,12 +1142,15 @@ class FavouriteOutfitListAPI(APIView):
         tags=["Outfit Management"],
         operation_description="Favourite Outfit List API",
         operation_id="Favourite Outfit List API",
-        manual_parameters=[],
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+        ],
     )
     def get(self, request, *args, **kwargs):
         favourite_outfits = request.user.favourite_outfit.all()
-        data = MyOutFitSerializer(favourite_outfits,many=True,context = {"request":request}).data
-        return Response({"data":data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)   
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), favourite_outfits)
+        data = MyOutFitSerializer(favourite_outfits[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK) 
     
 class GetItemByCategoryAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -1556,12 +1567,11 @@ class GetWardrobeDetailsAPI(APIView):
             return Response({"data": data},status=status.HTTP_200_OK)
         if req_type == 2:
             user_outfits = Outfit.objects.filter(created_by=wardrobe.user).order_by("-created_on")
-            start, end, meta_data = get_pages_data(request.query_params.get("page"),user_outfits)
+            start,end,meta_data = get_pages_data(request.query_params.get('page', None),user_outfits)
             data = MyOutFitSerializer(user_outfits[start:end],many=True,context={"request": request}).data
             return Response({"data": data,"meta": meta_data},status=status.HTTP_200_OK)
 
         return Response({"error": "Invalid type. Allowed values: 1: Items, 2: Outfits"},status=status.HTTP_400_BAD_REQUEST)
-
 
 class TodayOutfitSuggestion(APIView):
     permission_classes = [permissions.IsAuthenticated,]
@@ -1616,10 +1626,18 @@ class TodayOutfitSuggestion(APIView):
                 id__in=outfit_ids
             )
 
-            outfit_obj, _ = OutfitSiggestion.objects.get_or_create(
+            outfit_obj = OutfitSiggestion.objects.filter(
                 user=request.user,
-                occasion=occasion
-            )
+                occasion=occasion,
+                created_on__date=today
+            ).first()
+
+            if not outfit_obj:
+                outfit_obj = OutfitSiggestion.objects.create(
+                    user=request.user,
+                    occasion=occasion,
+                    created_on=datetime.now()
+                )
 
             if request.FILES.get("outfit_image"):
                 outfit_obj.today_outfit = request.FILES.get("outfit_image")
@@ -1627,7 +1645,6 @@ class TodayOutfitSuggestion(APIView):
             outfit_obj.explanation = explanation
             outfit_obj.items.set(selected_items)
             outfit_obj.save()
-
             saved_outfits.append(outfit_obj)
 
         return Response({
@@ -1640,7 +1657,6 @@ class TodayOutfitSuggestion(APIView):
            
         }, status=status.HTTP_200_OK)
         
-        
 
 class TodayOutfitSuggestionAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -1650,13 +1666,15 @@ class TodayOutfitSuggestionAPI(APIView):
         tags=["Outfit Management"],
         operation_description="Today Outfit Suggestion API",
         operation_id="Today Outfit Suggestion API",
-        manual_parameters=[],
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
     )
     def get(self, request, *args, **kwargs):
         try:
             today_suggestions = OutfitSiggestion.objects.filter(user=request.user)
         except:
             return Response({"message":'Suggestion does not exist !',"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-        start, end, meta_data = get_pages_data(request.query_params.get("page"),today_suggestions)
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None),today_suggestions)
         data = OutfitSiggestionSerializer(today_suggestions[start:end],many=True,context={"request": request}).data
         return Response({"data":data,"meta_data":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)  

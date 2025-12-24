@@ -309,6 +309,9 @@
                             <li class="nav-item">
                                 <a href="#sectionD" class="nav-link nav-link-items nav-link1" data-toggle="tab">Virtual Try Ons</a>
                             </li>
+                            <li class="nav-item">
+                                <a href="#sectionE" class="nav-link nav-link-items nav-link1" data-toggle="tab">Today Styling Suggestions</a>
+                            </li>
                         </ul>
                         <div class="tab-content">
                             <div id="sectionA" class="tab-pane fade show active ">
@@ -603,6 +606,64 @@
                                                <!-- pagination-->
                                                 {% include "admin-includes/pagination.html" with listing_objects=favourite_items %}
                                                 <!-- pagination end-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <div id="sectionE" class="tab-pane fade show">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>Occasion</strong></th>
+                                                                <th><strong>Items</strong></th>
+                                                                <th><strong>Explanation</strong></th>
+                                                                <th><strong>Created On</strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if user.today_suggestion.all %}
+                                                                {% for suggestion in user.today_suggestion.all %}
+                                                                <tr>
+                                                                    <td>{{suggestion.occasion|default:"-"}}</td>
+                                                                    <td>
+                                                                        {% if suggestion.items.all %}
+                                                                        <div class="d-flex align-items-center display-images" style="overflow-x:scroll;">
+                                                                            {% for img in suggestion.items.all %}
+                                                                                <a href="{{img.image.url}}" data-fancybox>
+                                                                                    <img src="{{img.image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                                </a>
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                        {% else %}-
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {{suggestion.explanation|safe|default:"-"}}
+                                                                    </td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ suggestion.created_on|date:'Y-m-d' }}", "{{ suggestion.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if user.today_suggestion.all.count > 3 %}
+                                                <div class='text-left mt-2' >
+                                                    <a class='btn btn-primary' href="{% url 'users:outfit_suggestions' %}?email={{user.email}}">View More <i class="fas fa-angle-double-right ms-2"></i></a>
+                                                </div>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>

@@ -16,8 +16,11 @@ class ClothItemSerializer(ModelSerializer):
         fields = ['id','title','wardrobe','image','cloth_category','occasion','thumbnail',
                   'accessory','weather_type','color','price','brand','date_added','last_worn','wear_count','item_url','is_favourite','feedback']
 
-    def get_cloth_category(self,obj):
-        return obj.cloth_category.id,obj.cloth_category.title
+    def get_cloth_category(self, obj):
+        return (
+            obj.cloth_category.id,
+            obj.cloth_category.title
+        ) if obj.cloth_category else None
     
     def get_is_favourite(self, obj):
         user = self.context.get("request").user
