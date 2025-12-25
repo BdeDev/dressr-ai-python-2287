@@ -200,10 +200,12 @@ TRY_ON_SUCCESS = 3
 TRY_ON_FAILED = 4
 
 
-SIGMENT_TYPE = ((0,"Upper Body"),(1,"Lower Body"),(2,"Full Body"))
+SIGMENT_TYPE = ((0,"Upper Body"),(1,"Lower Body"),(2,"Full Body"),(3,"Shoes"),(4,"Sunglasses"))
 UPPER_BODY = 0
 LOWER_BODY = 1
 FULL_BODY = 2
+SHOES = 3
+SUNGLASSES = 4
 
 INTEGRATION_TYPE = ((1,"API"),(2,"FEED"),(3,"MANUAL"))
 API = 1

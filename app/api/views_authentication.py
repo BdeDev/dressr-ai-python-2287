@@ -1219,12 +1219,15 @@ class CreateVirtualTryOnAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser, FormParser]
 
+    BODY_TYPES = [0, 1, 2]   # upper, lower, full
+    ACCESSORY_TYPES = [3, 4]  # shoes, goggles
+
     @swagger_auto_schema(
         tags=["Virtual Try On Management"],
         operation_id="Create Virtual Try On",
         operation_description="Create Virtual Try On",
         manual_parameters=[
-            openapi.Parameter('sigment_type', openapi.IN_FORM, type=openapi.TYPE_INTEGER,description='0:upper_body, 1:lower_body, 2:full_body'),
+            openapi.Parameter('sigment_type', openapi.IN_FORM, type=openapi.TYPE_INTEGER,description='0:upper_body, 1:lower_body, 2:full_body, 3:shoes,4:goggles'),
             openapi.Parameter('garment_image', openapi.IN_FORM, type=openapi.TYPE_STRING,description='upload garment url'),
         ],
     )
@@ -1237,7 +1240,8 @@ class CreateVirtualTryOnAPI(APIView):
             ]
         )
         user = request.user
-        garment_image_url = request.data.get("garment_image")
+        sigment_type = int(request.data.get("sigment_type"))
+        garment_image_url = request.data.get("garment_image","").strip()
         file_name = os.path.basename(urlparse(garment_image_url).path)
         file_name_without_ext = os.path.splitext(file_name)[0]
         try:
@@ -1250,18 +1254,26 @@ class CreateVirtualTryOnAPI(APIView):
         if not file_ext:
             file_ext = ".jpg"
 
-
         ## avtar file name to save on virtual try on and filter for ame outfit
+        avatar_url = request.build_absolute_uri(user.user_image.url)
         avtar_file_name = user.user_image.name.split('/')[1]
+
+
+        ## for top and buttom combination
+        virtual_try_on = VirtualTryOn.objects.filter(user=user).order_by('-created_on').first()
+        if virtual_try_on :
+            if (virtual_try_on.sigmentation_type == UPPER_BODY and sigment_type == LOWER_BODY) or (virtual_try_on.sigmentation_type == LOWER_BODY and sigment_type == UPPER_BODY):
+                avatar_url = request.build_absolute_uri(virtual_try_on.output_image.url)
+                avtar_file_name = virtual_try_on.output_image.name.split('/')[1]
+
         garment_file = ContentFile(img_response.content, name=file_name_without_ext)
         sig_type = int(request.data.get("sigment_type"))
-        avatar_url = request.build_absolute_uri(user.user_image.url)
         existing_tryon = VirtualTryOn.objects.filter(
             user=user,
             sigmentation_type=sig_type,
             garment_url= garment_image_url,
             avtar_file_name = avtar_file_name
-            ).last()
+            ).order_by('created_on').last()
 
         if existing_tryon and existing_tryon.output_image:
             serialized_data = VirtualTryOnSerializer(existing_tryon, context={"request": request}).data
@@ -1279,8 +1291,20 @@ class CreateVirtualTryOnAPI(APIView):
         virtual_try_on.avtar_file_name = avtar_file_name
         virtual_try_on.garment_image.save(file_name, garment_file)
         virtual_try_on.save()
+        result = None
         start_time  = time.time()
-        result = lightx_virtual_tryon(avatar_url, garment_image_url, sig_type)
+        if sig_type in [0, 1, 2]:
+            result = lightx_virtual_tryon(avatar_url, garment_image_url, sig_type)
+        elif sig_type in [3,4]:
+            product_type = None
+            if sig_type == SHOES:
+                product_type = 'Shoes'
+            elif sig_type == SUNGLASSES:
+                product_type = 'sunglass'
+                
+            prompt = f'Overlay {product_type} onto the real image using the mask. Modify only the masked region. Keep background, pose, and image quality unchanged. Ensure realistic lighting and seamless blending.'
+            result = try_on_accessory(avatar_url, garment_image_url,prompt)
+
         if result['success'] == True :
             virtual_try_on.response_payload = result['data']
         else:
@@ -1318,7 +1342,7 @@ class CreateVirtualTryOnAPI(APIView):
                 virtual_try_on.error_message = status_check['data']['statusCode']
                 virtual_try_on.save()
                 return Response({"message": status_check['data']['message'], "error": status_check['data']['statusCode']}, status=400)
-       
+    
             body = status_check["data"]["body"]
             status_data = body.get("status")
             output = body.get("output")
@@ -1347,6 +1371,9 @@ class CreateVirtualTryOnAPI(APIView):
         virtual_try_on.error_message = result['data']['statusCode']
         virtual_try_on.save()
         db_logger.info(f"⏱️ Execution time: {time.time() - start_time} seconds")
+        
+          
+
         send_notification(
             created_by=get_admin(),
             created_for=[user.id],
@@ -1529,7 +1556,9 @@ class VirtualTryOnListAPI(APIView):
         tags=["Virtual Try On Management"],
         operation_id="Get Virtual Try On List",
         operation_description="Get Virtual Try On List",
-        manual_parameters=[],
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
+        ],
     )
     def get(self, request, *args, **kwargs):
         virtual_try_on = VirtualTryOn.objects.filter(user=request.user)

@@ -23,16 +23,11 @@ class PartnerStoresSerializer(ModelSerializer):
 
 class RatingSerializer(ModelSerializer):
     user = SerializerMethodField()
+
     class Meta:
         model = Rating
         fields = ('__all__')
 
-class RatingSerializer(ModelSerializer):
-    user = SerializerMethodField()
-
-    class Meta:
-        model = Rating
-        fields = "__all__"
 
     def get_user(self, obj):
         request = self.context.get("request")

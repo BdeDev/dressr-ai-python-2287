@@ -62,5 +62,4 @@ urlpatterns = [
     re_path(r'^sync-virtual-try-on-data/$', SyncTryOnData.as_view(), name='sync_virtual_try_on_data'),
 
     re_path(r'^wardrobe-favourite-items/(?P<id>[-\w]+)/$', FavouriteItemList.as_view(), name='wardrobe_favourite_items'),
-   
 ]
