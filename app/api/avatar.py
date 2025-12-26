@@ -113,3 +113,32 @@ def remove_avatar_background(image_url: str):
     except Exception as e:
         return {"success": False, "error": str(e)}
     
+
+def try_on_accessory(image_url:str,mask_image:str,prompt:str):
+   
+    url = 'https://api.lightxeditor.com/external/api/v2/replace'
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': LIGHTX_API_KEY
+    }
+
+    payload = {
+        "imageUrl": image_url,
+        "maskedImageUrl": mask_image,
+        "textPrompt": prompt
+    }
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        return {"success": True, "data": response.json()} if response.status_code == 200 else {
+            "success": False,
+            "status_code": response.status_code,
+            "error": response.text
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    
+
+
+# output = try_on_accessory(PROMPT)
+# print(json.dumps(output, indent=4))

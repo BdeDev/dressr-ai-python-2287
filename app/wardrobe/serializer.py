@@ -199,7 +199,7 @@ class WearHistorySerializer(ModelSerializer):
                 "id": obj.item.id,
                 "title": obj.item.title,
                 "image": image,
-                "category_title": obj.item.cloth_category.title,
+                "category_title": obj.item.cloth_category.title if obj.item.cloth_category else None ,
                 "brand":obj.item.brand
             }
 
@@ -234,10 +234,11 @@ class ItemUsageFrequencySerializer(ModelSerializer):
 
 class OutfitSiggestionSerializer(ModelSerializer):
     items = SerializerMethodField()
+    is_favourite = SerializerMethodField()
     
     class Meta:
         model = OutfitSiggestion
-        fields = '__all__'
+        fields = ['id','occasion','explanation','today_outfit','items','is_favourite']
 
     def get_items(self, obj):
         request = self.context.get('request')
@@ -261,3 +262,7 @@ class OutfitSiggestionSerializer(ModelSerializer):
                 "brand": item.brand
             })
         return result
+    
+    def get_is_favourite(self, obj):
+        user = self.context.get("request").user
+        return 1 if obj.favourite.filter(id=user.id).exists() else 0

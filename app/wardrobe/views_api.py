@@ -303,7 +303,8 @@ class GetItemsAPI(APIView):
     )
     def get(self, request, *args, **kwargs):
         cloth_item = ClothingItem.objects.filter(wardrobe__user = request.user)
-        start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item)
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item,15)
+        # start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item)
         data = ClothItemSerializer(cloth_item[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
@@ -1618,10 +1619,9 @@ class TodayOutfitSuggestion(APIView):
 
         saved_outfits = []
         for suggestion in suggestions:
-            occasion = suggestion.get("occasion")
+            occasion = suggestion.get("occasion") if suggestion.get("occasion") else 'All'
             explanation = suggestion.get("explanation")
             outfit_ids = suggestion.get("outfit_ids", [])
-
             selected_items = wardrobe_items.filter(
                 id__in=outfit_ids
             )
@@ -1678,3 +1678,55 @@ class TodayOutfitSuggestionAPI(APIView):
         start,end,meta_data = get_pages_data(request.query_params.get('page', None),today_suggestions)
         data = OutfitSiggestionSerializer(today_suggestions[start:end],many=True,context={"request": request}).data
         return Response({"data":data,"meta_data":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)  
+    
+
+class MarkSuggestionFavouriteAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    parser_classes = [MultiPartParser,FormParser]
+
+    @swagger_auto_schema(
+        tags=['Suggestion management'],
+        operation_id="Mark Item as favourite",
+        operation_description="Mark Item as favourite",
+        manual_parameters=[
+            openapi.Parameter('suggestion_id', openapi.IN_FORM, type=openapi.TYPE_STRING,description="suggestion id"),
+            openapi.Parameter('is_favourite', openapi.IN_FORM, type=openapi.TYPE_STRING,description="1: Favourite , 2 : Not favourite"),
+            ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = CustomRequiredFieldsValidator.validate_api_field(self, request, [
+            {"field_name": "suggestion_id", "method": "post", "error_message": "Please enter suggestion id"},
+            {"field_name": "is_favourite", "method": "post", "error_message": "Please enter any one choices"},
+        ])
+        suggestion = get_or_none(OutfitSiggestion,"Suggestion id does not exist !" , id = request.data.get('suggestion_id'))
+        if suggestion in request.user.favourite_suggestion.all():
+            suggestion.favourite.remove(request.user)
+            message = "Suggestion unmarked successfully !"
+        else:
+            suggestion.favourite.add(request.user)
+            message = "Suggestion marked as favourite !"
+        suggestion.save()
+        return Response({"message":message,"status": status.HTTP_200_OK}, status = status.HTTP_200_OK)
+
+class FavouriteSuggestionListAPI(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    parser_classes = [MultiPartParser]
+
+    @swagger_auto_schema(
+        tags=["Suggestion management"],
+        operation_description="Favourite Suggestion List API",
+        operation_id="Favourite Suggestion List API",
+        manual_parameters=[
+            openapi.Parameter('suggestion_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Suggestion id"),
+            openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        favourite_suggestions = request.user.favourite_suggestion.all()
+        if request.query_params.get('suggestion_id'):
+            category = get_or_none(OutfitSiggestion,'Category does not exist !',id = request.query_params.get('suggestion_id').strip() )
+            favourite_suggestions = favourite_suggestions.filter(cloth_category=category)
+
+        start,end,meta_data = get_pages_data(request.query_params.get('page', None), favourite_suggestions)
+        data = OutfitSiggestionSerializer(favourite_suggestions[start : end],many=True,context = {"request":request}).data
+        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)

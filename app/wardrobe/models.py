@@ -185,6 +185,7 @@ class OutfitSiggestion(CommonInfo):
     explanation = models.TextField(blank=True, null=True)
     today_outfit = models.ImageField(upload_to="suggestion/outfit/", blank=True, null=True)
     items = models.ManyToManyField(ClothingItem)
+    favourite = models.ManyToManyField(User, related_name='favourite_suggestion')
 
     class Meta:
         db_table = 'outfit_suggestion'
