@@ -15,6 +15,7 @@ class ClothCategoryView(View):
     def get(self,request,*args,**kwargs):
         cloth_category = ClothCategory.objects.all().order_by('-created_on')
         cloth_category = query_filter_constructer(request,cloth_category,{
+            "category_type":"category_type",
             "title__icontains":"title",
             "created_on__date":"created_on",
         })
@@ -32,6 +33,7 @@ class ClothCategoryView(View):
     @method_decorator(admin_only)
     def post(self, request, *args, **kwargs):
         category_id = request.POST.get('category_id')
+        category_type  = request.POST.get('category_type')
         title = request.POST.get('title').strip()
         if category_id:
             try:
@@ -40,12 +42,15 @@ class ClothCategoryView(View):
                 messages.error(request, "Cloth Category not found!")
                 return redirect('wardrobe:cloth_category')
             
-            if ClothCategory.objects.filter(title=title).exclude(id=category_id).exists():
+            if ClothCategory.objects.filter(title=title,category_type = category_type).exclude(id=category_id).exists():
                 messages.error(request, "Cloth Category already exists!")
                 return redirect('wardrobe:cloth_category')
             if request.FILES.get('icon'):
                 cloth_category.icon = request.FILES.get('icon')
-            cloth_category.title = title
+            if category_type:
+                cloth_category.category_type = category_type
+            if title:
+                cloth_category.title = title.title()
             cloth_category.save()
             messages.success(request, "Cloth Category updated successfully!")
         else:
@@ -53,7 +58,8 @@ class ClothCategoryView(View):
                 messages.error(request, "Cloth Category already exists!")
                 return redirect('wardrobe:cloth_category')
             ClothCategory.objects.create(
-                title=title,
+                category_type = category_type,
+                title=title.title(),
                 icon = request.FILES.get('icon')
             )
             messages.success(request, "Cloth Category added successfully!")

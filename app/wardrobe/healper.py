@@ -4,7 +4,7 @@ import json
 import PIL.Image
 import os
 
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './mydressr-project-ef3d96e53e7a.json'
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './mydressr-project-ef3d96e53e7a.json'
 
 client = genai.Client(
     vertexai=True, 
@@ -20,18 +20,33 @@ def analyze_clothing_image(file_obj) -> dict:
         with open(file_obj, "rb") as f:
             image_bytes = f.read()
 
-    # Define a config to force JSON and lower safety barriers
+    # REINFORCED PROMPT: Using a clear mapping table for the AI
+    prompt = """
+        Analyze the clothing in this image. 
+        Return a JSON object with these EXACT keys:
+        
+        1. "title": A descriptive name (e.g., "Navy Blue Summer Dress").
+        2. "type": The specific garment type (e.g., "T-Shirt", "Chinos", "Sneakers").
+        3. "category_id": Return ONLY the integer based on this mapping:
+        - TOP = 1
+        - BOTTOM = 2
+        - DRESS = 3
+        - JACKET = 4
+        - SHOES_CAT = 5
+        - GOGGLES = 6
+        - PURSE = 7
+        - HAT = 8
+        4. "color": Main color.
+        5. "occasion": Best suited occasion.
+        6. "weather_type": Best suited weather.
+
+        If you are unsure, pick the closest match. Do not return null for category_id.
+    """
+
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
         safety_settings=[
-            types.SafetySetting(
-                category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                threshold="BLOCK_NONE", # High-waisted pants/shorts sometimes trigger this
-            ),
-            types.SafetySetting(
-                category="HARM_CATEGORY_HATE_SPEECH",
-                threshold="BLOCK_NONE",
-            ),
+            types.SafetySetting(category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold="BLOCK_NONE"),
         ]
     )
 
@@ -40,42 +55,40 @@ def analyze_clothing_image(file_obj) -> dict:
         config=config,
         contents=[
             types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-            "Analyze this clothing. Return JSON keys: category, color, occasion, weather_type."
+            prompt
         ]
     )
 
-    # CHECK FOR NONE BEFORE PARSING
-    if response.text is None:
-        # Check if it was blocked
-        finish_reason = "Unknown"
-        if response.candidates and response.candidates[0].finish_reason:
-            finish_reason = response.candidates[0].finish_reason
-        
-        return {
-            "category": "Unknown",
-            "color": "Unknown",
-            "occasion": "Casual",
-            "weather_type": "all weather",
-            "error": f"AI blocked or empty response. Reason: {finish_reason}"
-        }
+    if not response.text:
+        return {"error": "No response from AI", "category_id": 0}
 
     return json.loads(response.text)
 
 
 def normalize_ai_result(ai_data: dict) -> dict:
     """
-    Handles cases where AI returns lists instead of strings.
+    Ensures we get valid data and converts strings to integers if the AI makes a mistake.
     """
-    def first_value(value):
+    def clean_str(value, default="Unknown"):
         if isinstance(value, list) and value:
-            return value[0]
-        return value
+            return str(value[0])
+        return str(value) if value else default
+
+    # Extract category_id and force it to be an integer
+    raw_cat = ai_data.get("category_id")
+    try:
+        # This handles cases where AI returns "1" (string) instead of 1 (int)
+        category_id = int(raw_cat)
+    except (ValueError, TypeError):
+        category_id = 0 # Default to 0/Unknown if parsing fails
 
     return {
-        "category": first_value(ai_data.get("category", "Uncategorized")),
-        "color": first_value(ai_data.get("color", "Unknown")),
-        "occasion": first_value(ai_data.get("occasion")),
-        "weather_type": first_value(ai_data.get("weather_type", "all_weather")),
+        "title": clean_str(ai_data.get("title"), "New Clothing Item"),
+        "type": clean_str(ai_data.get("type"), "Other"),
+        "category_id": category_id,
+        "color": clean_str(ai_data.get("color")),
+        "occasion": clean_str(ai_data.get("occasion"), "Casual"),
+        "weather_type": clean_str(ai_data.get("weather_type"), "All-weather"),
     }
 
 
