@@ -19,6 +19,7 @@ class ClothItemSerializer(ModelSerializer):
     def get_cloth_category(self, obj):
         return (
             obj.cloth_category.id,
+            obj.cloth_category.category_type,
             obj.cloth_category.title
         ) if obj.cloth_category else None
     
@@ -243,7 +244,6 @@ class OutfitSiggestionSerializer(ModelSerializer):
     def get_items(self, obj):
         request = self.context.get('request')
         use_https = True
-
         result = []
         for item in obj.items.all():
             if item.image:

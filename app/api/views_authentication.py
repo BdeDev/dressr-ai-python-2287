@@ -1258,7 +1258,6 @@ class CreateVirtualTryOnAPI(APIView):
         avatar_url = request.build_absolute_uri(user.user_image.url)
         avtar_file_name = user.user_image.name.split('/')[1]
 
-
         ## for top and buttom combination
         virtual_try_on = VirtualTryOn.objects.filter(user=user).order_by('-created_on').first()
         if virtual_try_on :
@@ -1289,21 +1288,33 @@ class CreateVirtualTryOnAPI(APIView):
         )
         virtual_try_on.garment_url = garment_image_url
         virtual_try_on.avtar_file_name = avtar_file_name
-        virtual_try_on.garment_image.save(file_name, garment_file)
+        virtual_try_on.garment_image.save(file_name, garment_file)  
         virtual_try_on.save()
         result = None
         start_time  = time.time()
         if sig_type in [0, 1, 2]:
             result = lightx_virtual_tryon(avatar_url, garment_image_url, sig_type)
         elif sig_type in [3,4]:
+            
             product_type = None
             if sig_type == SHOES:
                 product_type = 'Shoes'
             elif sig_type == SUNGLASSES:
                 product_type = 'sunglass'
                 
-            prompt = f'Overlay {product_type} onto the real image using the mask. Modify only the masked region. Keep background, pose, and image quality unchanged. Ensure realistic lighting and seamless blending.'
-            result = try_on_accessory(avatar_url, garment_image_url,prompt)
+            # prompt =(f'Replace or apply the {product_type} onto the user in the real image using the provided mask.' 
+            #         f'Ensure the {product_type} fits naturally according to the user pose and body alignment.'
+            #         f'Preserve the original image quality, background, lighting, and facial features without alteration.'
+            #         f'Do not modify the user’s posture, body shape, or surrounding environment.' 
+            #         f'Maintain realistic scale, perspective, and shadows for a seamless virtual try-on result.'
+            #         f'Do not blur, distort, resize, recolor, or crop the original image.')
+            
+            prompt =(f'Apply the shoes onto the avatar image so they look naturally worn.' 
+                    f'Keep the avatar’s pose, body, and background unchanged'
+                    f'Make sure the shoes fit realistically with proper scale, perspective, and lighting')
+            
+            
+            result = try_on_accessory(garment_image_url, avatar_url,prompt)
 
         if result['success'] == True :
             virtual_try_on.response_payload = result['data']
@@ -1372,8 +1383,6 @@ class CreateVirtualTryOnAPI(APIView):
         virtual_try_on.save()
         db_logger.info(f"⏱️ Execution time: {time.time() - start_time} seconds")
         
-          
-
         send_notification(
             created_by=get_admin(),
             created_for=[user.id],

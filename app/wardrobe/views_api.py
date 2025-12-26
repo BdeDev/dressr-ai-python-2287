@@ -169,12 +169,15 @@ class AddMultipleItemInWardrobeAPI(APIView):
             if isinstance(ai_result, list):
                 ai_result = ai_result[0]
 
+
             parsed_json = normalize_ai_result(ai_result)
-            category_name = parsed_json.get('category','Uncategorized')
+            category_name = parsed_json.get('type','Uncategorized')
+            category_type = parsed_json.get('category_id','Uncategorized')
             
             if category_name:
                 category_name = category_name.strip().capitalize()
                 category, _ = ClothCategory.objects.get_or_create(
+                    category_type = category_type,
                     title__iexact=category_name,
                     defaults={'title': category_name}
                 )
@@ -304,7 +307,6 @@ class GetItemsAPI(APIView):
     def get(self, request, *args, **kwargs):
         cloth_item = ClothingItem.objects.filter(wardrobe__user = request.user)
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item,15)
-        # start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item)
         data = ClothItemSerializer(cloth_item[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
     
@@ -1157,18 +1159,44 @@ class GetItemByCategoryAPI(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = [MultiPartParser]
 
+    CATEGORY_TYPES = {
+        1: "TOP",
+        2: "BOTTOM",
+        3: "DRESS",
+        4: "JACKET",
+        5: "SHOES",
+        6: "GOGGLES",
+        7: "PURSE",
+        8: "HAT",
+    }
     @swagger_auto_schema(
         tags=["WarDrobe management"],
         operation_id="Get Item By category",
         operation_description="Get Item By category",
         manual_parameters=[
-            openapi.Parameter('category_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Category id"),
+            openapi.Parameter('category_type',openapi.IN_QUERY,type=openapi.TYPE_INTEGER,description="Category Type (1=TOP, 2=BOTTOM, 3=DRESS, 4=JACKET, 5=SHOES, 6=GOGGLES, 7=PURSE, 8=HAT)",),
             openapi.Parameter('page', openapi.IN_QUERY, type=openapi.TYPE_INTEGER)
         ],
     )
     def get(self, request, *args, **kwargs):
-        category = get_or_none(ClothCategory,'category does not exist !', id = request.query_params.get('category_id'))
-        items = ClothingItem.objects.filter(cloth_category = category,wardrobe__user  = request.user).order_by('created_on')
+        category_type = request.query_params.get('category_type')
+        if not category_type:
+            return Response({"message": "category_type is required", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+        try:
+            category_type = int(category_type)
+        except ValueError:
+            return Response({"message": "category_type must be an integer", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
+
+        if category_type not in self.CATEGORY_TYPES:
+            return Response({
+                    "message": "Invalid category_type",
+                    "allowed_values": self.CATEGORY_TYPES,
+                    "status": status.HTTP_400_BAD_REQUEST
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        items = ClothingItem.objects.filter(cloth_category__category_type=category_type,wardrobe__user=request.user).order_by('-created_on')
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), items)
         data = ClothItemSerializer(items[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -1433,7 +1461,7 @@ class MostWearClothAnalyticsAPI(APIView):
         operation_id="Item Usage Frequency",
         operation_description="Analyze usage frequency of wardrobe items.",
         manual_parameters=[
-            openapi.Parameter('category_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Category id"),
+            openapi.Parameter('category_type', openapi.IN_QUERY, type=openapi.TYPE_STRING,description="Category type"),
         ],
        
     )
@@ -1446,11 +1474,9 @@ class MostWearClothAnalyticsAPI(APIView):
         most_worn = items.order_by('-wear_count')[:5]
         least_worn = items.order_by('wear_count').first()
         most_worn_count = items.order_by('-wear_count').first()
-        if request.query_params.get('category_id'):
-            category = ClothCategory.objects.get(id = request.query_params.get('category_id'))
-            if not category:
-                return Response({"message": "Invalid category id","status":status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-            items = items.filter(cloth_category = category)
+        category_type = request.query_params.get('category_type')
+        if request.query_params.get('category_type'):
+            items = items.filter(cloth_category__category_type=category_type)
             most_worn = items.order_by('-wear_count')[:5]
 
         under_used = items.filter(wear_count__lte=2)
@@ -1729,4 +1755,4 @@ class FavouriteSuggestionListAPI(APIView):
 
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), favourite_suggestions)
         data = OutfitSiggestionSerializer(favourite_suggestions[start : end],many=True,context = {"request":request}).data
-        return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
+        return Response({"outfits":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)

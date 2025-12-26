@@ -211,3 +211,14 @@ INTEGRATION_TYPE = ((1,"API"),(2,"FEED"),(3,"MANUAL"))
 API = 1
 FEED = 2
 MANUAL = 3
+
+
+CLOTH_CATEGORY_TYPE = ((1,"Top"),(2,"Bottom"),(3,"Dress"),(4,"Jacket"),(5,"Shoes"),(6,"Goggles"),(7,"Purse"),(8,"Hat"))
+TOP = 1
+BOTTOM = 2
+DRESS = 3
+JACKET = 4
+SHOES_CAT = 5
+GOGGLES = 6
+PURSE = 7
+HAT = 8
