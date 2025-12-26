@@ -1,5 +1,9 @@
 import requests
 from accounts.utils import get_api_key
+import logging
+
+db_logger = logging.getLogger('db')
+
 
 LIGHTX_API_KEY = get_api_key()
 CHECK_STATUS = "https://api.lightxeditor.com/external/api/v2/order-status"
@@ -59,7 +63,6 @@ def lightx_virtual_tryon(image_url: str, style_image_url: str, segmentation_type
     }
     try:
         response = requests.post(START_JOB_URL, headers=headers, json=payload)
-        data = response.json()
         return {"success": True, "data": response.json()} if response.status_code == 200 else {
             "success": False,
             "status_code": response.status_code,
@@ -101,7 +104,7 @@ def remove_avatar_background(image_url: str):
     }
     payload = {
         "imageUrl": image_url,
-        "background": "#CCCCCC"
+        "background": "#F5F2F2"
     }
     try:
         response = requests.post(url, headers=headers, json=payload)
@@ -137,8 +140,3 @@ def try_on_accessory(image_url:str,mask_image:str,prompt:str):
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
-    
-
-
-# output = try_on_accessory(PROMPT)
-# print(json.dumps(output, indent=4))

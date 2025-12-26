@@ -27,6 +27,7 @@ class WardrobePublicShare(CommonInfo):
 
 
 class ClothCategory(CommonInfo):
+    category_type = models.PositiveIntegerField(choices=CLOTH_CATEGORY_TYPE,null=True, blank=True)
     title = models.CharField(max_length=100, blank=True, null=True)
     gender = models.PositiveIntegerField(choices=GENDER, null=True, blank=True)
     icon = models.FileField(upload_to="wardrobe/icons/",blank=True, null=True)
