@@ -106,5 +106,7 @@ urlpatterns = [
 
     re_path(r'^outfit-suggestions-api/$', TodayOutfitSuggestion.as_view(), name='outfit_suggestion_api'),
     re_path(r'^today-suggestions-api/$', TodayOutfitSuggestionAPI.as_view(), name='today_outfit_suggestion_api'),
+    re_path(r'^mark-suggestions-favourite-api/$', MarkSuggestionFavouriteAPI.as_view(), name='mark_suggestion_favourite_api'),
+    re_path(r'^favourite-suggestions-list-api/$', FavouriteSuggestionListAPI.as_view(), name='favourite_suggestion_list_api'),
 
 ]
