@@ -77,6 +77,66 @@
                     </div>
                 </div>
             </div>
+             <!-- tabs -->
+            <div class="col-lg-12 col-sm-12 mt-5">
+                <div class="row  mt-4">
+                    <div class="bs-example action-tabs">
+                        <ul class="nav nav-tabs" id="myTab">
+                            <li class="nav-item">
+                                <a href="#sectionA" class="nav-link nav-link-items active nav-link1" data-toggle="tab">Suggestion Feedback</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="sectionA" class="tab-pane fade show active ">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>User Name</strong></th>
+                                                                <th><strong>Rating</strong></th>
+                                                                <th><strong>Comment</strong></th>
+                                                                <th><strong>Created On </strong></th>
+                                                                <th><strong>Actions </strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if ratings %}
+                                                                {% for rating in ratings %}
+                                                                <tr>
+                                                                    <td>{{rating.user.full_name|default:'-'}}</td>
+                                                                    <td>{{rating.rating|default:'-'}}</td>
+                                                                    <td>{{rating.comment|default:'-'|truncatechars:75}}</td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ rating.created_on|date:'Y-m-d' }}", "{{ rating.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="d-flex">
+                                                                            <a title="View" href="{% url 'ecommerce:feedback_list' suggestion.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tabs end -->
         </div>
     </div>
 </div>
