@@ -31,6 +31,7 @@
 								<thead>
 									<tr>
                                         <th><strong>ID</strong></th>
+                                        <th><strong>Type</strong></th>
                                         <th><strong>Title</strong></th>
                                         <th><strong>Icon</strong></th>
 										<th><strong>Created On</strong></th>
@@ -40,6 +41,27 @@
 								<thead>
 									<tr class="search-row">
                                         <td><input disabled type="text" value="{{request.GET.id}}" class="form-control" name="id" maxlength="20"></td>
+                                        <td>
+                                            <select class="form-control" name="category_type" onchange="this.form.submit()">
+                                                <option value=""></option>
+                                                <option {% if request.GET.category_type == '1' %} selected {% endif %} value="1">TOP
+                                                </option>
+                                                <option {% if request.GET.category_type == '2' %} selected {% endif %} value="2">BOTTOM
+                                                </option>
+                                                <option {% if request.GET.category_type == '3' %} selected {% endif %} value="3">DRESS
+                                                </option>
+                                                <option {% if request.GET.category_type == '4' %} selected {% endif %} value="4">JACKET
+                                                </option>
+                                                <option {% if request.GET.category_type == '5' %} selected {% endif %} value="5">SHOES
+                                                </option>
+                                                <option {% if request.GET.category_type == '6' %} selected {% endif %} value="6">GOGGLES
+                                                </option>
+                                                <option {% if request.GET.category_type == '7' %} selected {% endif %} value="7">PURSE
+                                                </option>
+                                                <option {% if request.GET.category_type == '8' %} selected {% endif %} value="8">HAT
+                                                </option>
+                                            </select>
+                                        </td>
                                         <td><input type="text" value="{{request.GET.title}}" class="form-control" name="title" maxlength="20"></td>
                                         <td><input disabled type="text" value="{{request.GET.icon}}" class="form-control" name="icon" maxlength="20"></td>
 										<td><input type="date" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
@@ -51,6 +73,25 @@
 										{% for cloth in cloth_category %}
 										<tr>
                                             <td> {{cloth.id|default:"-"}}</td>
+                                            <td>
+                                                {% if cloth.category_type == 1 %}
+                                                <span class="badge bg-primary">TOP</span>
+                                                {% elif cloth.category_type == 2 %}
+                                                <span class="badge bg-secondary">BOTTOM</span>
+                                                {% elif cloth.category_type == 3 %}
+                                                <span class="badge bg-success">DRESS</span>
+                                                {% elif cloth.category_type == 4 %}
+                                                <span class="badge bg-danger">JACKET</span>
+                                                {% elif cloth.category_type == 5 %}
+                                                <span class="badge bg-warning text-dark">SHOES</span>
+                                                {% elif cloth.category_type == 6 %}
+                                                <span class="badge bg-info text-dark">GOGGLES</span>
+                                                {% elif cloth.category_type == 7 %}
+                                                <span class="badge bg-light text-dark">PURSE</span>
+                                                {% elif cloth.category_type == 8 %}
+                                                <span class="badge bg-dark">HAT</span>
+                                                {% endif %}
+                                            </td>
                                             <td> {{cloth.title|default:"-"}}</td>
                                             <td>
                                                 <div class="d-flex align-items-center display-images">
@@ -74,7 +115,7 @@
 											</td>
 											<td>
 												<div class="d-flex">
-													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{cloth.id}}','{{cloth.title}}')"  data-bs-target="#edit-cloth" class="btn btn-info shadow btn-xs sharp me-1">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{cloth.id}}','{{cloth.category_type}}','{{cloth.title}}')"  data-bs-target="#edit-cloth" class="btn btn-info shadow btn-xs sharp me-1">
 														<i class="fa fa-edit"></i>
 													</a>
                                                     <a title="Delete" href="{% url 'wardrobe:delete_cloth_category' cloth.id %}"
@@ -113,8 +154,24 @@
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
+                                    <label class="form-label">Type</label>
+                                    <select class="form-control" name="category_type" >
+                                        <option value="">select</option>
+                                        <option value="1">TOP</option>
+                                        <option value="2">BOTTOM</option>
+                                        <option value="3">DRESS</option>
+                                        <option value="4">JACKET</option>
+                                        <option value="5">SHOES</option>
+                                        <option value="6">GOGGLES</option>
+                                        <option value="7">PURSE</option>
+                                        <option value="8">HAT</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
                                     <label class="form-label">Title</label>
-                                    <input type="text" placeholder="Publish Title" name="title" id="title" class="form-control" maxlength="100">
+                                    <input type="text" placeholder="Cloth Category Title" name="title" id="title" class="form-control" maxlength="100">
                                 </div>
                             </div>
                             <div class="col-lg-12">
@@ -148,6 +205,22 @@
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
+                                    <label class="form-label">Type</label>
+                                    <select class="form-control" name="category_type" id="edit_category_type">
+                                        <option value="">Select</option>
+                                        <option value="1">TOP</option>
+                                        <option value="2">BOTTOM</option>
+                                        <option value="3">DRESS</option>
+                                        <option value="4">JACKET</option>
+                                        <option value="5">SHOES</option>
+                                        <option value="6">GOGGLES</option>
+                                        <option value="7">PURSE</option>
+                                        <option value="8">HAT</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
                                     <label class="form-label">Title</label>
                                     <input type="text" name="title" id="edit_category_title" class="form-control" maxlength="100">
                                 </div>
@@ -172,8 +245,9 @@
 {% include "admin-includes/footer.html" %}
 <script src="{% static 'admin-assets/js/validations/category.js' %}"></script>
 <script>
-function GetValue(id, title,icon){
+function GetValue(id, category_type,title,icon){
     $('#edit_category_id').val(id);
+    $('#edit_category_type').val(String(category_type));
     $('#edit_category_title').val(title);
     $('#category_icon').val(icon);
 }

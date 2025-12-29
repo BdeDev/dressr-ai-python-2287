@@ -3,6 +3,7 @@ from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework.authtoken.models import Token 
 from contact_us.models import *
 from api.helper import *
+from wardrobe.models import Wardrobe,VirtualTryOn
 
 class UserSerializer(ModelSerializer):
     token = SerializerMethodField(read_only=True)
@@ -10,6 +11,7 @@ class UserSerializer(ModelSerializer):
     skin_tone = SerializerMethodField()
     hair_color = SerializerMethodField()
     body_type = SerializerMethodField()
+    wardrobe = SerializerMethodField()
 
     def get_profile_pic(self,obj):
         url=self.context.get('request').build_absolute_uri(obj.profile_pic.url) if obj.profile_pic else "" 
@@ -33,12 +35,16 @@ class UserSerializer(ModelSerializer):
     def get_body_type(self, obj):
         body_type = BodyType.objects.filter(user=obj).first()
         return body_type.title if body_type else ""
+    
+    def get_wardrobe(self, obj):
+        wardrobe  = Wardrobe.objects.filter(user = obj).first()
+        return wardrobe.id
 
     class Meta:
         model=User
         fields= ("id","first_name","last_name","full_name","username","gender","hieght_cm","role_id","last_login","profile_pic","email",
-                 "mobile_no","country_code","country_iso_code","status","temp_otp","is_profile_setup","notification_enable","token",
-                 "created_on","updated_on",'hair_color','skin_tone','user_image','body_type')
+                 "mobile_no","country_code","country_iso_code","status","is_profile_setup","notification_enable","token",
+                 "created_on","updated_on",'hair_color','skin_tone','user_image','body_type','wardrobe','dob','others')
 
 
 class MinorUserSerializer(ModelSerializer):
@@ -111,4 +117,12 @@ class BodyTypeSerializer(ModelSerializer):
 
     class Meta:
         model = BodyType
+        fields = '__all__'
+
+
+
+class VirtualTryOnSerializer(ModelSerializer):
+
+    class Meta:
+        model = VirtualTryOn
         fields = '__all__'

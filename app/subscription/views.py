@@ -148,6 +148,7 @@ class PluchasedPlanList(View):
                 "plan_id__icontains":"plan_id",
                 "final_amount":"final_amount",
                 "status":"status",
+                "subscription_plan__is_free_plan":"is_free_plan",
                 "created_on__date":"created_on",
                 "purchased_by_id":"to_user"
             }
@@ -184,7 +185,7 @@ class ActivatePurchasedPlanNow(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
         purchase_plan = UserPlanPurchased.objects.get(id=self.kwargs['id'],status= USER_PLAN_IN_QUEUE)
-        user = purchase_plan.purchased_by
+        user = User.objects.get(id = purchase_plan.purchased_by.id )
 
         ## mark activate plan expire 
         UserPlanPurchased.objects.filter(

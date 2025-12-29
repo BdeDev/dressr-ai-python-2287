@@ -23,7 +23,6 @@
 					<div><button type="submit" class="btn btn-primary sharp me-2"><i class="fas fa-download me-2"></i>Export Csv</button></div>
 				</form> 
 				{% endif %}
-            	{% comment %} <a class="btn btn-primary" href="{% url 'users:add_user' %}"><i class="fas fa-plus me-2"></i> Customer</a> {% endcomment %}
             </div>
         </div>
 		<!-- cards -->
@@ -81,6 +80,43 @@
                 </a>
             </div>
         </div>
+		<!-- cards end -->
+		<div class="row my-2">
+            <div class="col-xl-12 col-lg-12 col-sm-12">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0 d-md-flex justify-content-between align-items-center">
+                        <h5 class="card-title">Customers Registered in <span id="selected_year"></span>{% if selected_month %}(<span id="selected_month"></span>){% endif %}</h5>
+                        <div class="graph-sets mt-md-0 mt-2">
+                            <div class="dropdown d-flex">
+                                <select class="graph-dropdown me-2" name="months" id="months" onchange="GetGraphData(this.value)">
+                                    <option value="">Select</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                                <select class="graph-dropdown" name="years" id="years" onchange="GetGraphData(this.value)"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card mt-2" >
             <div class="card-body" id="card_body_div">
 				<div class='d-flex flex-wrap justify-content-between'>
@@ -96,7 +132,7 @@
 									<tr>
 										<th>Full Name</th>
 										<th>Email</th>
-										<th>Mobile Number</th>
+										<th>Username</th>
 										<th>Created on</th>
 										<th>Status </th>
 										<th>Actions</th>
@@ -106,7 +142,7 @@
 									<tr class="search-row">
 										<td><input type="text" value="{{request.GET.full_name}}" class="form-control" name="full_name" maxlength="20"></td>
 										<td><input type="text" value="{{request.GET.email}}" class="form-control" name="email" maxlength="40"></td>
-										<td><input type="text" value="{{request.GET.mobile_no}}" onkeypress="return /[0-9+\Enter]/i.test(event.key)" class="form-control" name="mobile_no" maxlength="20"></td>
+										<td><input type="text" value="{{request.GET.username}}" class="form-control" name="username" maxlength="50"></td>
 										<td><input type="date" onkeydown="return false" value="{{request.GET.created_on}}" class="position-relative form-control" name="created_on" onchange="this.form.submit()"></td>
 										<td>
 											<select class="form-control" name="status" onchange="this.form.submit()">
@@ -146,14 +182,14 @@
 												{% if user.email %}{{ user.email }}{% else %}-{% endif %}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
-												{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %} {{ user.mobile_no }}{% else %}-{% endif %}
+												{{ user.username|default:"-" }}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
 												<span class="w-space-no">
-												<script>
-													var date = ConvertDateTime("{{ user.created_on|date:'Y-m-d' }}", "{{ user.created_on|time:'H:i' }}");
-													document.write(date);
-												</script>
+                                                    <script>
+                                                        var date = ConvertDateTime("{{ user.created_on|date:'Y-m-d' }}", "{{ user.created_on|time:'H:i' }}");
+                                                        document.write(date);
+                                                    </script>
 												</span>
 											</td>
 											
@@ -171,7 +207,6 @@
 											<td>
 												<div class="d-flex">
 													<a title="View Details" href="{% url 'users:view_user' user.id %}" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
-													{% comment %} <a title="Delete" href="{% url 'users:delete_users' user.id %}" class="btn btn-danger shadow btn-xs sharp me-1"><i class="fa fa-trash"></i></a> {% endcomment %}
 												</div>
 											</td>
 										</tr>
@@ -192,14 +227,5 @@
 {% include "admin-includes/footer.html" %}
 <script src="{% static 'admin-assets/js/customized-js/graph.js' %}"></script>
 <script>
-	// redirects on same div location after refresh
-	$(document).ready(function() {
-		if("{{scroll_required}}" == "True"){
-			$('html, body').animate({
-				scrollTop: ($("#card_body_div").offset().top + 170)
-			}, 100);
-		}
-	});
-
-	GetGraphData()
+    GetGraphData(); // user graph
 </script>

@@ -3,22 +3,18 @@ from django.contrib import admin
 from django.urls import re_path
 from .views_graphs import *
 from .views_exports import *
+
 admin.autodiscover()
 app_name = 'users'
 
-
 urlpatterns = [
-
     ## Users
     re_path(r'^view-profile/(?P<id>[-\w]+)/$',ViewUser.as_view(), name='view_user'),
     re_path(r'^delete-users/(?P<id>[-\w]+)/$',DeleteUsers.as_view(), name='delete_users'),
     re_path(r'^edit-admin/(?P<id>[-\w]+)/$',EditAdmin.as_view(), name='edit_admin'),
     re_path(r'^users-list/$', UsersList.as_view(), name='users_list'),
-    re_path(r'^affiliate-list/$', AffiliateList.as_view(), name='affiliate_list'),
-    re_path(r'^add-user/$', AddUser.as_view(), name='add_user'),
-    re_path(r'^edit-user/(?P<id>[-\w]+)/$', EditUser.as_view(), name='edit_user'),
     re_path(r'^modify-customer-stripe-account/(?P<id>[-\w]+)/$', ModifyCustomerStipeAccount.as_view(), name='modify_customer_stripe_account'),
-    
+
     ## User Actions
     re_path(r'^deactivate-user/(?P<id>[-\w]+)/$',InactivateUser.as_view(), name='inactivate_user'),
     re_path(r'^delete-user/(?P<id>[-\w]+)/$',DeleteUser.as_view(), name='delete_user'),
@@ -33,4 +29,15 @@ urlpatterns = [
     
     ## Download User Reports
     re_path(r'^download-customer-reports/$',DownLoadCustomerReports.as_view(), name='download_customer_reports'),
+
+    ## Affiiate Management from admin panel
+    re_path(r'^affiliate-list/$', AffiliateList.as_view(), name='affiliate_list'),
+    re_path(r'^add-affiliate/$', AddAffiliate.as_view(), name='add_affiliate'),
+    re_path(r'^edit-affiliate/(?P<id>[-\w]+)/$', EditAffiliate.as_view(), name='edit_affiliate'),
+    re_path(r'^delete-affiliate/(?P<id>[-\w]+)/$', DeleteAffiliate.as_view(), name='delete_affiliate'),
+    re_path(r'^edit-affiliate-commission/(?P<id>[-\w]+)/$', UpdateAffiliateCommission.as_view(), name='edit_affiliate_commission'),
+
+    re_path(r'^outfit-suggestions/$', AIOutfitSuggestionsView.as_view(), name='outfit_suggestions'),
+    re_path(r'^delete-suggestion/(?P<id>[-\w]+)/$', DeleteOutfitSuggestion.as_view(), name='delete_suggestion'),
+    re_path(r'^view-suggestion/(?P<id>[-\w]+)/$', GetOutfitSuggestion.as_view(), name='view_suggestion'),
 ]

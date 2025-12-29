@@ -14,25 +14,117 @@
                 </nav>
             </div>
 			<div class="page-btn d-flex flex-wrap">
-				{% if users %}
-				<form action="{% url 'users:download_customer_reports' %}?role_id=2" method="POST">
+				{% if affiliates %}
+				<form action="{% url 'users:download_customer_reports' %}?role_id=3" method="POST">
 					{% csrf_token %} 			
 					<input type="hidden" class="timezone" name="timezone">
 					<div><button type="submit" class="btn btn-primary sharp me-2"><i class="fas fa-download me-2"></i>Export Csv</button></div>
 				</form> 
 				{% endif %}
-            	{% comment %} <a class="btn btn-primary" href="{% url 'users:add_user' %}"><i class="fas fa-plus me-2"></i> Customer</a> {% endcomment %}
+            	<a class="btn btn-primary" href="{% url 'users:add_affiliate' %}"><i class="fas fa-plus me-2"></i> Affiliate</a>
+            </div>
+        </div>
+		<!-- cards -->
+		<div class="row state-overview">
+            <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                <a href="?" style="color: inherit;" class="d-flex">
+                    <div class="dash-count das4">
+                        <div class="dash-counts">
+                            <h5>Total Affiliates</h5>
+                            <h4>{{'total_affiliate'|affiliates_count}}</h4>
+                        </div>
+                        <div class="dash-imgs">
+                            <span><i class="fad fa-users"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                <a href="?status=1" style="color: inherit;" class="d-flex">
+                    <div class="dash-count das5">
+                        <div class="dash-counts">
+                            <h5>Active Affiliates</h5>
+                            <h4>{{'active_affiliate'|affiliates_count}}</h4>
+                        </div>
+                        <div class="dash-imgs">
+                            <span><i class="fas fa-badge-check"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                <a href="?status=2" style="color: inherit;" class="d-flex">
+                    <div class="dash-count das6">
+                        <div class="dash-counts">
+                            <h5>Inactive Affiliates</h5>
+                            <h4>{{'inactive_affiliate'|affiliates_count}}</h4>
+                        </div>
+                        <div class="dash-imgs">
+                            <span><i class="fas fa-times-circle"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                <a href="?status=3" style="color: inherit;" class="d-flex">
+                    <div class="dash-count das7">
+                        <div class="dash-counts">
+                            <h5>Deleted Affiliates</h5>
+                            <h4>{{'deleted_affiliate'|affiliates_count}}</h4>
+                        </div>
+                        <div class="dash-imgs">
+                            <span><i class="fas fa-user-minus"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+		<!-- cards end -->
+		<div class="row my-2">
+            <div class="col-xl-12 col-lg-12 col-sm-12">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0 d-md-flex justify-content-between align-items-center">
+                        <h5 class="card-title">Affiliates Registered in <span id="selected_year"></span>{% if selected_month %}(<span id="selected_month"></span>){% endif %}</h5>
+                        <div class="graph-sets mt-md-0 mt-2">
+                            <div class="dropdown d-flex">
+                                <select class="graph-dropdown me-2" name="months" id="months" onchange="GetGraphDataAffiliate(this.value)">
+                                    <option value="">Select</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                                <select class="graph-dropdown" name="years" id="years" onchange="GetGraphDataAffiliate(this.value)"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="affiliate-chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="card mt-2" >
             <div class="card-body" id="card_body_div">
 				<div class='d-flex flex-wrap justify-content-between'>
 					<!-- showing_objects-->
-					{% include "admin-includes/showing_objects.html" with listing_objects=users %}
+					{% include "admin-includes/showing_objects.html" with listing_objects=affiliates %}
 					<!-- showing_objects end-->
 				</div>
                 <div class="dataview">
-                    <form onsubmit="Loader()" action="{% url 'users:users_list' %}" method="GET">
+                    <form onsubmit="Loader()" action="{% url 'users:affiliate_list' %}" method="GET">
 						<div class="table-responsive">
 							<table class="table datatable">
 								<thead>
@@ -63,9 +155,9 @@
 									</tr>
 								</thead>
 								<tbody>
-									{% if users %}
-										{% for user in users %}
-										<tr {% if user.is_defaulter %}class="overdue-loan-color"{% endif %} >
+									{% if affiliates %}
+										{% for user in affiliates %}
+										<tr>
 											<td>
 												<div class="d-flex align-items-center display-images">
 													{% if user.profile_pic %}
@@ -89,7 +181,7 @@
 												{% if user.email %}{{ user.email }}{% else %}-{% endif %}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
-												{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %}{{ user.mobile_no }}{% else %}-{% endif %}
+												{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %} {{ user.mobile_no }}{% else %}-{% endif %}
 											</td>
 											<td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
 												<span class="w-space-no">
@@ -124,7 +216,7 @@
 						</div>
 					</form>
                     <!-- pagination-->
-					{% include "admin-includes/pagination.html" with listing_objects=users %}
+					{% include "admin-includes/pagination.html" with listing_objects=affiliates %}
 					<!-- pagination end-->
                 </div>
             </div>
@@ -143,5 +235,5 @@
 		}
 	});
 
-	GetGraphData()
+	GetGraphDataAffiliate()
 </script>

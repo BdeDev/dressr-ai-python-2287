@@ -41,3 +41,10 @@ class TwilioSetting(CommonInfo):
     class Meta:
         db_table = 'twilio_settings'
        
+
+class LightXEditorCredentials(CommonInfo):
+    api_key = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=False, blank=True, null=True)
+
+    class Meta:
+        db_table = 'lightx_editor'

@@ -1,0 +1,254 @@
+{% include "admin-includes/header.html" %}{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Virtual Try On</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'ecommerce:virtual_try_on_list' %}">Virtual Try On</a></li>
+                        <li class="breadcrumb-item active">Virtual Try On Details</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary" href="{% url 'ecommerce:virtual_try_on_list' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <div class="card my-4">
+                    <div class="card-body">
+                        <div class="row">
+                        <div class=" col-md-12  productdetails">
+                            <ul class="product-bar mb-2">
+                                <li>
+                                    <h4>Id </h4>
+                                    <h6>{{virtual_try_on.id}}</h6>
+                                </li>
+                                <li>
+                                    <h4> Order Id </h4>
+                                    <h6>{{virtual_try_on.order_id|default:"-"}}</h6>
+                                </li>
+                                 <li>
+                                    <h4> User </h4>
+                                    <h6>
+                                        {% if virtual_try_on.user %}
+                                        <div class="d-flex align-items-center display-images">
+                                            {% if virtual_try_on.user.profile_pic %}
+                                                <a href="{{virtual_try_on.user.profile_pic.url}}" data-fancybox>
+                                                    <img src="{{virtual_try_on.user.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% else %}
+                                                <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                    class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% endif %}
+                                            <span><a class="w-100" href="{% url 'users:view_user' virtual_try_on.user.id %}">{{virtual_try_on.user.full_name|capfirst}}</a></span>
+                                        </div>
+                                        {% else %}-{% endif %}
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Sigmentation Type</h4>
+                                    <h6>
+                                        {% if virtual_try_on.sigmentation_type == 0 %}
+                                            <span class="badge bg-success">UPPER BODY</span>
+                                        {% elif virtual_try_on.sigmentation_type == 1 %}
+                                            <span class="badge bg-warning">LOWER BODY</span>
+                                        {% elif virtual_try_on.sigmentation_type == 2 %}
+                                            <span class="badge bg-primary">FULL BODY</span>
+                                        {% else %}-
+                                        {% endif %}
+                                    </h6>
+                                </li>
+
+                                <li>
+                                    <h4>Status</h4>
+                                    <h6>
+                                        {% if virtual_try_on.status == 1 %}
+                                            <span class="badge bg-primary">PENDING</span>
+                                        {% elif virtual_try_on.status == 2 %}
+                                            <span class="badge bg-warning">PROCESSING</span>
+                                        {% elif virtual_try_on.status == 3 %}
+                                            <span class="badge bg-success">SUCCESS</span>
+                                        {% elif virtual_try_on.status == 4 %}
+                                            <span class="badge bg-danger">FAILED</span>
+                                        {% else %}-
+                                        {% endif %}
+                                    </h6>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <div class="card my-4">
+                    <div class="card-body">
+                        <div class="row">
+                        <div class=" col-md-12  productdetails d-flex justify-content-between">
+                            <div class="product-bar mb-2">
+                                <h4> Source Image </h4><hr>
+                                <h6>
+                                    <div class="d-flex align-items-center">
+                                        {% if virtual_try_on.source_image %}
+                                            <a href="{{virtual_try_on.source_image.url}}" data-fancybox>
+                                                <img src="{{virtual_try_on.source_image.url}}" class="rounded-lg me-2" width="300" alt="">
+                                            </a>
+                                        {% else %}
+                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                class="rounded-lg me-2" width="300" alt="">
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </h6>
+                            </div>
+                            <div class="product-bar mb-2">
+                                <h4> Garment Image </h4><hr>
+                                <h6>
+                                    {% if virtual_try_on.garment_image %}
+                                    <div class="d-flex align-items-center">
+                                        {% if virtual_try_on.garment_image %}
+                                            <a href="{{virtual_try_on.garment_image.url}}" data-fancybox>
+                                                <img src="{{virtual_try_on.garment_image.url}}" class="rounded-lg me-2" width="300" alt="">
+                                            </a>
+                                        {% else %}
+                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                class="rounded-lg me-2" width="300" alt="">
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}-{% endif %}
+                                </h6>
+                            </div>
+                            <div class="product-bar mb-2">
+                                <h4> Output Image </h4><hr>
+                                <h6>
+                                    {% if virtual_try_on.output_image %}
+                                    <div class="d-flex align-items-center">
+                                        {% if virtual_try_on.output_image %}
+                                            <a href="{{virtual_try_on.output_image.url}}" data-fancybox>
+                                                <img src="{{virtual_try_on.output_image.url}}" class="rounded-lg me-2" width="300" alt="">
+                                            </a>
+                                        {% else %}
+                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                class="rounded-lg me-2" width="300" alt="">
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}-{% endif %}
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- tabs -->
+            <div class="col-lg-12 col-sm-12 mt-5">
+                <div class="row  mt-4">
+                    <div class="bs-example action-tabs">
+                        <ul class="nav nav-tabs" id="myTab">
+                            <li class="nav-item">
+                                <a href="#sectionA" class="nav-link nav-link-items active nav-link1" data-toggle="tab">Try on Feedback</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="sectionA" class="tab-pane fade show active ">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>User Name</strong></th>
+                                                                <th><strong>Rating</strong></th>
+                                                                <th><strong>Comment</strong></th>
+                                                                <th><strong>Created On </strong></th>
+                                                                <th><strong>Actions </strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if ratings %}
+                                                                {% for rating in ratings %}
+                                                                <tr>
+                                                                    <td>
+                                                                        {% if rating.user %}
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if rating.user.profile_pic %}
+                                                                                <a href="{{rating.user.profile_pic.url}}" data-fancybox>
+                                                                                    <img src="{{rating.user.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                                                </a>
+                                                                            {% else %}
+                                                                                <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                    class="rounded-lg me-2" width="50" alt="">
+                                                                                </a>
+                                                                            {% endif %}
+                                                                            <span><a class="w-100" href="{% url 'users:view_user' rating.user.id %}">{{rating.user.full_name|capfirst}}</a></span>
+                                                                        </div>
+                                                                        {% else %}-{% endif %}
+                                                                    </td>
+                                                                    <td>{{rating.rating|default:'-'}}</td>
+                                                                    <td>{{rating.comment|default:'-'|truncatechars:75}}</td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ rating.created_on|date:'Y-m-d' }}", "{{ rating.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="d-flex">
+                                                                            <a title="View" href="{% url 'ecommerce:feedback_list' virtual_try_on.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <!-- pagination-->
+                                                {% include "admin-includes/pagination.html" with listing_objects=ratings %}
+                                                <!-- pagination end-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tabs end -->
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<style>
+    .product-bar.outfit-custom-size-img {
+    max-height: 281px;
+    max-width: 364px;
+    overflow: hidden;
+   /*  border: 1px solid #dbdbdb;*/
+}
+
+.display-images1 img {
+    margin-right: 8px;
+    width: 137px;
+    height: 269px;
+    border-radius: 0.75rem;
+    object-fit: cover;
+}
+
+
+</style>

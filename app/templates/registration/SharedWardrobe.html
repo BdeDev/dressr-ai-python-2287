@@ -1,0 +1,292 @@
+<!DOCTYPE html>{% load static %}{% load extras %}{% load humanize %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <meta name="description" content="POS - Bootstrap Admin Template">
+    <meta name="keywords"
+        content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern,  html5, responsive">
+    <meta name="author" content="toxsltech">
+    <meta name="robots" content="noindex, nofollow">
+    <title>My Dressr</title>
+    <link rel="shortcut icon" href="{% static 'admin-assets/images/logo-wht.svg' %}" />
+    <link rel="stylesheet" href="{% static 'admin-assets/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/dataTables.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/flash.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/loader.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/selectize.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/swiper-bundle.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/jquery.fancybox.min.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/intlTelInput.css' %}">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/customized-css/custom.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'admin-assets/css/dark-theme.css' %}">
+</head>
+<body class="{% if request.session.dark_mode == 'enabled' %}dark-mode{% endif %}">
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == "error" %}
+                <div class="flash flash_error animate--drop-in-fade-out">
+                    <div class="flash__icon flash__icon__error">
+                        <i class="icon fas fa-times-circle"></i>
+                    </div>
+                    <span class="flash__body">{{ message }}</span>
+                </div>
+            {% else %}
+                <div class="flash animate--drop-in-fade-out">
+                    <div class="flash__icon">
+                        <i class="icon far fa-check-circle"></i>
+                    </div>
+                    <span class="flash__body">{{ message }}</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    <script src="{% static 'admin-assets/js/moment.min.js' %}"></script>
+    <script src="{% static 'admin-assets/js/customized-js/moment.js' %}"></script>
+</body>
+<div>
+    <div class="content">
+        <div class="page-header">
+            <div class="auth-logo text-center">
+            <a class="auth-logo-inr" href="/">
+               <img src="{% static 'admin-assets/images/logo-black.svg' %}" />
+            </a>
+          </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <div class="card my-4">
+                    <div class="card-body">
+                        <div class="product-detail-wrapper">
+                            <div class="profile-imgbox">
+                                {% if wardrobe.user.profile_pic %}
+                                <a class="product-img" href="{{ wardrobe.user.profile_pic.url }}" data-fancybox="gallery">
+                                    <img style="height: auto;" src="{{ wardrobe.user.profile_pic.url }}" alt="image">
+                                </a>
+                                {% else %}
+                                <a class="product-img" href="{% static 'admin-assets/images/dp.png' %}" data-fancybox="gallery">
+                                    <img style="height: auto;" src="{% static 'admin-assets/images/dp.png' %}" alt="image">
+                                </a>
+                                {% endif %}
+                                
+                            </div>
+                            
+                        </div>
+                        <h4><span class="d-flex justify-content-center"><b>{{wardrobe.user.full_name|capfirst}}</b></span></h4>
+                    </div>
+                </div>
+            </div>
+            <div class="row gap-3">
+                <div class="card-body" id="card_body_div">
+                    <div class="swiper mySwiper">
+                        <div class="swiper-wrapper">
+                            {% for item in cloth_items %}
+                                <div class="swiper-slide">
+                                    <div class="card" style="width: 18rem; position: relative;">
+                                        {% if item.image %}
+                                        <a href="{{ item.image.url }}" data-fancybox>
+                                            <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
+                                        </a>
+                                        <a href="javascript:void(0);" onclick="getWardrobeItemDetails('{{ item.id }}')">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <h5 class="card-title">{{item.title|default:"-"}} </h5>
+                                                <small>( Wears Times: {{item.wear_count}} )</small>
+                                            </div>
+                                            <p class="card-text">{{item.cloth_category.title|default:"-"}}</p>
+                                        </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="view-details" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="basic-form">
+                    <div class="row">
+                        <div class="col-md-12 col-lg-12 col-sm-12">
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="card my-4">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6  productdetails">
+                                            <h5><b>Item Detail</b></h5>
+                                            <ul class="product-bar mb-2">
+                                                <li>
+                                                    <h4>Id </h4>
+                                                    <h6><span id="item_id"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Title </h4>
+                                                    <h6><span id="item_title"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Category </h4>
+                                                    <h6><span id="item_category"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Wear Count </h4>
+                                                    <h6><span id="item_wear_count"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Weather Type </h4>
+                                                    <h6><span id="weather_type"></span>
+                                                    </h6>
+                                                </li> 
+                                                <li>
+                                                    <h4> Colour </h4>
+                                                    <h6><span id="item_color"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Brand </h4>
+                                                    <h6><span id="item_brand"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Occasion </h4>
+                                                    <h6><span id="item_occasion"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4>Created On </h4>
+                                                    <h6>
+                                                        <span id="item_addedd_on"> </span>
+                                                    </h6>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6 productdetails">
+                                            <h5><b>Item Image</b></h5>
+                                            <ul class="product-bar custom-size-img mb-2">
+                                                <li>
+                                                    <a id="item_image_link" data-fancybox>
+                                                        <img id="item_image_img"  alt="">
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'admin-assets/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/bootstrap4.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/jquery.fancybox.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/jquery.slimscroll.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/script.js' %}"></script>
+<script src="{% static 'admin-assets/js/validate.js' %}"></script>
+<script src="{% static 'admin-assets/js/additional-methods.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/selectize.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/selectize_no_results.js' %}"></script>
+<script src="{% static 'admin-assets/js/jquery-ui.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/highcharts.src.js' %}"></script>
+<script src="{% static 'admin-assets/js/intlTelInput-jquery.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/sweetalert.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/sweet-alerts.js' %}"></script>
+<script src="{% static 'admin-assets/js/ckeditor-validation.js' %}"></script>
+<script src="{% static 'admin-assets/js/swiper-js/swiper-bundle.min.js' %}"></script>
+<script src="{% static 'admin-assets/js/swiper.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/common.js' %}"></script>
+<script src="{% static 'admin-assets/js/customized-js/loader.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.0/dist/sweetalert2.all.min.js"></script>
+<script src="{% static 'admin-assets/js/customized-js/show-more.js' %}"></script>
+</body>
+</html>
+<script>
+function getWardrobeItemDetails(itemId) {
+    $.ajax({
+        url: "{% url 'wardrobe:wardrobe_item_details' %}",
+        type: "GET",
+        data: { item_id: itemId },
+        success: function(response) {
+            let item = response.items_data;
+            $("#item_id").text(item.id);
+            $("#item_title").text(item.title);
+            $("#item_category").text(item.cloth_category);
+            $("#item_wear_count").text(item.wear_count);
+            $("#item_color").text(item.color);
+            $("#item_brand").text(item.brand);
+            $("#item_occasion").text(item.occasion);
+            $("#item_addedd_on").text(item.created_on);
+            $("#item_image_img").attr("src", item.image_url);
+            $("#item_image_link").attr("href", item.image_url);
+            const weatherTypeMapping = {
+                1: "Summer",
+                2: "Winter",
+                3: "Rainy Season",
+                4: "Spring Season",
+                5: "All Seasons"
+            };
+            let weatherVal = parseInt(item.weather_type);
+            let weatherText = weatherTypeMapping[weatherVal] || "Not Available";
+            $("#weather_type").text(weatherText);
+
+            $("#view-details").modal("show");
+        },
+        error: function() {
+            alert("Failed to load item details.");
+        }
+    });
+}
+</script>
+
+<script>
+    var swiper = new Swiper(".mySwiper", {
+        slidesPerView: 5,
+        spaceBetween: 20,
+
+        breakpoints: {
+            0: {
+                slidesPerView: 1,
+                spaceBetween: 10,
+            },
+
+            576: {
+                slidesPerView: 2,
+                spaceBetween: 15,
+            },
+
+            768: {
+                slidesPerView: 3,
+                spaceBetween: 20,
+            },
+
+            1200: {
+                slidesPerView: 5,
+                spaceBetween: 20,
+            }
+        }
+    });
+
+</script>
+<style> 
+    .page-header {
+        margin-bottom: 25px;
+        margin-top: 25px;
+        margin-right: 60px;
+        justify-content: end;
+        flex-wrap: wrap;
+    }
+</style>

@@ -46,9 +46,17 @@
                                     <a {% if notification.notification_type == 1 and notification.obj_id  %}
                                             href="{% url "users:view_user" notification.obj_id %}?n_id={{notification.id}}"
                                         {% elif notification.notification_type == 2 and notification.obj_id %}
-                                            href="{% url "loan_manager:view_loan_application" notification.obj_id %}?n_id={{notification.id}}"
+                                            href="{% url "users:view_user" notification.obj_id %}?n_id={{notification.id}}"
                                         {% elif notification.notification_type == 3 and notification.obj_id %}
-                                            href="{% url "users:view_user" %}?n_id={{notification.id}}"
+                                            href="{% url "users:view_user" notification.obj_id %}?n_id={{notification.id}}"
+                                        {% elif notification.notification_type == 4 and notification.obj_id %}
+                                            href="{% url "ecommerce:view_virtual_try_on" notification.obj_id %}?n_id={{notification.id}}"
+                                        {% elif notification.notification_type == 5 and notification.obj_id %}
+                                            href="{% url "wardrobe:view_outfit_detail" notification.obj_id %}?n_id={{notification.id}}"
+                                        {% elif notification.notification_type == 6 and notification.obj_id %}
+                                            href="{% url "subscription:purchased_plan_info" notification.obj_id %}?n_id={{notification.id}}"
+                                        {% elif notification.notification_type == 7 and notification.obj_id %}
+                                            href="{% url "users:view_suggestion" notification.obj_id %}?n_id={{notification.id}}"
                                         {% else %}
                                             href="?n_id={{notification.id}}"
                                         {% endif %}
@@ -158,7 +166,8 @@
                     </li>
                     <li class="submenu {% if head_title == "User Management" or head_title == "Affiliate Management"  %} active {% endif %}">
                         <a href="javascript:void(0);"><i class="fad fa-users"></i><span> Users</span>
-                            <span class="menu-arrow"></span></a>
+                            <span class="menu-arrow"></span>
+                        </a>
                         <ul>
                             <li>
                                 <a {% if head_title == 'User Management' %} class="active" {% endif %} href="{% url 'users:users_list' %}" onclick="Loader()">
@@ -192,6 +201,16 @@
                             <li>
                                 <a {% if head_title == 'Outfit Management' %} class="active" {% endif %} href="{% url 'wardrobe:user_outfit_list' %}">
                                     Outfit
+                                </a>
+                            </li>
+                            <li>
+                                <a {% if head_title == 'Virtual Try On Management' %} class="active" {% endif %} href="{% url 'ecommerce:virtual_try_on_list' %}">
+                                    Virtual Try On
+                                </a>
+                            </li>
+                            <li>
+                                <a {% if head_title == 'Styling Suggestions Management' %} class="active" {% endif %} href="{% url 'users:outfit_suggestions' %}">
+                                    Styling Suggestions
                                 </a>
                             </li>
                         </ul>
@@ -321,6 +340,11 @@
                                     Firebase
                                 </a>
                             </li>
+                            <li>
+                                <a {% if head_title == 'LightX Editor Credentials Management' %} class="active" {% endif %} href="{% url 'credentials:lightx_editor_key_list' %}" onclick="Loader()">
+                                    LightX Editor
+                                </a>
+                            </li>
                         </ul>
                     </li>
                     <li class="submenu {% if   head_title == 'Help & Support Management' or head_title == 'Social Links Management' or head_title == 'Domain Management' %}active{% endif %}">
@@ -332,11 +356,6 @@
                                     Domain Setting
                                 </a>
                             </li>
-                            {% comment %} <li>
-                                <a {% if head_title == 'Social Links Management' %} class="active" {% endif %} href="{% url 'contact_us:social_links' %}">
-                                    Social Links
-                                </a>
-                            </li> {% endcomment %}
                         </ul>
                     </li>
                     <li class="submenu {% if head_title == 'Login History' or head_title == 'Notifications Management' or head_title == 'Pages Management' or head_title == 'Backup Management' %}active {% endif %}">

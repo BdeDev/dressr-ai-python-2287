@@ -1,0 +1,112 @@
+{% include 'admin-includes/header.html' %}
+{% load static %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Affiliates</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'users:affiliate_list' %}" class="white-text">Affiliates</a></li>
+                        <li class="breadcrumb-item active">Add Affiliate</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary" href="{% url 'users:affiliate_list' %}" ><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <form onsubmit="Loader(this.id)" id="add-affiliate" action="{% url 'users:add_affiliate' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-lg-4 col-md-4 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">First Name</label>
+                                <input type="text" placeholder="Enter First Name" name="first_name" class="form-control" maxlength="254">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" placeholder="Enter Last Name" name="last_name" class="form-control" maxlength="254">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Email</label>
+                                <input type="email" placeholder="Enter Email" name="email" class="form-control" maxlength="254">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Mobile No</label>
+                                <input id="country_code" value="+91" type="hidden" name="country_code" class="form-control" maxlength="20">
+                                <input type="hidden"  value="in" name="country_iso_code" id="country_iso_code" class="form-control"  maxlength="10">
+                                <input type="text" placeholder="Enter Mobile No" onkeypress="return /[0-9]/i.test(event.key)" name="mobile_no" id="mobile_no" maxlength="10" class="form-control" >
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Password</label>
+                                <div class="pass-group">
+                                    <input type="password" name="password" class="pass-input" autocomplete="on" onclick="changetype()"  placeholder="Enter your password">
+                                    <span class="fas toggle-password fa-eye-slash"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-12">
+                            <div class="form-group required-field">
+                                <label class="form-label">Gender</label>
+                                <select name="gender" id="gender" required class="form-control">
+                                    <option value="">Select</option>
+                                    <option value="1">Male</option>
+                                    <option value="2">Female</option>
+                                    <option value="3">Others</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 col-md-4 col-12">
+                            <div class="form-group">
+                                <label class="form-label">Profile Pic</label>
+                                <input type="file" name="profile_pic" accept="image/*" class="form-control" maxlength="254">
+                            </div>
+                        </div>
+                        <div class="col-lg-12 text-end">
+                            <button type="submit" class="btn btn-primary me-2">Save</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'admin-includes/footer.html' %}
+<script src="{% static 'admin-assets/js/validations/user-validation.js' %}"></script>
+<script type="text/javascript">
+
+    // For country code picker intlTelInputGlobals
+    $("#mobile_no").intlTelInput({
+     initialCountry: "{% if user.country_iso_code %}{{user.country_iso_code}}{% else %}auto{% endif %}",
+     separateDialCode: true,
+     geoIpLookup: function(callback) {
+         fetch("https://ipapi.co/json")
+           .then(function(res) { return res.json(); })
+           .then(function(data) { callback(data.country_code); 
+             $('#country_code').val(data.country_code)
+             $('#country_iso_code').val(data.country_calling_code)
+         }).catch(function() { callback("in"); 
+           $('#country_code').val('in')
+           $('#country_iso_code').val('+91')
+         });
+         
+       }
+     }).on('countrychange', function (e, countryData) {
+         $('#country_code').val($('.iti__selected-dial-code').text())
+         $('#country_iso_code').val($("#mobile_no").intlTelInput("getSelectedCountryData").iso2)
+     });
+ 
+ </script>

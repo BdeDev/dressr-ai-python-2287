@@ -3,6 +3,8 @@ from accounts.common_imports import *
 from .models import *
 from accounts.management.commands.default_data import default_activity_flags,default_hair_colors,default_skin_tones,default_body_types
 from accounts.utils import *
+from ecommerce.models import Rating
+from ecommerce.serializer import RatingSerializer
 # Create your views here.
 
 """
@@ -13,6 +15,7 @@ class ClothCategoryView(View):
     def get(self,request,*args,**kwargs):
         cloth_category = ClothCategory.objects.all().order_by('-created_on')
         cloth_category = query_filter_constructer(request,cloth_category,{
+            "category_type":"category_type",
             "title__icontains":"title",
             "created_on__date":"created_on",
         })
@@ -30,6 +33,7 @@ class ClothCategoryView(View):
     @method_decorator(admin_only)
     def post(self, request, *args, **kwargs):
         category_id = request.POST.get('category_id')
+        category_type  = request.POST.get('category_type')
         title = request.POST.get('title').strip()
         if category_id:
             try:
@@ -38,12 +42,15 @@ class ClothCategoryView(View):
                 messages.error(request, "Cloth Category not found!")
                 return redirect('wardrobe:cloth_category')
             
-            if ClothCategory.objects.filter(title=title).exclude(id=category_id).exists():
+            if ClothCategory.objects.filter(title=title,category_type = category_type).exclude(id=category_id).exists():
                 messages.error(request, "Cloth Category already exists!")
                 return redirect('wardrobe:cloth_category')
             if request.FILES.get('icon'):
                 cloth_category.icon = request.FILES.get('icon')
-            cloth_category.title = title
+            if category_type:
+                cloth_category.category_type = category_type
+            if title:
+                cloth_category.title = title.title()
             cloth_category.save()
             messages.success(request, "Cloth Category updated successfully!")
         else:
@@ -51,7 +58,8 @@ class ClothCategoryView(View):
                 messages.error(request, "Cloth Category already exists!")
                 return redirect('wardrobe:cloth_category')
             ClothCategory.objects.create(
-                title=title,
+                category_type = category_type,
+                title=title.title(),
                 icon = request.FILES.get('icon')
             )
             messages.success(request, "Cloth Category added successfully!")
@@ -181,7 +189,6 @@ class WardrobeList(View):
     def get(self,request,*args,**kwargs):
         wardrobs = Wardrobe.objects.all().order_by('-created_on')
         wardrobs = query_filter_constructer(request,wardrobs,{
-            "name__icontains":"name",
             "user__full_name__icontains":"user",
             "is_shared":"is_shared",
         })
@@ -223,7 +230,7 @@ class WardrobeView(View):
         return render(request,'wardrobe/wardrobs/view-wardrobe.html',{
             "head_title":'Wardrobe Management',
             "wardrobe":wardrobe,
-            "cloth_items":cloth_items,
+            "cloth_items":cloth_items[:12],
             "most_worn":most_worn,
             "least_worn":least_worn,
             "recommendations":recommendations,
@@ -370,8 +377,15 @@ class ViewOutfitDetails(View):
     @method_decorator(admin_only)
     def get(self,request,*args,**kwargs):
         outfit = Outfit.objects.get(id=self.kwargs.get('id'))
-        return render(request,'ecommerce/outfits/view-outfit-detail.html',{"outfit":outfit,"head_title":"Outfit Management"})
+        ratings = Rating.objects.filter(outfit_id = outfit)
+        return render(request,'ecommerce/outfits/view-outfit-detail.html',{"outfit":outfit,"ratings":ratings,"head_title":"Outfit Management"})
     
+class DeleteOutfit(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        outfit = Outfit.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Outfit Deleted Successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 class HairColorList(View):
     @method_decorator(admin_only)
@@ -532,6 +546,8 @@ class BodyTypeList(View):
                 return redirect('wardrobe:body_type_list')
             if request.POST.get('title'):
                 body_type.title = request.POST.get('title').strip()
+            if request.FILES.get('icon'):
+                body_type.icon = request.FILES.get('icon')
             if request.POST.get('description'):
                 body_type.description = request.POST.get('description').strip()
             body_type.save()
@@ -542,6 +558,7 @@ class BodyTypeList(View):
                 return redirect('wardrobe:body_type_list')
             BodyType.objects.create(
                 title=request.POST.get('title').strip(),
+                icon = request.FILES.get('icon') if request.FILES.get('icon') else None,
                 description=request.POST.get('description').strip()
             )
             messages.success(request, "Body Type added successfully!")
@@ -597,3 +614,43 @@ class CalenderDataAjax(View):
         wear_items_data = list(wear_items.values('id', 'worn_on','item_id','user_id','item__image'))
         data['items_data'] = wear_items_data
         return JsonResponse(data)
+    
+
+class WardrobeItemsDetails(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        item_id = request.GET.get('item_id')
+
+        item_feedback = Rating.objects.filter(item = item_id).order_by('-created_on')
+        try:
+            item = ClothingItem.objects.get(id=item_id)
+        except ClothingItem.DoesNotExist:
+            return JsonResponse({"error": "Item not found"}, status=404)
+        data = {
+            "items_data": {
+                "id": item.id,
+                "title": item.title,
+                "cloth_category": item.cloth_category.title if item.cloth_category else "",
+                "wear_count": item.wear_count,
+                "weather_type": item.weather_type,
+                "color": item.color,
+                "brand": item.brand,
+                "occasion": item.occasion.title if item.occasion else "",
+                "created_on": item.created_on.strftime("%Y-%m-%d %H:%M"),
+                "image_url": item.image.url if item.image else "",
+                
+            },
+            "item_feedback":RatingSerializer(item_feedback,many=True,context = {'request':request}).data
+        }
+        return JsonResponse(data)
+
+
+class ViewItemList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        wardrobe = Wardrobe.objects.get(id=self.kwargs.get('id'))
+        cloth_items = ClothingItem.objects.filter(wardrobe = wardrobe).order_by('-created_on')
+        return render(request,'wardrobe/wardrobs/wardrobe-item-list.html',{
+            "head_title":'Wardrobe Management',
+            "cloth_items":get_pagination(request,cloth_items)
+        })

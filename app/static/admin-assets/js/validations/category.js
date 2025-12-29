@@ -27,7 +27,7 @@ $("#edit-cloth-category").validate({
 			required: true,
 			},
         icon: {
-			required: true,
+			required: false,
 			},
 		},
 	messages: {

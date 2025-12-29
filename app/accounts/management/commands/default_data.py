@@ -1,4 +1,6 @@
 
+
+
 default_skin_tones = [
         {"name": "Fair", "hex": "#FFDFC4"},
         {"name": "Very Fair", "hex": "#FFD7A2"},
@@ -35,7 +37,6 @@ default_activity_flags = [
     {"name": "Formal Meetings", "description": "Formal attire and accessories."},
     {"name": "Night Life", "description": "Party and nightlife outfits."},
     {"name": "Desert", "description": "Desert-specific clothing and gear."},
-    # {"name": "Other activities", "description": "Additional activities, such as skiing or yoga."},
 ]
 
 default_body_types = [
@@ -50,3 +51,49 @@ default_body_types = [
     {"name": "Slim", "description": "Lean and narrow frame with lower body fat and delicate proportions."},
     {"name": "Plus Size", "description": "Fuller figure with soft curves and proportional upper and lower body."}
 ]
+
+
+ACTIVITY_ITEM_MAP = {
+    "swim": [
+        "swimwear",
+        "flip_flops",
+        "towel",
+        "sunscreen",
+        "sunglasses",
+    ],
+
+    "hiking": [
+        "shoes",
+        "jacket",
+        "tshirt",
+        "shorts",
+        "cap",
+        "water_bottle",
+    ],
+
+    "formal_meetings": [
+        "blazer",
+        "shirt",
+        "trousers",
+        "shoes",
+        "tie",
+        "belt",
+    ],
+
+    "night_life": [
+        "shirt",
+        "dress",
+        "heels",
+        "perfume",
+        "accessories",
+    ],
+
+    "desert": [
+        "shirt",
+        "pants",
+        "sun_hat",
+        "scarf",
+        "desert_boots",
+        "sunglasses",
+    ],
+}

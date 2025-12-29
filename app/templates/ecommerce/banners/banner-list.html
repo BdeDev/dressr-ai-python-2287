@@ -59,16 +59,23 @@
                                             <td> {{banner.title|default:"-"}}</td>
                                             <td> 
                                                 <div class="d-flex align-items-center display-images">
-                                                {% if banner.image %}
-                                                    <a href="{{banner.image.url}}" data-fancybox>
-                                                        <img src="{{banner.image.url}}" class="rounded-lg me-2" width="50" alt="">
-                                                    </a>
-                                                {% else %}
-                                                    <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
-                                                        <img src="{% static 'admin-assets/images/dp.png' %}"
-                                                        class="rounded-lg me-2" width="50" alt="">
-                                                    </a>
-                                                {% endif %}
+                                                    {% if banner.image %}
+                                                        {% if banner.image.url|lower|slice:"-4:" == ".mp4" or banner.image.url|lower|slice:"-5:" == ".webm" %}
+                                                            <a href="{{ banner.image.url }}" data-fancybox>
+                                                                <video width="50" class="rounded-lg me-2" muted>
+                                                                    <source src="{{ banner.image.url }}" type="video/mp4">
+                                                                </video>
+                                                            </a>
+                                                        {% else %}
+                                                            <a href="{{ banner.image.url }}" data-fancybox>
+                                                                <img src="{{ banner.image.url }}" class="rounded-lg me-2" width="50" alt="">
+                                                            </a>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                            <img src="{% static 'admin-assets/images/dp.png' %}" class="rounded-lg me-2" width="50" alt="">
+                                                        </a>
+                                                    {% endif %}
                                                 </div>
                                             </td>
                                             <td>
@@ -87,9 +94,9 @@
 											<td>
 												<div class="d-flex mx-2">
                                                     {% if banner.is_active %}
-                                                        <span style="line-height:32px;" class="badge bg-success active_deactive me-2" message="Are you sure you want to deactivate?" action='DeActivate' href="{% url 'accounts:change_banner_status' banner.id %}">Active</span>
+                                                        <span style="line-height:32px;" class="badge bg-warning active_deactive me-2" message="Are you sure you want to deactivate?" action='DeActivate' href="{% url 'accounts:change_banner_status' banner.id %}">InActive</span>
                                                     {% else %}
-                                                        <span style="line-height:32px;" class="badge bg-warning active_deactive me-2" message="Are you sure you want to activate?" action='Activate' href="{% url 'accounts:change_banner_status' banner.id %}" >InActive</span>
+                                                        <span style="line-height:32px;" class="badge bg-success active_deactive me-2" message="Are you sure you want to activate?" action='Activate' href="{% url 'accounts:change_banner_status' banner.id %}" >Active</span>
                                                     {% endif %}
                                                     <a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{banner.id}}','{{banner.title}}','{{banner.image}}')"  data-bs-target="#edit-banner" class="btn btn-info shadow btn-xs sharp me-2">
 														<i class="fa fa-edit"></i>
@@ -133,8 +140,13 @@
                             </div>
                             <div class="col-lg-12">
                                 <div class="form-group">
-                                    <label class="form-label">Banner Image</label>
-                                    <input type="file" name="image" id="image" accept="image/*" class="form-control">
+                                    <label class="form-label">Banner Image / Video</label>
+                                    <input 
+                                        type="file" 
+                                        name="media" 
+                                        id="media" 
+                                        accept="image/*,video/*" 
+                                        class="form-control">
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -171,7 +183,7 @@
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Image</label>
-                                    <input type="file" name="image" id="banner_image" accept="image/*" class="form-control">
+                                    <input type="file" name="media" id="banner_media" accept="image/*,video/*"  class="form-control">
                                 </div>
                             </div>
                             <div class="col-lg-12 text-end">
@@ -191,6 +203,6 @@
 function GetValue(id, title,image){
     $('#banner_id').val(id);
     $('#banner_title').val(title);
-	$('#banner_image').val(image);
+	$('#banner_media').val(image);
 }
 </script>

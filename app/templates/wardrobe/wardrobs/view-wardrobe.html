@@ -47,18 +47,8 @@
                                                     class="rounded-lg me-2" width="50" alt="">
                                                 </a>
                                             {% endif %}
-                                            <span ><a href="{% url 'users:view_user' wardrobe.user.id %}" class="w-100">{{wardrobe.user.full_name|capfirst}}</a></span>
+                                            <span><a href="{% url 'users:view_user' wardrobe.user.id %}" class="w-100">{{wardrobe.user.full_name|capfirst}}</a></span>
                                         </div>
-                                    </h6>
-                                </li>
-                                <li>
-                                    <h4>Is Shared</h4>
-                                    <h6>
-                                        {% if wardrobe.is_shared %}
-                                        <span class="badge bg-primary">Yes</span>
-                                        {% else %}
-                                        <span class="badge bg-warning">No</span>
-                                        {% endif %}
                                     </h6>
                                 </li>
                                 <li>
@@ -83,10 +73,24 @@
                                 <li>
                                     <h4>Favourite Items Count</h4>
                                     <h6>
-                                      {{favourite_items}}
+                                        <div class="d-flex justify-content-between">
+                                            {% if favourite_items %}
+                                            <span>
+                                                <i class="fa fa-heart text-danger"></i>  {{favourite_items}}
+                                            </span>
+                                            {% else %}
+                                            <span>
+                                                <i class="fa fa-heart not-favourite"></i>  {{favourite_items}}
+                                            </span>
+                                            {% endif %}
+                                            {% if favourite_items > 0 %}
+                                            <a href="{% url 'ecommerce:wardrobe_favourite_items'  wardrobe.id %}">
+                                                <span class="badge bg-success-custom"><i class="fa fa-eye me-1"></i>View</span>
+                                            </a>
+                                            {% endif %}
+                                        </div>
                                     </h6>
                                 </li>
-                                
                                 <li>
                                     <h4> Most Wear </h4>
                                     <h6>
@@ -142,6 +146,9 @@
             <div class="row gap-3">
                 <div class="card-body" id="card_body_div">
                     <div class="swiper mySwiper">
+                        {% if wardrobe.items.count > 4  %}
+                        <div class="text-end mb-2"><a href="{% url 'wardrobe:wardrobe_item_list' wardrobe.id %}" class="btn btn-primary-custom">View All<a></div>
+                        {% endif %}
                         <div class="swiper-wrapper">
                             {% for item in cloth_items %}
                                 {% is_favourite item.wardrobe.user item as item_is_favourite %}
@@ -149,9 +156,8 @@
                                     <div class="card" style="width: 18rem; position: relative;">
                                         {% if item.image %}
                                         <a href="{{ item.image.url }}" data-fancybox>
-                                            <img src="{{ item.image.url }}" style="height:250px !important;" class="card-img-top" alt="">
+                                            <img src="{{ item.image.url }}" style="height:350px !important;" class="card-img-top" alt="">
                                         </a>
-
                                         <span class="heart-icon" onclick="toggleFavorite('{{ item.id }}')">
                                             {% if item_is_favourite %}
                                                 <i class="fa fa-heart text-danger"></i>
@@ -159,18 +165,28 @@
                                                 <i class="fa fa-heart not-favourite"></i>
                                             {% endif %}
                                         </span>
-
-                                        <a title="View" data-bs-toggle="modal"
-                                            onclick="GetValue('{{item.id}}','{{item.title}}','{{item.cloth_category.title}}','{{item.wear_count}}','{{item.weather_type}}','{{item.color}}','{{item.brand}}','{{item.occasion.title}}','{{item.image.url}}','{{item.created_on|date:"Y-m-d"}}T{{item.created_on|date:"H:i"}}')"
-                                            data-bs-target="#view-details">
+                                        <a href="javascript:void(0);" onclick="getWardrobeItemDetails('{{ item.id }}')">
                                         {% endif %}
-
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between">
-                                            <h5 class="card-title">{{item.title|default:"-"}} </h5>
-                                            <small>( Wears Times: {{item.wear_count}} )</small>
+                                                <div class="hover-box">
+                                                    {% comment %} <span class="text">{{ item.title|capfirst|default:"-" }}</span> {% endcomment %}
+                                                    <button class="btn hover-btn" style="padding:0 !important; font-size:.8rem !important">
+                                                        <span class="badge bg-success-custom">
+                                                            <i class="fa fa-eye me-1"></i> View
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                                <small>( Wears Times: {{item.wear_count}} )</small>
                                             </div>
-                                            <p class="card-text">{{item.cloth_category.title|default:"-"}}  </p>
+                                            <div class="d-flex justify-content-between">
+                                            <p class="card-text">{{item.cloth_category.title|capfirst|default:"-"}}</p>
+                                                <small>
+                                                    <a href="{% url 'ecommerce:feedback_list' item.id %}">
+                                                        <span class="badge bg-success-custom">{% if item.rating_set.count > 0  %} <i class="fa fa-eye me-1"></i>View Feedback: {% else %} Feedback: {% endif %}{{item.rating_set.count}}</span>
+                                                    </a>
+                                                </small>
+                                            </div>
                                         </div>
                                         </a>
                                     </div>
@@ -203,10 +219,10 @@
                                                     <h4>Id </h4>
                                                     <h6><span id="item_id"></span></h6>
                                                 </li>
-                                                <li>
+                                                {% comment %} <li>
                                                     <h4> Title </h4>
                                                     <h6><span id="item_title"></span></h6>
-                                                </li>
+                                                </li> {% endcomment %}
                                                 <li>
                                                     <h4> Category </h4>
                                                     <h6><span id="item_category"></span></h6>
@@ -244,9 +260,9 @@
                                             <h5><b>Item Image</b></h5>
                                             <ul class="product-bar custom-size-img mb-2">
                                                 <li>
-                                                <a id="item_image_link" data-fancybox>
-                                                    <img id="item_image_img"  alt="">
-                                                </a>
+                                                    <a id="item_image_link" data-fancybox>
+                                                        <img id="item_image_img"  alt="">
+                                                    </a>
                                                 </li>
                                             </ul>
                                         </div>
@@ -263,63 +279,60 @@
 {% include "admin-includes/footer.html" %}
 
 <script>
-	function GetValue(id, title,cloth_category,wear_count,weather_type,color,brand,occasion,image,created_on){
-    $('#item_id').text(id);
-    $('#item_title').text(title);
-    $('#item_wear_count').text(wear_count);
-    $('#item_category').text(cloth_category);
-   // $('#weather_type').text(weather_type);
-    $('#item_color').text(color);
-    $('#item_brand').text(brand);
-    $('#item_occasion').text(occasion);
-    $('#item_image_img').attr('src', image);
-    $('#item_image_link').attr('href', image);
-    $('#item_addedd_on').text(moment.utc(created_on).local().format("D MMMM YYYY, LT"));
+    function getWardrobeItemDetails(itemId) {
+        $.ajax({
+            url: "{% url 'wardrobe:wardrobe_item_details' %}",
+            type: "GET",
+            data: { item_id: itemId },
+            success: function(response) {
+                let item = response.items_data;
+                $("#item_id").text(item.id);
+                if (item.cloth_category) {
+                    $("#item_category").text(item.cloth_category);
+                }else{
+                     $("#item_category").text("-");
+                }
+                if (item.wear_count) {
+                    $("#item_wear_count").text(item.wear_count);
+                }else{
+                     $("#item_wear_count").text("0");
+                }
+                if (item.color) {
+                    $("#item_color").text(item.color);
+                }else{
+                     $("#item_color").text("-");
+                }
+                // $("#item_title").text(item.title);
+                
+                if (item.brand) {
+                    $("#item_brand").text(item.brand);
+                }else{
+                     $("#item_brand").text("-");
+                }
+                $("#item_occasion").text(item.occasion);
+                $("#item_addedd_on").text(item.created_on);
+                $("#item_image_img").attr("src", item.image_url);
+                $("#item_image_link").attr("href", item.image_url);
+                const weatherTypeMapping = {
+                    1: "Summer",
+                    2: "Winter",
+                    3: "Rainy Season",
+                    4: "Spring Season",
+                    5: "All Seasons"
+                };
+                let weatherVal = parseInt(item.weather_type);
+                let weatherText = weatherTypeMapping[weatherVal] || "Not Available";
+                $("#weather_type").text(weatherText);
 
-    const weatherTypeMapping = {
-        1: "Summer",
-        2: "Winter",
-        3: "Rainy Season",
-        4: "Spring Seasons",
-        5: "All Seasons"
-    };
-
-    let weatherVal = parseInt(weather_type);
-    let weatherText = weatherTypeMapping[weatherVal] || "Not Available";
-    document.getElementById("weather_type").innerText = weatherText;
+                $("#view-details").modal("show");
+            },
+            error: function() {
+                alert("Failed to load item details.");
+            }
+        });
 }
-
 </script>
 
-<style>
-    .heart-icon {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: #ffffff;
-        border-radius: 50%;
-        padding: 6px 8px;
-        cursor: pointer;
-        z-index: 10;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .heart-icon i {
-        font-size: 18px;
-        transition: 0.2s ease;
-    }
-
-    .heart-icon .not-favourite {
-        color: #ddcbcb !important;
-    }
-
-    .heart-icon .fa-heart {
-        color: #d11a2a;
-    }
-</style>
 <script>
     var swiper = new Swiper(".mySwiper", {
     slidesPerView: 5,

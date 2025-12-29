@@ -1,18 +1,35 @@
+import uuid
 from django.db import models
 from accounts.common_imports import *
 from accounts.models import CommonInfo,User
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 class Wardrobe(CommonInfo):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wardrobes",blank=True,null=True)
     name = models.CharField(max_length=100, default="My Wardrobe",blank=True, null=True)
     is_shared = models.BooleanField(default=False)
     shared_with = models.ManyToManyField(User, blank=True,related_name="shared_wardrobes")
+    share_count = models.PositiveIntegerField(default=0,blank=True,null=True)
 
     class Meta:
         db_table = 'wardrobe'
 
+
+class WardrobePublicShare(CommonInfo):
+    wardrobe = models.OneToOneField(Wardrobe, on_delete=models.CASCADE, related_name="public_share")
+    share_token = models.UUIDField(default=uuid.uuid4, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'wardrobe_share'
+
+
 class ClothCategory(CommonInfo):
+    category_type = models.PositiveIntegerField(choices=CLOTH_CATEGORY_TYPE,null=True, blank=True)
     title = models.CharField(max_length=100, blank=True, null=True)
+    gender = models.PositiveIntegerField(choices=GENDER, null=True, blank=True)
     icon = models.FileField(upload_to="wardrobe/icons/",blank=True, null=True)
 
     class Meta:
@@ -30,21 +47,16 @@ class Accessory(CommonInfo):
     class Meta:
         db_table = 'accessories'
 
-class Tag(CommonInfo):
-    title = models.CharField(max_length=50,blank=True, null=True)
-
-    class Meta:
-        db_table = 'tag'
 
 class ClothingItem(CommonInfo):
     title = models.CharField(max_length=200,blank=True, null=True)
     wardrobe = models.ForeignKey(Wardrobe, on_delete=models.CASCADE, related_name="items",blank=True, null=True)
-    image = models.FileField(upload_to="wardrobe/items/",blank=True, null=True)
+    image = models.ImageField(upload_to="wardrobe/items/",blank=True, null=True)
+    thumbnail = models.ImageField(upload_to="wardrobe/items/thumbnails/", blank=True, null=True)
     cloth_category = models.ForeignKey(ClothCategory,on_delete=models.SET_NULL, null=True,blank=True)
     occasion = models.ForeignKey(Occasion,on_delete=models.SET_NULL, null=True,blank=True)
     accessory = models.ForeignKey(Accessory,on_delete=models.SET_NULL,null=True,blank=True)
     # ai_category = models.CharField(max_length=50, blank=True, null=True)
-    # manual_category = models.CharField(max_length=50,blank=True, null=True)
     weather_type = models.PositiveIntegerField(choices=WEATHER_TYPE,blank=True, null=True)
     color = models.CharField(max_length=30,blank=True, null=True)
     price = models.FloatField(default=0.0, null=True, blank=True)
@@ -54,7 +66,6 @@ class ClothingItem(CommonInfo):
     wear_count = models.PositiveIntegerField(default=0)
     favourite = models.ManyToManyField(User, related_name='favourite_item')
     item_url = models.URLField(blank=True, null=True)
-    tags = models.ManyToManyField(Tag, related_name="items")
 
     class Meta:
         db_table = 'clothing_item'
@@ -63,6 +74,25 @@ class ClothingItem(CommonInfo):
         if self.price and self.wear_count > 0:
             return round(self.price / self.wear_count, 2)
         return None
+    
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image and not self.thumbnail:
+            img = Image.open(self.image)
+            img = img.convert("RGB")
+            img.thumbnail((300, 300))
+
+            thumb_io = BytesIO()
+            img.save(thumb_io, format='JPEG', quality=70)
+
+            thumb_name = self.image.name.split('/')[-1]
+            self.thumbnail.save(
+                f"thumb_{thumb_name}",
+                ContentFile(thumb_io.getvalue()),
+                save=False
+            )
+            super().save(update_fields=['thumbnail'])
 
 class Outfit(CommonInfo):
     title = models.CharField(max_length=200,blank=True, null=True)
@@ -112,14 +142,6 @@ class Trips(CommonInfo):
 
     class Meta:
         db_table = 'trip'
-        
-# class PackingItem(CommonInfo):
-#     name = models.CharField(max_length=255,null=True, blank=True)
-#     category = models.PositiveIntegerField(default=CLOTHING,choices=PACKING_CATEGORY,blank=True, null=True)
-#     activity_flag = models.ForeignKey(ActivityFlag, on_delete=models.SET_NULL, null=True, blank=True)
-
-#     class Meta:
-#         db_table = 'packing_item'
 
 class Recommendation(CommonInfo):
     vacation_plan = models.ForeignKey(Trips, on_delete=models.CASCADE, related_name="recommendations",blank=True, null=True)
@@ -131,10 +153,40 @@ class Recommendation(CommonInfo):
     class Meta:
         db_table = 'recomendation'
 
-
 class RecentSearch(CommonInfo):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recent_searches")
     keyword = models.CharField(max_length=255)
 
     class Meta:
         db_table = 'recent_search'
+
+
+class VirtualTryOn(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="virtual_try_ons")
+    sigmentation_type = models.PositiveIntegerField(choices=SIGMENT_TYPE, blank=True, null=True)
+    source_image = models.ImageField(upload_to="tryon/source/", blank=True, null=True)
+    garment_image = models.ImageField(upload_to="tryon/masks/", blank=True, null=True)
+    garment_url = models.URLField(blank=True, null=True)
+    avtar_file_name = models.CharField(max_length=150, blank=True, null=True)
+    order_id = models.CharField(max_length=100, blank=True, null=True)
+    request_payload = models.JSONField(blank=True, null=True)
+    response_payload = models.JSONField(blank=True, null=True)
+    output_image = models.ImageField(upload_to="tryon/output/", blank=True, null=True)
+    status = models.PositiveIntegerField(choices=TRY_ON_STATUS, blank=True, null=True)
+    error_message = models.TextField(blank=True, null=True)
+    favourite = models.ManyToManyField(User, related_name='favourite_tryon')
+
+    class Meta:
+        db_table = 'virtual_try_on'
+
+
+class OutfitSiggestion(CommonInfo):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="today_suggestion")
+    occasion = models.CharField(max_length=50,blank=True, null=True)  # Casual / Work / Color-focused
+    explanation = models.TextField(blank=True, null=True)
+    today_outfit = models.ImageField(upload_to="suggestion/outfit/", blank=True, null=True)
+    items = models.ManyToManyField(ClothingItem)
+    favourite = models.ManyToManyField(User, related_name='favourite_suggestion')
+
+    class Meta:
+        db_table = 'outfit_suggestion'

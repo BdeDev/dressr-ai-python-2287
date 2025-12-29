@@ -1,0 +1,144 @@
+{% include "admin-includes/header.html" %}{% load static %}{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Styling Suggestion Details </h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'frontend:index' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'users:outfit_suggestions' %}">Styling Suggestion Details</a></li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap">
+                <a class="btn btn-secondary" href="{% url 'users:outfit_suggestions' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-lg-12 col-sm-12">
+                <div class="card my-4">
+                    <div class="card-body">
+                        <div class="row">
+                        <div class=" col-12  productdetails">
+                            <ul class="product-bar mb-2">
+                                <li>
+                                    <h4>Id </h4>
+                                    <h6>{{suggestion.id}}</h6>
+                                </li>
+                                <li>
+                                    <h4> Explanation </h4>
+                                    <h6>{{suggestion.explanation|default:"-"}}</h6>
+                                </li>
+                                <li>
+                                    <h4>User</h4>
+                                    <h6>
+                                        <div class="d-flex align-items-center display-images">
+                                            {% if suggestion.user.profile_pic %}
+                                                <a href="{{suggestion.user.profile_pic.url}}" data-fancybox>
+                                                    <img src="{{suggestion.user.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% else %}
+                                                <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                    class="rounded-lg me-2" width="50" alt="">
+                                                </a>
+                                            {% endif %}
+                                            <span><a href="{% url 'users:view_user' suggestion.user.id %}" class="w-100">{{suggestion.user.full_name|capfirst}}</a></span>
+                                        </div>
+                                    </h6>
+                                </li>
+                                <li>
+                                    <h4>Created On </h4>
+                                    <h6>
+                                        <script>
+                                            var date = ConvertDateTime("{{ suggestion.created_on|date:'Y-m-d' }}", "{{ suggestion.created_on|time:'H:i' }}");
+                                            document.write(date);
+                                        </script>
+                                    </h6>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card row">
+                <div class="outfit-wrapper">
+                    <div class="outfit-main-card">
+                        <span class="outfit-label">
+                            {{ suggestion.occasion|default:"" }}
+                        </span>
+                        {% comment %} <img src="{% static 'admin-assets/images/tshirt-cloth.jpeg' %}" alt="" class="outfit-main-image"> {% endcomment %}
+                    </div>
+                    <div class="outfit-items">
+                        {% for img in suggestion.items.all %}
+                            <img src="{{ img.image.url }}" alt="" class="outfit-item-image">
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+             <!-- tabs -->
+            <div class="col-lg-12 col-sm-12 mt-5">
+                <div class="row  mt-4">
+                    <div class="bs-example action-tabs">
+                        <ul class="nav nav-tabs" id="myTab">
+                            <li class="nav-item">
+                                <a href="#sectionA" class="nav-link nav-link-items active nav-link1" data-toggle="tab">Suggestion Feedback</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="sectionA" class="tab-pane fade show active ">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>User Name</strong></th>
+                                                                <th><strong>Rating</strong></th>
+                                                                <th><strong>Comment</strong></th>
+                                                                <th><strong>Created On </strong></th>
+                                                                <th><strong>Actions </strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if ratings %}
+                                                                {% for rating in ratings %}
+                                                                <tr>
+                                                                    <td>{{rating.user.full_name|default:'-'}}</td>
+                                                                    <td>{{rating.rating|default:'-'}}</td>
+                                                                    <td>{{rating.comment|default:'-'|truncatechars:75}}</td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ rating.created_on|date:'Y-m-d' }}", "{{ rating.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="d-flex">
+                                                                            <a title="View" href="{% url 'ecommerce:feedback_list' suggestion.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tabs end -->
+        </div>
+    </div>
+</div>
+
+{% include "admin-includes/footer.html" %}

@@ -1,14 +1,24 @@
 from django import template
 from accounts.views import *
 from contact_us.models import *
-from wardrobe.models import Wardrobe
+from wardrobe.models import Wardrobe,VirtualTryOn
 from subscription.models import *
+from django.http.request import HttpRequest
+from django.contrib.sites.shortcuts import get_current_site
 import environ
 
 register = template.Library()
 env = environ.Env()
 environ.Env.read_env()
 
+@register.simple_tag
+def protocol_domain(request:HttpRequest):
+	current_site = get_current_site(request)
+	context = {
+            'domain':current_site.domain,
+            'protocol': 'https' if USE_HTTPS else 'http',
+        }
+	return context 
 
 @register.simple_tag
 def split_email(email:str):
@@ -63,6 +73,10 @@ def convert_local_timezone_date(data,timezone):
 	except Exception as e:
 		return None
 
+@register.filter(name='today_customers')
+def today_customers(key):
+	return User.objects.filter(created_on__date=datetime.now().date(),role_id=CUSTOMER).order_by("-created_on")[0:5]
+
 #Dashboard template tags start
 @register.filter(name='users_count')
 def users_count(key):
@@ -77,6 +91,19 @@ def users_count(key):
 		count=User.objects.filter(role_id__in=[CUSTOMER]).count()
 	return count
 
+
+@register.filter(name='affiliates_count')
+def affiliates_count(key):
+	count=0
+	if key=='active_affiliate':
+		count=User.objects.filter(role_id__in=[AFFILIATE],status=ACTIVE).count()
+	elif key=='inactive_affiliate':
+		count=User.objects.filter(role_id__in=[AFFILIATE],status=INACTIVE).count()
+	elif key=='deleted_affiliate':
+		count=User.objects.filter(role_id__in=[AFFILIATE],status=DELETED).count()
+	elif key=='total_affiliate':
+		count=User.objects.filter(role_id__in=[AFFILIATE]).count()
+	return count
 
 @register.filter(name='wardrobe_count')
 def wardrobe_count(key):
@@ -156,13 +183,19 @@ def is_favourite(user, item):
         return user.favourite_item.filter(id=item.id).exists()
     return False
 
-@register.filter(name='subscribers')
-def subscribers(key):
-    total_users = User.objects.filter(role_id=CUSTOMER,status=ACTIVE).count()
-    active_subscribers = UserPlanPurchased.objects.filter(status=USER_PLAN_ACTIVE,subscription_plan__is_free_plan = False).values_list("purchased_by", flat=True).distinct().count()
-    free_users = total_users - active_subscribers
-    if key == "active_subscribers":
-        return active_subscribers
-    if key == "free_users":
-        return free_users
-    return 0
+
+@register.filter(name='total_try_on')
+def total_try_on(key):
+	return VirtualTryOn.objects.all().count()
+
+#Dashboard template tags start
+@register.filter(name='subscribers_count')
+def subscribers_count(key):
+	count=0
+	if key=='free_subscribers':
+		count=UserPlanPurchased.objects.filter(subscription_plan__is_free_plan=True).count()
+	elif key=='premium_subscribers':
+		count=UserPlanPurchased.objects.filter(subscription_plan__is_free_plan=False).count()
+	elif key=='total_subscribers':
+		count=UserPlanPurchased.objects.filter().count()
+	return count

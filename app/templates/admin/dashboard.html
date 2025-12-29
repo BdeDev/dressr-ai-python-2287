@@ -17,11 +17,24 @@
                 </a>
             </div>
             <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
-                <a href="#" style="color: inherit;" class="d-flex">
+                <a href="{% url 'users:affiliate_list' %}" style="color: inherit;" class="d-flex">
+                    <div class="dash-count">
+                        <div class="dash-counts">
+                            <h5>Total Affiliate</h5>
+                            <h4>{{'total_affiliate'|affiliates_count}}</h4>
+                        </div>
+                        <div class="dash-imgs">
+                            <span><i class="fas fa-user-tie"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
+                <a href="{% url 'subscription:purchased_plans' %}" style="color: inherit;" class="d-flex">
                     <div class="dash-count">
                         <div class="dash-counts">
                             <h5>Active subscribers</h5>
-                            <h4>{{'active_subscribers'|subscribers}}</h4>
+                            <h4>{{'total_subscribers'|subscribers_count}}</h4>
                         </div>
                         <div class="dash-imgs">
                             <span><i class="fas fa-users"></i></span>
@@ -30,27 +43,14 @@
                 </a>
             </div>
             <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
-                <a href="#" style="color: inherit;" class="d-flex">
-                    <div class="dash-count">
-                        <div class="dash-counts">
-                            <h5>Free Subscribers</h5>
-                            <h4>{{'free_users'|subscribers}}</h4>
-                        </div>
-                        <div class="dash-imgs">
-                            <span><i class="fas fa-piggy-bank"></i></span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-xl-3 col-lg-3 col-sm-6 col-12">
-                <a href="#" style="color: inherit;" class="d-flex">
+                <a href="{% url 'ecommerce:virtual_try_on_list' %}" style="color: inherit;" class="d-flex">
                     <div class="dash-count">
                         <div class="dash-counts">
                             <h5>Total Virtual Try-ons</h5>
-                            <h4>{{'0'}}</h4>
+                            <h4>{{'total_try_on'|total_try_on}}</h4>
                         </div>
                         <div class="dash-imgs">
-                            <span><i class="fas fa-ban"></i></span>
+                            <span><i class="fas fa-tshirt"></i></span>
                         </div>
                     </div>
                 </a>
@@ -84,12 +84,85 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-8">
+                            <div class="col-12">
                                 <div id="chart-container"></div>
                             </div>
-                            <div class="col-4">
-                                <div id="chart-container-pie"></div>
-                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4" >
+            <div class="col-xl-12 col-lg-12"><div>
+                <div class="card shadow">
+                    <div class="card-header align-items-center d-flex justify-content-between pb-0">
+                        <div>
+                            <h4 class="card-title mb-0 flex-grow-1">Users Who Joined Today</h4>
+                        </div>
+                        <div class="flex-shrink-0">
+                            {% if 1|today_customers %}
+                            <a href="{% url 'users:users_list' %}">See All </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive table-card">
+                            <table class="table table-centered align-middle table-nowrap mb-0">
+                                <thead class="text-muted table-light">
+                                    <tr>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Role</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Mobile Number</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if 1|today_customers %}
+                                        {% for user in 1|today_customers %}
+                                        <tr>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
+                                                <div class="d-flex">
+                                                    <div class="flex-shrink-0 me-2">
+                                                        {% if user.profile_pic %}
+                                                        <a href="{{user.profile_pic.url}}" data-fancybox>
+                                                            <img src="{{user.profile_pic.url}}" class="rounded-lg me-2" width="30" alt="">
+                                                        </a>
+                                                        {% else %}
+                                                        <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                            <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                            class="rounded-lg me-2" width="24" alt="">
+                                                        </a>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="flex-grow-1 profile_approve">
+                                                        <h4>{% if user.full_name %}{{user.full_name}}{% else %}--{% endif %}</h4>
+                                                    </div>
+                                                </div> 
+                                            </td>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
+                                                {% if user.role_id == 1 %}
+                                                <span class="badge bg-primary">ADMIN</span>
+                                                {% elif user.role_id == 2 %}
+                                                <span class="badge bg-primary">CUSTOMER</span>
+                                                {% elif user.role_id == 3 %}
+                                                <span class="badge bg-primary">BUYER</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
+                                                <h4>{% if user.email %}{{user.email}}{% else %}-{% endif %}</h4>
+                                            </td>
+                                            <td class='clickable-row' data-href="{% url 'users:view_user' user.id %}">
+                                                <h4>{% if user.mobile_no %}{% if user.country_code %}{{user.country_code}}{% endif %}{{ user.mobile_no }}{% else %}-{% endif %}</h4>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="12" class="text-center">No Customer Joined Today</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -99,6 +172,3 @@
 </div>
 {% include "admin-includes/footer.html" %}
 <script src="{% static 'admin-assets/js/customized-js/graph.js' %}"></script>
-<script>
-    GetGraphData() // user graph
-</script>

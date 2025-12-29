@@ -26,6 +26,90 @@
                
             </div>
         </div>
+		<!-- cards -->
+		<div class="row state-overview">
+			<!-- Total Subscribers -->
+			<div class="col-xl-4 col-lg-4 col-sm-6 col-12">
+				<a href="?" style="color: inherit;" class="d-flex">
+					<div class="dash-count das4">
+						<div class="dash-counts">
+							<h5>Total Subscribers</h5>
+							<h4>{{ 'total_subscribers'|subscribers_count }}</h4>
+						</div>
+						<div class="dash-imgs">
+							<span><i class="fad fa-users"></i></span>
+						</div>
+					</div>
+				</a>
+			</div>
+
+			<!-- Free Plan Subscribers -->
+			<div class="col-xl-4 col-lg-4 col-sm-6 col-12">
+				<a href="?is_free_plan=1" style="color: inherit;" class="d-flex">
+					<div class="dash-count das5">
+						<div class="dash-counts">
+							<h5>Free Plan Users</h5>
+							<h4>{{ 'free_subscribers'|subscribers_count }}</h4>
+						</div>
+						<div class="dash-imgs">
+							<span><i class="fas fa-badge-check"></i></span>
+						</div>
+					</div>
+				</a>
+			</div>
+
+			<!-- Premium Plan Subscribers -->
+			<div class="col-xl-4 col-lg-4 col-sm-6 col-12">
+				<a href="?is_free_plan=0" style="color: inherit;" class="d-flex">
+					<div class="dash-count das6">
+						<div class="dash-counts">
+							<h5>Premium Plan Users</h5>
+							<h4>{{ 'premium_subscribers'|subscribers_count }}</h4>
+						</div>
+						<div class="dash-imgs">
+							<span><i class="fas fa-crown"></i></span>
+						</div>
+					</div>
+				</a>
+			</div>
+		</div>
+		<!-- cards end -->
+		<div class="row my-2">
+            <div class="col-xl-12 col-lg-12 col-sm-12">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0 d-md-flex justify-content-between align-items-center">
+                        <h5 class="card-title">Plan Purchased in <span id="selected_year"></span>{% if selected_month %}(<span id="selected_month"></span>){% endif %}</h5>
+                        <div class="graph-sets mt-md-0 mt-2">
+                            <div class="dropdown d-flex">
+                                <select class="graph-dropdown me-2" name="months" id="months" onchange="GetSubscriptionGraphData(this.value)">
+                                    <option value="">Select</option>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                                <select class="graph-dropdown" name="years" id="years" onchange="GetSubscriptionGraphData(this.value)"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <div id="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card">
             <div class="card-body">
                 <div class='d-flex flex-wrap justify-content-between'>
@@ -42,6 +126,7 @@
 										<th><strong>Plan Id</strong></th>
 										<th><strong>Final Price</strong></th>
 										<th><strong>Status</strong></th>
+										<th><strong>Plan Type</strong></th>
 										<th><strong>Plan Validity</strong></th>
 										<th><strong>User</strong></th>
 										<th><strong>Purchased On</strong></th>
@@ -64,7 +149,16 @@
 												<option {% if search_filters.status == '4' %} selected {% endif %} value="4">CANCELLED</option>
 											</select>
 										</td>
-										<td></td>
+										<td>
+											<select class="form-control" name="is_free_plan" onchange="this.form.submit()">
+												<option  value=""></option>
+												<option {% if search_filters.is_free_plan == '0' %} selected {% endif %} value="0">Premium Plan</option>
+												<option {% if search_filters.is_free_plan == '1' %} selected {% endif %} value="1">Free Plan</option>
+											</select>
+										</td>
+										<td>
+
+										</td>
 										<td><input type="text" {% if plan_user %}disabled{% endif %} value="{{search_filters.created_by}}" class="form-control" name="created_by" maxlength="50"></td>
 										<td><input type="date" value="{{search_filters.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
@@ -88,6 +182,14 @@
 												{% endif %}
 											</td>
 											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">
+												
+												{% if plan.subscription_plan.is_free_plan %}
+													<span class="badge bg-warning">Free PLAN</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">PREMIUM PLAN</span>
+												{% endif %}
+											</td>
+											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">
 												{% if plan.validity == 1 %}{% if plan.month_year > 1 %}Months{% else %}Month{% endif %} 
 												{% elif plan.validity == 2 %}{% if plan.month_year > 1 %}Years{% else %}Year{% endif %} 
 												{% endif %}
@@ -106,7 +208,6 @@
 													{% endif %}
 													{{plan.purchased_by.full_name|capfirst|default:"-"}}
 												</div>
-												
 											</td>
 											<td class='clickable-row' data-href="{% url "subscription:purchased_plan_info" plan.id %}">
 												<script>
@@ -136,3 +237,4 @@
     </div>
 </div>
 {% include "admin-includes/footer.html" %}
+<script src="{% static 'admin-assets/js/customized-js/subscription-graph.js' %}"></script>

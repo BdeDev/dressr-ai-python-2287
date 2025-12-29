@@ -1,7 +1,9 @@
-from django.shortcuts import render,get_object_or_404
+from django.shortcuts import render
 from accounts.common_imports import *
 from accounts.utils import *
 from .models import *
+from django.core.files.base import ContentFile
+from api.avatar import *
 
 
 class CategoryList(View):
@@ -338,8 +340,8 @@ class AddDiscountAd(View):
             segment = SubscriptionPlans.objects.get(id=seg_id)
             discount_ad.target_segments.add(segment)
             
-        for img in request.FILES.getlist('image'):
-            discount_ad.image.add(Image.objects.create(image=img))
+        # for img in request.FILES.getlist('image'):
+        #     discount_ad.image.add(Image.objects.create(image=img))
 
         discount_ad.save()
         messages.success(request, "Discount ads added successfully!")
@@ -380,9 +382,9 @@ class EditDiscountAd(View):
             discount_ad.end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d')
         if request.POST.getlist('target_sigment'):
             discount_ad.target_segments.set(target_segment_ids)
-        if request.FILES.getlist('image'):
-            for img in request.FILES.getlist('image'):
-                discount_ad.image.add(Image.objects.create(image=img))
+        # if request.FILES.getlist('image'):
+        #     for img in request.FILES.getlist('image'):
+        #         discount_ad.image.add(Image.objects.create(image=img))
         discount_ad.save()
         messages.success(request, "Discount ad updated successfully!")
         return redirect('ecommerce:view_discount', discount_ad.id)
@@ -416,3 +418,426 @@ class PublishUnpublishDiscountAd(View):
             messages.success(request,'Discount ads published successfully')
         discount_ad.save()
         return redirect('ecommerce:view_discount',id=discount_ad.id)
+    
+
+
+#Add marketing data from admin  
+class AffiliateMarketingTools(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        marketing_categories=MarketingToolsCategories.objects.all().order_by('-created_on')
+        marketing_categories = query_filter_constructer(request,marketing_categories,
+                {
+                    "title__icontains":"title",
+                    "created_on__date":"created_on",
+                }
+            )
+        if request.GET and not marketing_categories:
+            messages.error(request, 'No Data Found!')
+        guide=AffiliateGuide.objects.first()
+        return render(request,'users/affiliate/admin/markteing_tools/marketing-tools.html',{
+            "head_title":'Affiliate Management',
+            "marketing_categories":marketing_categories,
+            'sort_params':request.GET.copy(),
+            "guide":guide
+        })
+    
+    def post(self, request, *args, **kwargs):
+        if not request.POST.get('marketing_category'):
+            messages.error(request,'Please enter marketing category')
+        else:
+            marketing_category,created=MarketingToolsCategories.objects.get_or_create(title=request.POST.get('marketing_category').strip())
+            if created:
+                marketing_category.save()
+                messages.success(request,'Marketing category added successfully!')
+            else:
+                messages.success(request,'Marketing category already exists!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class UpdateMarketingCategory(View):
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        marketing_category = MarketingToolsCategories.objects.get(id=request.POST.get('category_id'))
+        if MarketingToolsCategories.objects.filter(title=request.POST.get('e_category_title').strip()).exclude(id=marketing_category.id):
+            messages.error(request,'Marketing category Already Exists!')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        
+        if request.POST.get('e_category_title'):
+            marketing_category.title=request.POST.get('e_category_title')
+
+        marketing_category.save()
+        messages.success(request, 'Marketing category updated successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+class DeleteMarketingCategory(View):
+    def get(self,request,*args,**kwargs):
+        MarketingToolsCategories.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request, 'Marketing category deleted successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
+
+   
+class ViewMarketingCategory(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        marketing_category = MarketingToolsCategories.objects.get(id=self.kwargs['id'])
+        category_media=marketing_category.category_media.all().order_by('-created_on')
+
+        category_media = query_filter_constructer(request,category_media,
+                {
+                    "name__icontains":"name",
+                    "created_on__date":"created_on",
+                }
+            )
+        if request.GET and not category_media:
+            messages.error(request, 'No Data Found!')
+    
+        return render(request,'users/affiliate/admin/markteing_tools/category_media.html',{
+            'head_title':'Affiliate Management',
+            'marketing_category':marketing_category,
+            'category_media':get_pagination(request,category_media),
+            "sort_params":request.GET
+              })
+
+
+class AddMarketingCatyegoryMedia(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        marketing_category = MarketingToolsCategories.objects.get(id=self.kwargs['id'])
+        return render(request, 'users/affiliate/admin/markteing_tools/add_category_media.html',{"head_title":"Affiliate Management","marketing_category":marketing_category})
+
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        marketing_category = MarketingToolsCategories.objects.get(id=self.kwargs['id'])
+        if not request.POST.get('name'):
+            messages.error(request,'Please enter media name')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        media_file = request.FILES.get('media_file')
+        link = request.POST.get('link')
+        if media_file and link:
+            messages.error(request, 'Please provide only one input: either a media file or a link, not both.')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        if not media_file and not link:
+            messages.error(request, 'Please provide at least one input: a media file or a link.')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        
+        category_media = MarketingCategoryMedia.objects.create(
+            category=marketing_category,
+            name = request.POST.get('name'),
+            media_file = request.FILES.get('media_file'),
+            link=request.POST.get('link')
+        )
+        messages.success(request, 'Category Media added successfully!')
+        return redirect('affiliate_v2:view_marketing_category',id=marketing_category.id)
+    
+
+class UpdateMarketingCatyegoryMedia(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        category_media = MarketingCategoryMedia.objects.get(id=self.kwargs['id'])
+        return render(request, 'users/affiliate/admin/markteing_tools/update_category_media.html',{"head_title":"Affiliate Management","category_media":category_media})
+
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        category_media = MarketingCategoryMedia.objects.get(id=self.kwargs['id'])
+        if MarketingCategoryMedia.objects.filter(category=category_media.category,name=request.POST.get('name').strip()).exclude(id=category_media.id):
+            messages.error(request,'Category Media Already Exists!')
+            return redirect('affiliate_v2:view_marketing_category',id=category_media.category.id)
+        media_file = request.FILES.get('media_file')
+        link = request.POST.get('link')
+        if media_file and link:
+            messages.error(request, 'Please provide only one input: either a media file or a link, not both.')
+            return redirect('affiliate_v2:view_marketing_category', id=category_media.category.id)
+
+        if not media_file and not link:
+            messages.error(request, 'Please provide at least one input: a media file or a link.')
+            return redirect('affiliate_v2:view_marketing_category', id=category_media.category.id)
+        category_media.name=request.POST.get('name')
+        category_media.media_file=media_file
+        category_media.link=link
+        category_media.save()
+        messages.success(request, 'Category Media updated successfully!')
+        return redirect('affiliate_v2:view_marketing_category',id=category_media.category.id)
+
+class DeleteMarketingCatyegoryMedia(View):
+    def get(self,request,*args,**kwargs):
+        MarketingCategoryMedia.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request, 'Marketing category media deleted successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
+    
+
+class AddAffiliateGuide(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        return render(request, 'users/affiliate/admin/guide/add_affiliate_guide.html',{"head_title":"Affiliate Management"})
+
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        if not request.POST.get('description'):
+            messages.error(request, 'please add guide description!')
+            return redirect('affiliate_v2:affiliate_marketing_tools')
+        if not AffiliateGuide.objects.first():
+            AffiliateGuide.objects.create(description=request.POST.get('description'),image=request.FILES.get('image'))
+            messages.success(request, 'Guide added successfully!')
+        else:
+            messages.error(request, 'Guide already exists!')
+        return redirect('affiliate_v2:affiliate_marketing_tools')
+    
+class EditAffiliateGuide(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        guide=AffiliateGuide.objects.first()
+        return render(request, 'users/affiliate/admin/guide/edit_affiliate_guide.html',{"head_title":"Affiliate Management","guide":guide})
+
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        guide=AffiliateGuide.objects.first()
+        if request.POST.get('description'):
+            guide.description=request.POST.get('description')
+        if request.FILES.get('image'):
+            guide.image=request.FILES.get('image')
+        guide.save()
+        messages.success(request, 'Guide updated successfully!')
+        return redirect('affiliate_v2:affiliate_marketing_tools')
+    
+class DeleteAffiliateGuide(View):
+    def get(self,request,*args,**kwargs):
+        try:
+            AffiliateGuide.objects.first().delete()
+            messages.success(request, 'Guide deleted successfully!')
+        except:
+            pass
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
+
+
+"""
+Store Credentials
+"""
+class StoreCredentialsView(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        store_creds = StoreCredentials.objects.all().order_by('-created_on')
+        return render(request,'ecommerce/partner-store/partner-store.html',{
+            "head_title":'Store credentials Management',
+            "store_creds" : get_pagination(request, store_creds),
+            "scroll_required":True if request.GET else False,
+            "total_objects":store_creds.count()
+        })
+    
+    @method_decorator(admin_only)
+    def post(self, request, *args, **kwargs):
+        store_id = request.POST.get('store_id')
+        access_token = request.POST.get('access_token').strip()
+        refresh_token = request.POST.get('refresh_token').strip()
+        url = request.FILES.get('url')
+        if store_id:
+            try:
+                store_creds = StoreCredentials.objects.get(id=store_id)
+            except StoreCredentials.DoesNotExist:
+                messages.error(request, "Store credentials store not found!")
+                return redirect('ecommerce:store_creds')
+            
+            if StoreCredentials.objects.filter(access_token=access_token, refresh_token=refresh_token).exclude(id=store_id).exists():
+                messages.error(request, "Store credentials store already exists!")
+                return redirect('ecommerce:store_creds')
+
+            store_creds.access_token = access_token
+            store_creds.refresh_token = refresh_token
+            store_creds.url = url
+            store_creds.save()
+            messages.success(request, "Store credentials store updated successfully!")
+        else:
+            if StoreCredentials.objects.filter(access_token=access_token, refresh_token=refresh_token).exists():
+                messages.error(request, "Store credentials store already exists!")
+                return redirect('ecommerce:store_creds')
+            StoreCredentials.objects.create(
+                access_token=access_token,
+                refresh_token=refresh_token,
+                url = url,
+                created_by = request.user
+            )
+            messages.success(request, "Store credentials added successfully!")
+        return redirect('ecommerce:store_creds')
+    
+class DeleteStoreCredentials(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        delete_store = StoreCredentials.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Store credentials Deleted Successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+class UserFeedBackList(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        obj_id = None
+        obj_id = (
+            ClothingItem.objects.filter(id=self.kwargs.get('id')).first() or
+            VirtualTryOn.objects.filter(id=self.kwargs.get('id')).first() or
+            Outfit.objects.filter(id=self.kwargs.get('id')).first() or
+            OutfitSiggestion.objects.filter(id=self.kwargs.get('id')).first()
+        )        
+        if obj_id:
+            obj_id = obj_id.id
+            ratings = Rating.objects.filter(Q(item_id=obj_id)|Q(outfit_id=obj_id)|Q(suggestion_id=obj_id)|Q(virtual_try_on_id=obj_id))
+        else:
+            ratings = Rating.objects.none()
+        return render(request, 'ecommerce/user-rating/user-rating-list.html',{
+            "head_title":'Wardrobe Management',
+            "obj_id":obj_id,
+            "ratings":get_pagination(request,ratings),
+            "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
+            "total_objects":ratings.count()
+        })
+    
+
+class VirtualTryOnList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        virtual_try_ons = VirtualTryOn.objects.all().order_by('-created_on')
+        virtual_try_ons = query_filter_constructer(request,virtual_try_ons,{
+            "order_id":"order_id",
+            "user__full_name__icontains":"user",
+            "sigmentation_type":"sigmentation_type",
+            "status":"status",
+            "created_on__date":"created_on",
+        })
+
+        if request.POST and not virtual_try_ons:
+            messages.error(request, 'No Data Found')
+        return render(request,'ecommerce/virtual-try-on/try-on-list.html',{
+            "head_title":'Virtual Try On Management',
+            "virtual_try_ons" : get_pagination(request, virtual_try_ons),
+            "scroll_required":True if request.GET else False,
+            "search_filters":request.GET.copy(),
+            "total_objects":virtual_try_ons.count()
+        })
+    
+class ViewTryOnDetails(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        virtual_try_on = VirtualTryOn.objects.get(id=self.kwargs['id'])
+        ratings = Rating.objects.filter(virtual_try_on=virtual_try_on).order_by('-created_on')
+        return render(request,'ecommerce/virtual-try-on/try-on-details.html',{
+            'head_title':'Virtual Try On Management',
+            'virtual_try_on':virtual_try_on,
+            "ratings":get_pagination(request,ratings)})
+
+
+class DeleteVirtualTryOn(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        virtual_try_on = VirtualTryOn.objects.get(id=self.kwargs['id']).delete()
+        messages.success(request,'Virtual Try On Deleted Successfully!')
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+class SyncTryOnData(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        try_ons = VirtualTryOn.objects.filter(status=None).order_by('created_on')
+        order_ids = try_ons.values_list('order_id',flat=True)
+        for order_id in order_ids:
+            try:
+                virtual_try_on = VirtualTryOn.objects.filter(order_id=order_id).first()
+            except Exception as e:
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            if virtual_try_on.order_id:
+                order_status = check_lightx_order_status(virtual_try_on.order_id)
+
+                if order_status["data"]["body"]["output"] is None:
+                    virtual_try_on.status = TRY_ON_FAILED
+                    virtual_try_on.save()
+                    messages.error(request,'Virtual try on generation failed')
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+                image_url = order_status["data"]["body"]["output"]
+                img_response = requests.get(image_url)
+                if img_response.status_code != 200:
+                    messages.error(request,'Failed to download virtual try on image')
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+                file_name = image_url.split("/")[-1]
+                virtual_try_on.output_image.save(file_name, ContentFile(img_response.content))
+                virtual_try_on.status = TRY_ON_SUCCESS
+                virtual_try_on.error_message = order_status['data']['statusCode']
+                virtual_try_on.save()
+
+                send_notification(
+                    created_by=get_admin(),
+                    created_for=[virtual_try_on.user.id],
+                    title="New Virtual Try On Generated",
+                    description=f"A new virtual try on is ready for {virtual_try_on.user.full_name}.",
+                    notification_type=VIRTUAL_TRY_ON,
+                    obj_id=str(virtual_try_on.id),
+                )
+        messages.success(request,"Virtual Try On Sync Successfully!")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+
+
+class SyncVirtualTryOnOutput(View):
+    @method_decorator(admin_only)
+    def get(self, request, *args, **kwargs):
+        try_ons = VirtualTryOn.objects.get(id=self.kwargs.get('id'))
+        if try_ons.order_id:
+            order_status = check_lightx_order_status(try_ons.order_id)
+            try:
+                if order_status['data']['status'] == 'FAIL':
+                    messages.error(request,order_status['data']['message'])
+                    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            except:
+                pass
+            if order_status['data']['body']['status'] == 'failed':
+                try_ons.status = TRY_ON_PROCESSING
+                try_ons.error_message = order_status['data']['statusCode']
+                try_ons.save()
+                messages.error(request,order_status['data']['message'])
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    
+            body = order_status["data"]["body"]
+            status_data = body.get("status")
+
+            if status_data in ["failed", "error"]:
+                try_ons.status = TRY_ON_FAILED
+                try_ons.save()
+                messages.error(request,'Virtual try on generation failed')
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+            image_url = order_status["data"]["body"]["output"]
+            img_response = requests.get(image_url)
+            if img_response.status_code != 200:
+                messages.error(request,'Failed to download virtual try on image')
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+            file_name = image_url.split("/")[-1]
+            try_ons.output_image.save(file_name, ContentFile(img_response.content))
+            try_ons.status = TRY_ON_SUCCESS
+            try_ons.error_message = order_status['data']['statusCode']
+            try_ons.save()
+
+            send_notification(
+                created_by=request.user,
+                created_for=[try_ons.user.id],
+                title="New Virtual Try On Generated",
+                description=f"A new virtual try on is ready for {try_ons.user.full_name}.",
+                notification_type=VIRTUAL_TRY_ON,
+                obj_id=str(try_ons.id),
+            )
+        messages.success(request,"Virtual Try On Sync Successfully!")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class FavouriteItemList(View):
+    @method_decorator(admin_only)
+    def get(self,request,*args,**kwargs):
+        wardrobe_id = Wardrobe.objects.get(id = self.kwargs.get('id'))
+        items = ClothingItem.objects.filter(wardrobe = wardrobe_id).order_by('-created_on')
+        favourite_items = wardrobe_id.user.favourite_item.all()
+        return render(request,'wardrobe/wardrobs/favourite-item-list.html',{
+            "head_title":'Wardrobe Management',
+            "wardrobe":wardrobe_id,
+            "items":items,
+            "favourite_items":get_pagination(request,favourite_items),
+
+        })

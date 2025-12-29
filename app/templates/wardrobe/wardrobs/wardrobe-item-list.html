@@ -1,0 +1,218 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Favourite Items</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+						<li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'wardrobe:wardrobe_list' %}">Favourite Items</a></li>
+					</ol>
+				</nav>
+            </div>
+            <div class="page-btn d-flex flex-wrap gap-3">
+                <a class="btn btn-secondary" href="{% url 'wardrobe:wardrobe_list' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+				<div class='d-flex flex-wrap justify-content-between'>
+					<!-- showing_objects-->
+                    {% include "admin-includes/showing_objects.html" with listing_objects=cloth_items %}
+                    <!-- showing_objects end-->
+				</div>
+                <div class="row">
+                    {% for item in cloth_items %}
+                    {% is_favourite item.wardrobe.user item as item_is_favourite %}
+
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <div class="card h-100 position-relative">
+                            {% if item.image %}
+                            <a href="{{ item.image.url }}" data-fancybox>
+                                <img src="{{ item.image.url }}" class="card-img-top" style="height:500px; object-fit:cover;" alt="">
+                            </a>
+                            {% endif %}
+                            <span class="heart-icon" onclick="toggleFavorite('{{ item.id }}')">
+                                {% if item_is_favourite %}
+                                    <i class="fa fa-heart text-danger"></i>
+                                {% else %}
+                                    <i class="fa fa-heart not-favourite"></i>
+                                {% endif %}
+                            </span>
+                            <a href="javascript:void(0);" onclick="getWardrobeItemDetails('{{ item.id }}')">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="hover-box">
+                                            {% comment %} <span class="text">{{ item.title|capfirst|default:"-" }}</span> {% endcomment %}
+                                            <button class="btn hover-btn" style="padding:0 !important; font-size:.8rem !important">
+                                                <span class="badge bg-success-custom">
+                                                    <i class="fa fa-eye me-1"></i> View
+                                                </span>
+                                            </button>
+                                        </div>
+                                        <small>(Wears: {{ item.wear_count }})</small>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <p class="card-text mb-0">
+                                            {{ item.cloth_category.title|default:"-" }}
+                                        </p>
+                                        <small>
+                                            <a href="{% url 'ecommerce:feedback_list' item.id %}">
+                                                <span class="badge bg-success-custom"><i class="fa fa-eye me-1"></i>View Feedback: {{item.rating_set.count}}</span>
+                                            </a>
+                                        </small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                {% empty %}
+                <ul class="activity-list">
+                    <li class="no-activity">
+                        <div class="activity-content">No Data Found</div>
+                    </li>
+                </ul>
+                {% endfor %}
+                </div>
+                <!-- pagination-->
+                {% include "admin-includes/pagination.html" with listing_objects=cloth_items %}
+                <!-- pagination end-->
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="view-details" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="basic-form">
+                    <div class="row">
+                        <div class="col-md-12 col-lg-12 col-sm-12">
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="card my-4">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6  productdetails">
+                                            <h5><b>Item Detail</b></h5>
+                                            <ul class="product-bar mb-2">
+                                                <li>
+                                                    <h4>Id </h4>
+                                                    <h6><span id="item_id"></span></h6>
+                                                </li>
+                                                {% comment %} <li>
+                                                    <h4> Title </h4>
+                                                    <h6><span id="item_title"></span></h6>
+                                                </li> {% endcomment %}
+                                                <li>
+                                                    <h4> Category </h4>
+                                                    <h6><span id="item_category"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Wear Count </h4>
+                                                    <h6><span id="item_wear_count"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Weather Type </h4>
+                                                    <h6><span id="weather_type"></span>
+                                                    </h6>
+                                                </li> 
+                                                <li>
+                                                    <h4> Colour </h4>
+                                                    <h6><span id="item_color"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Brand </h4>
+                                                    <h6><span id="item_brand"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4> Occasion </h4>
+                                                    <h6><span id="item_occasion"></span></h6>
+                                                </li>
+                                                <li>
+                                                    <h4>Created On </h4>
+                                                    <h6>
+                                                        <span id="item_addedd_on"> </span>
+                                                    </h6>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6 productdetails">
+                                            <h5><b>Item Image</b></h5>
+                                            <ul class="product-bar custom-size-img mb-2">
+                                                <li>
+                                                    <a id="item_image_link" data-fancybox>
+                                                        <img id="item_image_img"  alt="">
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}
+<script>
+    function getWardrobeItemDetails(itemId) {
+        $.ajax({
+            url: "{% url 'wardrobe:wardrobe_item_details' %}",
+            type: "GET",
+            data: { item_id: itemId },
+            success: function(response) {
+                let item = response.items_data;
+                $("#item_id").text(item.id);
+                if (item.cloth_category) {
+                    $("#item_category").text(item.cloth_category);
+                }else{
+                     $("#item_category").text("-");
+                }
+                if (item.wear_count) {
+                    $("#item_wear_count").text(item.wear_count);
+                }else{
+                     $("#item_wear_count").text("0");
+                }
+                if (item.color) {
+                    $("#item_color").text(item.color);
+                }else{
+                     $("#item_color").text("-");
+                }
+                // $("#item_title").text(item.title);
+                
+                if (item.brand) {
+                    $("#item_brand").text(item.brand);
+                }else{
+                     $("#item_brand").text("-");
+                }
+                $("#item_occasion").text(item.occasion);
+                $("#item_addedd_on").text(item.created_on);
+                $("#item_image_img").attr("src", item.image_url);
+                $("#item_image_link").attr("href", item.image_url);
+                const weatherTypeMapping = {
+                    1: "Summer",
+                    2: "Winter",
+                    3: "Rainy Season",
+                    4: "Spring Season",
+                    5: "All Seasons"
+                };
+                let weatherVal = parseInt(item.weather_type);
+                let weatherText = weatherTypeMapping[weatherVal] || "Not Available";
+                $("#weather_type").text(weatherText);
+
+                $("#view-details").modal("show");
+            },
+            error: function() {
+                alert("Failed to load item details.");
+            }
+        });
+}
+</script>

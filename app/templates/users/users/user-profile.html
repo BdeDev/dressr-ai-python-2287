@@ -15,9 +15,6 @@
             <div class="page-btn d-flex flex-wrap">
                 <a class="btn btn-primary me-2" href="{% url 'logger:send_custom_email' user.id %}" ><i class="fas fa-mail-bulk me-1"></i> Send Email</a>
                 <a class="btn btn-primary me-2" href="{% url 'accounts:notifications_list' user.id %}" ><i class="fas fa-bell me-1"></i> Notifications</a>
-                {% if not user.status == 3 %}
-                    <a class="btn btn-primary me-2" href="{% url 'users:edit_user' user.id %}" ><i class="fa fa-edit me-1"></i> Update</a>
-                {% endif %}
                 <a class="btn btn-secondary" href="{% url 'users:users_list' %}" ><i class="fa fa-angle-left me-1"></i> Back</a>
             </div>
         </div>
@@ -51,16 +48,12 @@
                                         <h6>{% if user.username %}{{user.username}}{% else %} - {% endif %}</h6>
                                     </li>
                                     <li>
-                                        <h4>First Name </h4>
-                                        <h6>{% if user.first_name %}{{user.first_name|capfirst}}{% else %} - {% endif %}</h6>
-                                    </li>
-                                    <li>
-                                        <h4>Last Name </h4>
-                                        <h6>{% if user.last_name %}{{user.last_name|capfirst}}{% else %} - {% endif %}</h6>
-                                    </li>
-                                    <li>
                                         <h4>Full Name </h4>
                                         <h6>{% if user.full_name %}{{user.full_name|capfirst}}{% else %} - {% endif %}</h6>
+                                    </li>
+                                    <li>
+                                        <h4>DOB</h4>
+                                        <h6>{% if user.dob %}{{user.dob}}{% else %} - {% endif %}</h6>
                                     </li>
                                     <li>
                                         <h4>Mobile Number </h4>
@@ -221,7 +214,6 @@
                                             {% if device.device_token %}{{device.device_token}}{% else %}-{% endif %}                 
                                         </h6>
                                     </li>
-                                    
                                 </ul>
                                 {% endif %}
                                 {% if user.user_image %}
@@ -242,6 +234,49 @@
                                     </li>
                                 </ul>
                                 {% endif %}
+
+                                {% if ai_suggestions %}
+                                <ul class="product-bar mb-2">
+                                    <li>
+                                        <h4>Today Suggestion </h4>
+                                        <h6>
+                                            <div class="d-flex align-items-center display-images" style="overflow-x:scroll;">
+                                                {% for img in ai_suggestions.items.all %}
+                                                    <a href="{{img.image.url}}" data-fancybox>
+                                                        <img src="{{img.image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                        </h6>
+                                    </li>
+                                </ul>
+                                {% endif %}
+                                {% comment %} <h5 class="mt-3"><b>Stripe Information</b></h5>
+                                <ul class="product-bar mb-2">
+                                    <li>
+                                        <h4>Stripe Customer ID</h4>
+                                        <h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>{% if user.customer_id %}{{user.customer_id}}{% else %}-{% endif %}</span>
+                                                {% if not user.customer_id %}
+                                                <a onclick="Loader()" href="{% url "users:modify_customer_stripe_account" user.id %}?type=customer" title="Create Customer ID" class="btn btn-sm btn-info">Create Customer ID</a>
+                                                {% endif %}
+                                            </div>
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Stripe Account ID</h4>
+                                        <h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>{% if user.account_id %}{{user.account_id}}{% else %}-{% endif %}</span>
+                                                {% if not user.account_id %}
+                                                <a onclick="Loader()" href="{% url "users:modify_customer_stripe_account" user.id %}?type=account" title="Create Account ID" class="btn btn-sm btn-info">Create Account ID</a>
+                                                {% endif %}
+                                            </div>
+                                        </h6>
+                                    </li>
+                                
+                                </ul> {% endcomment %}
                             </div>
                         </div>
                         <div class="btn-list border-0 d-flex justify-content-end align-items-center mt-4">
@@ -259,7 +294,7 @@
             </div>
             <!-- tabs -->
             <div class="col-lg-12 col-sm-12 mt-5">
-                <div class="row  mt-4">
+                <div class="row mt-4">
                     <div class="bs-example action-tabs">
                         <ul class="nav nav-tabs" id="myTab">
                             <li class="nav-item">
@@ -270,6 +305,12 @@
                             </li>
                             <li class="nav-item">
                                 <a href="#sectionC" class="nav-link nav-link-items nav-link1" data-toggle="tab">Favourite Items</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#sectionD" class="nav-link nav-link-items nav-link1" data-toggle="tab">Virtual Try Ons</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#sectionE" class="nav-link nav-link-items nav-link1" data-toggle="tab">Today Styling Suggestions</a>
                             </li>
                         </ul>
                         <div class="tab-content">
@@ -320,14 +361,12 @@
                                                     <a class='btn btn-primary' href="{% url 'accounts:login_history' %}?email={{user.email}}">View More <i class="fas fa-angle-double-right ms-2"></i></a>
                                                 </div>
                                                 {% endif %}
-                                                {% comment %} <!-- pagination-->
-                                                {% include "admin-includes/pagination.html" with listing_objects=loginhistory %}
-                                                <!-- pagination end--> {% endcomment %}
                                             </div>
                                         </div>
                                     </div>
                                 </section>
                             </div>
+
                             <div id="sectionB" class="tab-pane fade show">
                                 <section id="tab" class="tab-panel">
                                     <div class="card custom-card">
@@ -340,6 +379,7 @@
                                                                 <th><strong>Title</strong></th>
                                                                 <th><strong>Occasion</strong></th>
                                                                 <th><strong>Season</strong></th>
+                                                                <th><strong>Outfit Image</strong></th>
                                                                 <th><strong>Created On</strong></th>
                                                                 <th><strong>Actions</strong></th>
                                                             </tr>
@@ -362,6 +402,20 @@
                                                                         {% elif outfit.weather_type == 5 %}
                                                                             <span class="badge bg-secondary">ALL SEASON</span>
                                                                         {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if outfit.image %}
+                                                                            <a href="{{outfit.image.url}}" data-fancybox>
+                                                                                <img src="{{outfit.image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% else %}
+                                                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% endif %}
+                                                                        </div>
                                                                     </td>
                                                                     <td>
                                                                         <script>
@@ -388,6 +442,7 @@
                                     </div>
                                 </section>
                             </div>
+
                             <div id="sectionC" class="tab-pane fade show">
                                 <section id="tab" class="tab-panel">
                                     <div class="card custom-card">
@@ -404,7 +459,6 @@
                                                                 <th><strong>Colour</strong></th>
                                                                 <th><strong>Brand</strong></th>
                                                                 <th><strong>Created On</strong></th>
-                                                                {% comment %} <th><strong>Actions</strong></th> {% endcomment %}
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -449,10 +503,99 @@
                                                                             document.write(date);
                                                                         </script>
                                                                     </td>
-                                                                    <td>
-                                                                        <div class="d-flex">
-                                                                            {% comment %} <a title="View" href="{% url 'wardrobe:view_outfit_detail' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a> {% endcomment %}
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                               <!-- pagination-->
+                                                {% include "admin-includes/pagination.html" with listing_objects=favourite_items %}
+                                                <!-- pagination end-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <div id="sectionD" class="tab-pane fade show">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>Order Id</strong></th>
+                                                                <th><strong>Source Image</strong></th>
+                                                                <th><strong>Garment Image</strong></th>
+                                                                <th><strong>Output Image</strong></th>
+                                                                <th><strong>Sigmentation Type</strong></th>
+                                                                <th><strong>Created On</strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if virtual_tryons %}
+                                                                {% for tryon in virtual_tryons %}
+                                                                <tr>
+                                                                    <td> {{tryon.order_id|default:"-"}}</td>
+                                                                    <td> 
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if tryon.source_image %}
+                                                                            <a href="{{tryon.source_image.url}}" data-fancybox>
+                                                                                <img src="{{tryon.source_image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% else %}
+                                                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% endif %}
                                                                         </div>
+                                                                    </td>
+                                                                    <td> 
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if tryon.garment_image %}
+                                                                            <a href="{{tryon.garment_image.url}}" data-fancybox>
+                                                                                <img src="{{tryon.garment_image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% else %}
+                                                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td> 
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if tryon.output_image %}
+                                                                            <a href="{{tryon.output_image.url}}" data-fancybox>
+                                                                                <img src="{{tryon.output_image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% else %}
+                                                                            <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                class="rounded-lg me-2" width="24" alt="">
+                                                                            </a>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td> 
+                                                                        {% if tryon.sigmentation_type == 0 %}
+                                                                            <span class="badge bg-success">Upper</span>
+                                                                        {% elif tryon.sigmentation_type == 1 %}
+                                                                            <span class="badge bg-warning">Lower</span>
+                                                                        {% elif tryon.sigmentation_type == 2 %}
+                                                                            <span class="badge bg-primary">Full Body</span>
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ tryon.created_on|date:'Y-m-d' }}", "{{ tryon.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
                                                                     </td>
                                                                 </tr>
                                                                 {% endfor %}
@@ -463,6 +606,64 @@
                                                <!-- pagination-->
                                                 {% include "admin-includes/pagination.html" with listing_objects=favourite_items %}
                                                 <!-- pagination end-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <div id="sectionE" class="tab-pane fade show">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>Occasion</strong></th>
+                                                                <th><strong>Items</strong></th>
+                                                                <th><strong>Explanation</strong></th>
+                                                                <th><strong>Created On</strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if user.today_suggestion.all %}
+                                                                {% for suggestion in user.today_suggestion.all %}
+                                                                <tr>
+                                                                    <td>{{suggestion.occasion|default:"-"}}</td>
+                                                                    <td>
+                                                                        {% if suggestion.items.all %}
+                                                                        <div class="d-flex align-items-center display-images" style="overflow-x:scroll;">
+                                                                            {% for img in suggestion.items.all %}
+                                                                                <a href="{{img.image.url}}" data-fancybox>
+                                                                                    <img src="{{img.image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                                                </a>
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                        {% else %}-
+                                                                        {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {{suggestion.explanation|safe|default:"-"}}
+                                                                    </td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ suggestion.created_on|date:'Y-m-d' }}", "{{ suggestion.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% if user.today_suggestion.all.count > 3 %}
+                                                <div class='text-left mt-2' >
+                                                    <a class='btn btn-primary' href="{% url 'users:outfit_suggestions' %}?email={{user.email}}">View More <i class="fas fa-angle-double-right ms-2"></i></a>
+                                                </div>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>

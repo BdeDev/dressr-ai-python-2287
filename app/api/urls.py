@@ -21,8 +21,7 @@ urlpatterns = [
     ##Security Management
     re_path(r'^change-password-api/$',ChangePassword.as_view(),name="change_password_api"),
     re_path(r'^forgot-password-api/$',ForgotPassword.as_view(),name="forgot_password_api"),
-    # re_path(r'^forgot-password-resend-link/$',ForgotPasswordResendLink.as_view(),name="forgot_password_resend_link_api"),
-    # re_path(r'^reset-password/$',ResetPasswordView.as_view(),name="reset_password_api"),
+
     
     ## Profile Management
     re_path(r'^profile-details-api/$',UserProfileDetails.as_view(),name="user_profile_details_api"),
@@ -49,5 +48,10 @@ urlpatterns = [
 
     ##CheckDate
     re_path(r'datecheck-api/$',CheckDate.as_view(),name="datecheck_api"),
+
+    re_path(r'avatar-creation-api/$',CreateUserAvatarAPI.as_view(),name="avatar_creation_api"),
+    re_path(r'virtual-try-on-api/$',CreateVirtualTryOnAPI.as_view(),name="virtual_try_on_api"),
+    re_path(r'create-outfit-api/$',CreateAIOutFitAPI.as_view(),name="create_outfit_api"),
+    re_path(r'virtual-try-on-list-api/$',VirtualTryOnListAPI.as_view(),name="virtual_try_on_list_api"),
 
 ]

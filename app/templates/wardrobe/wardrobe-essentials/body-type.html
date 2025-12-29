@@ -33,6 +33,7 @@
 									<tr>
                                         <th><strong>ID</strong></th>
                                         <th><strong>Title</strong></th>
+                                        <th><strong>Icon</strong></th>
                                         <th><strong>Description</strong></th>
 										<th><strong>Created On</strong></th>
                                         <th><strong>Actions</strong></th>
@@ -42,6 +43,7 @@
 									<tr class="search-row">
                                         <td><input disabled type="text" value="{{request.GET.id}}" class="form-control" name="id" maxlength="20"></td>
                                         <td><input type="text" value="{{request.GET.title}}" class="form-control" name="title" maxlength="20"></td>
+                                        <td><input disabled type="text" value="{{request.GET.image}}" class="form-control" name="image" maxlength="20"></td>
                                         <td><input type="text" value="{{request.GET.description}}" class="form-control" name="description" maxlength="20"></td>
 										<td><input type="date" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
 										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
@@ -53,6 +55,20 @@
 										<tr>
                                             <td> {{type.id|default:"-"}} </td>
                                             <td> {{type.title|default:"-"}} </td>
+                                            <td> 
+                                                <div class="d-flex align-items-center display-images">
+                                                {% if type.icon %}
+                                                    <a href="{{type.icon.url}}" data-fancybox>
+                                                        <img src="{{type.icon.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                        <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                        class="rounded-lg me-2" width="50" alt="">
+                                                    </a>
+                                                {% endif %}
+                                                </div>
+                                            </td>
                                             <td> {{type.description|default:"-"}} </td>
 											<td>
 												<script>
@@ -62,7 +78,7 @@
 											</td>
 											<td>
 												<div class="d-flex">
-													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{type.id}}','{{type.title}}','{{type.description}}')"  data-bs-target="#edit-body-type" class="btn btn-info shadow btn-xs sharp me-1">
+													<a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{type.id}}','{{type.title}}','{{type.icon}}','{{type.description}}')"  data-bs-target="#edit-body-type" class="btn btn-info shadow btn-xs sharp me-1">
 														<i class="fa fa-edit"></i>
 													</a>
                                                     <a title="Delete" href="{% url 'wardrobe:delete_body_type' type.id %}" id="delete-btn" class="btn btn-danger shadow btn-xs sharp"><i class="fa fa-trash"></i></a>
@@ -102,6 +118,12 @@
                                     <input type="text" placeholder="Title" name="title" id="title" class="form-control" maxlength="100">
                                 </div>
                             </div>
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label class="form-label">Body Type Icon</label>
+                                    <input type="file" name="icon" id="icon" accept="image/*" class="form-control">
+                                </div>
+                            </div>
 							<div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Description</label>
@@ -129,12 +151,18 @@
                 <div class="basic-form">
                     <form onsubmit="Loader(this.id)" id="edit-body-types" action="{% url 'wardrobe:body_type_list' %}" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
-                        <input type="hidden" name="id" id="id" value="">
+                        <input type="hidden" name="body_type_id" id="body_type_id" value="">
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="form-group required-field">
                                     <label class="form-label">Title</label>
                                     <input type="text" name="title" id="body_type_title" class="form-control" maxlength="100" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group required-field">
+                                    <label class="form-label">Body Type Icon</label>
+                                    <input type="file" name="icon" id="body_type_icon" accept="image/*" class="form-control">
                                 </div>
                             </div>
                             <div class="col-lg-12">
@@ -155,9 +183,10 @@
 </div>
 {% include "admin-includes/footer.html" %}
 <script>
-    function GetValue(id, title,description){
-        $('#id').val(id);
+    function GetValue(id, title,icon,description){
+        $('#body_type_id').val(id);
         $('#body_type_title').val(title);
+        $('#body_type_icon').val(icon);
         $('#body_type_description').val(description);
     }
 </script>

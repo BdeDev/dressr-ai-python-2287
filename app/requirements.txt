@@ -35,3 +35,4 @@ redis
 celery
 django-celery-beat
 django-celery-results
+google-genai

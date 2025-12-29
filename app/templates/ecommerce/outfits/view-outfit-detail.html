@@ -31,7 +31,13 @@
                                     <h4> Title </h4>
                                     <h6>{{outfit.title|default:"-"}}</h6>
                                 </li>
-                                 <li>
+                                {% if outfit.color %}
+                                <li>
+                                    <h4> Colour </h4>
+                                    <h6>{{outfit.color|default:"-"}}</h6>
+                                </li>
+                                {% endif %}
+                                <li>
                                     <h4> Occasion </h4>
                                     <h6><a href="{% url 'wardrobe:occasion' %}">{{outfit.occasion.title|default:'-'}}</a></h6>
                                 </li>
@@ -70,6 +76,7 @@
                                         {% else %}-{% endif %}
                                     </h6>
                                 </li>
+                                {% if outfit.items.all %}
                                 <li>
                                     <h4> Items in Outfit ({{outfit.items.count}})</h4>
                                     <h6>
@@ -82,18 +89,26 @@
                                         </div>
                                     </h6>
                                 </li>
+                                {% endif %}
+                                {% if outfit.notes %}
+                                <li>
+                                    <h4> Prompt </h4>
+                                    <h6>{{outfit.notes|safe}}</h6>
+                                </li>
+                                {% endif %}
                             </ul>
                         </div>
                         <div class=" col-md-6 productdetails">
                             <h5><b>Outfit Image</b></h5>
-                            <ul class="product-bar outfit-custom-size-img d-flex justify-content-center mb-2">
+                            <ul class="product-bar outfit-custom">
                                 {% if outfit.image %}
                                     <a href="{{outfit.image.url}}" data-fancybox>
-                                        <img src="{{outfit.image.url}}" alt="">
+                                        <img src="{{outfit.image.url}}" class="rounded-lg me-2"  alt="">
                                     </a>
                                 {% else %}
                                     <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
-                                        <img src="{% static 'admin-assets/images/dp.png' %}" alt="">
+                                        <img src="{% static 'admin-assets/images/dp.png' %}"
+                                        class="rounded-lg me-2" alt="">
                                     </a>
                                 {% endif %}
                             </ul>
@@ -101,15 +116,67 @@
                     </div>
                 </div>
             </div>
+            <!-- tabs -->
+            <div class="col-lg-12 col-sm-12 mt-5">
+                <div class="row  mt-4">
+                    <div class="bs-example action-tabs">
+                        <ul class="nav nav-tabs" id="myTab">
+                            <li class="nav-item">
+                                <a href="#sectionA" class="nav-link nav-link-items active nav-link1" data-toggle="tab">Outfit Feedback</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="sectionA" class="tab-pane fade show active ">
+                                <section id="tab" class="tab-panel">
+                                    <div class="card custom-card">
+                                        <div class="card-body">
+                                            <div class=" dataview">
+                                                <div class="table-responsive">
+                                                    <table class="table datatable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th><strong>User Name</strong></th>
+                                                                <th><strong>Rating</strong></th>
+                                                                <th><strong>Comment</strong></th>
+                                                                <th><strong>Created On </strong></th>
+                                                                <th><strong>Actions </strong></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% if ratings %}
+                                                                {% for rating in ratings %}
+                                                                <tr>
+                                                                    <td>{{rating.user.full_name|default:'-'}}</td>
+                                                                    <td>{{rating.rating|default:'-'}}</td>
+                                                                    <td>{{rating.comment|default:'-'|truncatechars:75}}</td>
+                                                                    <td>
+                                                                        <script>
+                                                                            var date = ConvertDateTime("{{ rating.created_on|date:'Y-m-d' }}", "{{ rating.created_on|time:'H:i' }}");
+                                                                            document.write(date);
+                                                                        </script>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="d-flex">
+                                                                            <a title="View" href="{% url 'ecommerce:feedback_list' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- tabs end -->
         </div>
     </div>
 </div>
 {% include "admin-includes/footer.html" %}
-<style>
-    .product-bar.outfit-custom-size-img {
-    max-height: 281px;
-    max-width: 364px;
-    overflow: hidden;
-    border: 1px solid #dbdbdb;
-}
-</style>

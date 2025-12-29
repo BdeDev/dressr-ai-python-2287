@@ -1,12 +1,9 @@
 USE_HTTPS = False
 DEFAULT_TIMEZONE='Asia/Kolkata'
-DEFAULT_SEARCH_RADIUS_KM=20
-TEMP_OTP = 1234
 MAX_ACTIVE_BANNER = 5
 SHOW_MORE_COUNT = 5
 DEFAULT_SERVICE_FEES = 5
 DEFAULT_CONVENIENCE_FEES = 5
-NEAR_BY_RANGE = 200
 MAX_PROVIDERS_KEY = 3
 
 '''
@@ -64,12 +61,15 @@ API_PAGINATION = 10
 '''
 Notification Type
 '''
-NOTIFICATION_TYPE = ((1,'Admin Notification'),(2,'Loan Status Notification'),(3,'User Related Notification'),(3,'Query Ticket Notification'),(3,'Subscription Notification'))
+NOTIFICATION_TYPE = ((1,'Admin Notification'),(2,'Avatar Created'),
+                     (3,'User Related Notification'),(4,'Virtual Try On'),(5,'User Outfit Generated'),(6,'Subscription status'),(7,'Style Suggestion'))
 ADMIN_NOTIFICATION=1
-LOAN_STATUS_NOTIFICATION = 2
+AVATAR_CREATED = 2
 USER_RELATED_NOTIFICATION = 3
-QUERY_TICKET_NOTIFICATION = 4
-SUBSCRIPTION_STATUS_NOTIFICATION = 5
+VIRTUAL_TRY_ON = 4
+USER_OUTFIT = 5
+SUBSCRIPTION_STATUS_NOTIFICATION = 6
+STYLE_SUGGESTION_NOTIFICATION = 7
 
 """
 LOGIN_STATE
@@ -110,10 +110,6 @@ EMAIL_SENT = 1
 EMAIL_PENDING = 2
 EMAIL_FAILED = 3
 
-BODY_TYPE = ((1,'Slim'),(2,'Athletic'),(3,'Curvy'))
-SLIM = 1
-ATHLETIC = 2
-CURVY = 3
 
 STYLE = [(1, "Casual"),(2, "Formal"),(3, "Party"),(4, "Street Style"),(5, "Classic")]
 CASUAL = 1
@@ -187,3 +183,45 @@ GEAR = 4
 SOURCE_CHOICES = [(1,'Wardrobe'),(1,'Recommended')]
 WARDROBE = 1
 RECOMMENDED = 2
+
+
+#Affiliate Constants
+COMMISSION_TYPE=((1, "Percentage of sale"),)
+PERCENTAGE_OF_SALE=1
+
+
+COMMISSION_HISTORY_STATUS=((1, "Pending"),(2, "Approved"),(3, "Paid"))
+COMMISSION_STATUS_PENDING=1
+COMMISSION_STATUS_APPROVED=2
+COMMISSION_STATUS_PAID=3
+
+
+TRY_ON_STATUS = ((1, "Pending"),(2, "Processing"),(3, "Success"),(4, "Failed"))
+TRY_ON_PENDING = 1
+TRY_ON_PROCESSING = 2
+TRY_ON_SUCCESS = 3
+TRY_ON_FAILED = 4
+
+
+SIGMENT_TYPE = ((0,"Upper Body"),(1,"Lower Body"),(2,"Full Body"),(3,"Shoes"),(4,"Sunglasses"))
+UPPER_BODY = 0
+LOWER_BODY = 1
+FULL_BODY = 2
+SHOES = 3
+SUNGLASSES = 4
+
+INTEGRATION_TYPE = ((1,"API"),(2,"FEED"),(3,"MANUAL"))
+API = 1
+FEED = 2
+MANUAL = 3
+
+
+CLOTH_CATEGORY_TYPE = ((1,"Top"),(2,"Bottom"),(3,"Dress"),(4,"Jacket"),(5,"Shoes"),(6,"Goggles"),(7,"Purse"),(8,"Hat"))
+TOP = 1
+BOTTOM = 2
+DRESS = 3
+JACKET = 4
+SHOES_CAT = 5
+GOGGLES = 6
+PURSE = 7
+HAT = 8

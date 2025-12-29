@@ -128,8 +128,11 @@ class ResetPassword(View):
         uid = kwargs.get('uid')
         token_key = kwargs.get('token')
         user = get_object_or_404(User, id=uid)
-        token = Token.objects.get(key=token_key, user=user)
-        return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
+        try:
+            token = Token.objects.get(key=token_key, user=user)
+            return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
+        except Exception as e:
+            return render(request, 'frontend/failed-verification.html',{'protocol': 'https' if USE_HTTPS else 'http', 'domain': env('SITE_DOMAIN')})
       
 
     def post(self, request, *args, **kwargs):
@@ -147,12 +150,9 @@ class ResetPassword(View):
             user.set_password(password)
             user.save()
             token.delete()
-
-            messages.success(request, 'Password reset successfully! Please log in.')
             return render(request,'frontend/password-reset-successful.html', {
                     "user": user, 'protocol': 'https' if USE_HTTPS else 'http', 'domain': env('SITE_DOMAIN')})
         except:
-            messages.error(request, 'Sorry! Your reset link has expired or is invalid.')
             return render(request, 'registration/ResetPassword.html', {"token": token, "uid": uid})
       
 
@@ -174,26 +174,6 @@ class ForgotPasswordEmail(View):
             bulk_send_user_email(request,user,'EmailTemplates/reset_password_admin.html','Reset Your Password',request.POST.get("email"),reset_link,"","","",assign_to_celery=False)
             messages.success(request,'A link has been sent on your email to reset your password.')
             return redirect('accounts:login')
-
-
-"""
-Verify Account through email 
-"""
-class VerifyUserAccount(View):
-    def get(self, request, *args, **kwargs):
-        try:
-            user_otp = request.GET.get('otp')
-            token = Token.objects.get(key=self.kwargs.get('token'))
-            user = User.objects.get(id=token.user_id)
-            if user.temp_otp == user_otp:
-                user.is_verified = True
-                user.save()
-                token.delete()
-                return render(request,'frontend/success-verification.html',{"user":user,'protocol': 'https' if USE_HTTPS else 'http','domain':env('SITE_DOMAIN')})
-            token.delete()
-            return render(request,'frontend/failed-verification.html',{'protocol': 'https' if USE_HTTPS else 'http','domain':env('SITE_DOMAIN')})
-        except:
-            return render(request,'frontend/failed-verification.html',{'protocol': 'https' if USE_HTTPS else 'http','domain':env('SITE_DOMAIN')})
 
 """
 Notification Management
@@ -432,18 +412,18 @@ class BannersList(View):
                 return redirect('accounts:banners_list')
             if request.POST.get('title'):
                 banner.title = request.POST.get('title').strip()
-            if request.FILES.get('image'):
-                banner.image = request.FILES.get('image').strip()
+            if request.FILES.get('media'):
+                banner.image = request.FILES.get('media')
             banner.save()
             messages.success(request, "Banner updated successfully!")
         else:
             if Banners.objects.filter(title=request.POST.get('title')).exists():
                 messages.error(request, "Banner already exists!")
                 return redirect('accounts:banners_list')
-            if request.FILES.get('image'):
+            if request.FILES.get('media'):
                 Banners.objects.create(
                     title = request.POST.get('title'),
-                    image = request.FILES.get('image',None),
+                    image = request.FILES.get('media',None),
                     is_active = False if Banners.objects.filter(is_active=True).count() >= MAX_ACTIVE_BANNER else True,
                 )
                 messages.success(request, "Banner added successfully!")

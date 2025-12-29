@@ -1,0 +1,109 @@
+{% include "admin-includes/header.html" %}
+{% load static %}
+{% load extras %}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Styling Suggestions</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'accounts:login_history' %}">Styling Suggestions</a>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class='d-flex flex-wrap justify-content-between'>
+                    <!-- showing_objects-->
+					{% include "admin-includes/showing_objects.html" with listing_objects=outfit_suggestions %}
+					<!-- showing_objects end-->
+				</div>
+                <div class="dataview">
+                    <form onsubmit="Loader()" action="" method="GET">
+                        <div class="table-responsive">
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th><strong>User</strong></th>
+                                        <th><strong>Email</strong></th>
+                                        <th><strong>Occasion</strong></th>
+                                        <th><strong>Items</strong></th>
+                                        <th><strong>Created On</strong></th>
+                                        <th><strong>Actions</strong></th>
+                                    </tr>
+                                </thead>
+                                <thead>
+									<tr class="search-row">
+										<td><input type="text" value="{{request.GET.full_name}}" class="form-control" name="full_name" maxlength="50"></td>
+                                        <td><input type="text" value="{{request.GET.email}}" class="form-control" name="email" maxlength="20"></td>
+										<td><input type="text" value="{{request.GET.occasion}}" class="form-control" name="occasion" maxlength="20"></td>
+                                        <td><input disabled type="text" value="{{request.GET.occasion}}" class="form-control" name="occasion" maxlength="20"></td>
+                                        <td><input type="date" onkeydown="return false" value="{{request.GET.created_on}}" class="position-relative form-control" onchange="this.form.submit()" name="created_on"></td>
+										<td><button type="submit" class="btn btn-primary ms-2">Search</button></td>
+									</tr>
+								</thead>
+                                <tbody>
+                                    {% if outfit_suggestions %}
+                                    {% for outfit in outfit_suggestions %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center display-images">
+                                                {% if outfit.user.profile_pic %}
+                                                    <a href="{{outfit.user.profile_pic.url}}" data-fancybox>
+                                                        <img src="{{outfit.user.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                        <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                        class="rounded-lg me-2" width="50" alt="">
+                                                    </a>
+                                                {% endif %}
+                                                <span><a href="{% url 'users:view_user' outfit.user.id %}" class="w-100">{{outfit.user.full_name|capfirst|default:"-"}}</a></span>
+                                            </div>
+                                        </td>
+                                        <td>{{outfit.user.email|default:"-"}}</td>
+                                        <td>{{outfit.occasion|default:"-"}}</td>
+                                        <td>
+                                            {% if outfit.items.all %}
+                                            <div class="d-flex align-items-center display-images" style="overflow-x:scroll;">
+                                                {% for img in outfit.items.all %}
+                                                    <a href="{{img.image.url}}" data-fancybox>
+                                                        <img src="{{img.image.url}}" class="rounded-lg me-2" width="24" alt="">
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                            {% else %}-
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <script>
+                                                var date = ConvertDateTime("{{ outfit.created_on|date:'Y-m-d' }}", "{{ outfit.created_on|time:'H:i' }}");
+                                                document.write(date);
+                                            </script>
+                                        </td>
+                                        <td>
+                                            <a title="View Suggestion" href="{% url 'users:view_suggestion' outfit.id %}" class="btn btn-success shadow btn-xs sharp me-1">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            <a style="margin-right:5px" href="{% url 'users:delete_suggestion' outfit.id %}" message="Are you sure you want to delete this suggestion ?" class="btn btn-danger shadow btn-xs sharp action_confirm"><i class="fa fa-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    <!-- pagination start-->
+                    {% include "admin-includes/pagination.html" with listing_objects=outfit_suggestions %}
+                    <!-- pagination end-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include "admin-includes/footer.html" %}

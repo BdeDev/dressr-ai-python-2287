@@ -8,7 +8,6 @@ function GetGraphData(){
         },
         success: function (data) {
             Highcharts.chart("chart-container", data['users']);
-            Highcharts.chart('chart-container-pie', data['pie_chart']);
             $('#selected_year').text(data['selected_year']);
             $('#selected_month').text(data['month_name']);
             $("#years option[value='"+data['selected_year']+"']").attr("selected","selected");
@@ -22,63 +21,38 @@ for (i = new Date().getFullYear(); i > new Date().getFullYear() - 5; i--)
     $('#r_years').append($('<option />').val(i).html(i));
     $('#r_years').append($('<option />').val(i).html(i));
 }
-
+GetGraphData();
 
 // for sub admin graph
 
 
-function GetGraphDataSubAdmin(){
+
+
+
+function GetGraphDataAffiliate(){
     $.ajax({
-        url: "/users/sub-admin-user-graph/",
+        url: "/ecommerce/affiliate-graph/",
         dataType: 'json',
         data: {
-            'sub_month': $('#sub_months').val(),
-            'sub_year': $('#sub_years').val(),
+            'month': $('#months').val(),
+            'year': $('#years').val(),
         },
         success: function (data) {
-            Highcharts.chart("sub-chart-container", data['users']);
-            $('#sub_selected_year').text(data['sub_selected_year']);
-            $('#sub_selected_month').text(data['sub_month_name']);
-            $("#sub_years option[value='"+data['sub_selected_year']+"']").attr("selected","selected");
-            $("#sub_months option[value='"+data['sub_selected_month']+"']").attr("selected","selected");
+            Highcharts.chart("affiliate-chart-container", data['users']);
+            $('#selected_year').text(data['selected_year']);
+            $('#selected_month').text(data['month_name']);
+            $("#years option[value='"+data['selected_year']+"']").attr("selected","selected");
+            $("#months option[value='"+data['selected_month']+"']").attr("selected","selected");
         }
     });
 }
 for (i = new Date().getFullYear(); i > new Date().getFullYear() - 5; i--)
 {
-    $('#sub_years').append($('<option />').val(i).html(i));
-    $('#sub_r_years').append($('<option />').val(i).html(i));
+    $('#years').append($('<option />').val(i).html(i));
+    $('#r_years').append($('<option />').val(i).html(i));
+    $('#r_years').append($('<option />').val(i).html(i));
 }
-
-
-
-
-function GetLoanGraphData() {
-    $.ajax({
-        url: "/loan-manager/loan-application-graph/",
-        dataType: 'json',
-        data: {
-            'loan_month': $('#loan_months').val(),
-            'loan_year': $('#loan_years').val(),
-        },
-        success: function(data) {
-            Highcharts.chart("loan-chart-container", data['chart']);
-            Highcharts.chart('chart-container-pie', data['pie_chart']);
-            $('#loan_selected_year').text(data['loan_selected_year']);
-            $('#loan_selected_month').text(data['loan_month_name']);
-            $("#loan_years option[value='" + data['loan_selected_year'] + "']").attr("selected", "selected");
-            $("#loan_months option[value='" + data['loan_selected_month'] + "']").attr("selected", "selected");
-        },
-        error: function(xhr, status, error) {
-            console.error(xhr.responseText);
-        }
-    });
-}
-
-for (let i = new Date().getFullYear(); i > new Date().getFullYear() - 5; i--) {
-    $('#loan_years').append($('<option />').val(i).html(i));
-    $('#loan_r_years').append($('<option />').val(i).html(i));
-}
+GetGraphDataAffiliate();
 
 
 // activity graph
@@ -107,3 +81,6 @@ for (i = new Date().getFullYear(); i > new Date().getFullYear() - 5; i--)
 {
     $('#activity_years').append($('<option />').val(i).html(i));
 }
+
+
+

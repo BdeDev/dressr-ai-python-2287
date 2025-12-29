@@ -33,12 +33,13 @@ from rest_framework import status
 from dateutil.relativedelta import relativedelta
 from user_agents import parse
 from subscription.models import *
-from ecommerce.models import DiscountAd
+from ecommerce.models import DiscountAd,Rating
 import random
 import string
 from accounts.tasks import *
 from wardrobe.models import *
 from django.utils.text import slugify
+import requests
 
 
 db_logger = logging.getLogger('db')
@@ -57,7 +58,21 @@ def generate_mydressr_username(name):
 
     return list(suggestions)
 
-
+"""
+generate a referal code.
+"""
+def GenerateReferal():
+    rand_digits = str(random.randint(1000, 9999))
+    rand_lower_string = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
+    referral_code=list(rand_lower_string.upper()+rand_digits)
+    random.shuffle(referral_code)
+    referral_code=referral_code
+    referral_code=""+"".join(referral_code)
+    if User.objects.filter(referral_code=referral_code):
+        GenerateReferal()
+    else:
+        return referral_code
+    
 def get_admin():
     '''
     Get Superuser 
@@ -236,33 +251,37 @@ def convert_to_local_timezone(time_zone:str, date_time:str):
         db_logger.exception(e)
         return datetime.strptime(str(UTC_tz.normalize(local_tz.localize(date_time).astimezone(pytz.timezone('GMT')))).split("+")[0], "%Y-%m-%d %H:%M:%S")
 
-def get_pages_data(page:int, data):
-    '''
-        Returns Pagination Data : Start, End, Meta Data
-        Args:
-            page (int): Page Number (starts from 1)
-            data (QuerySet): `QuerySet` to apply pagination
-    '''
+
+def get_pages_data(page: int,  data, limit: int = None):
+    """
+    Returns Pagination Data : Start, End, Meta Data
+    Args:
+        page (int): Page number (starts from 1)
+        limit (int): Dynamic limit (if None, use API_PAGINATION)
+        data (QuerySet): QuerySet to paginate
+    """
+
+    per_page = int(limit) if limit else API_PAGINATION
     if page:
-        if str(page) == '1':
-            start = 0
-            end = start + API_PAGINATION
-        else:
-            start = API_PAGINATION * (int(page)-1)
-            end = start + API_PAGINATION
+        page = int(page)
+        start = (page - 1) * per_page
+        end = start + per_page
     else:
+        page = 1
         start = 0
-        end = start + API_PAGINATION
-    page_data_value = Paginator(data, API_PAGINATION)	
-    last_page = True if page_data_value.num_pages == int(page if page else 1) else False
-    meta_data = { 
-        "page_count": page_data_value.num_pages,
+        end = per_page
+
+    paginator = Paginator(data, per_page)
+    last_page = page >= paginator.num_pages
+    meta_data = {
+        "page_count": paginator.num_pages,
         "total_results": data.count(),
-        "current_page_no": int(page if page else 1),
-        "limit": API_PAGINATION,
+        "current_page_no": page,
+        "limit": per_page,
         "last_page": last_page
     }
-    return start,end,meta_data
+    return start, end, meta_data
+
 
 def bulk_send_notification(
         created_by:User, created_for:List[User], title:str, description:str, notification_type:int, obj_id:str,assign_to_celery:bool=True
@@ -352,7 +371,7 @@ def update_object(self,request, model, fields: list):
         return True
 
 def activate_subscription(user,activate_purchased_plan:SubscriptionPlans=None):
-    user = User.objects.get(id=user)
+    user = User.objects.get(id=user.id)
     ## Warning : This function is also used on cronjob to renew plan
     if not activate_purchased_plan:
         upcomming_plan =  UserPlanPurchased.objects.filter(purchased_by=user,status = USER_PLAN_IN_QUEUE).order_by('created_on').first()
@@ -420,6 +439,12 @@ def generate_discount_code(prefix="DIS", length=6, suffix=None):
         generate_discount_code()
     else:
         return code
-    
 
-    
+
+def get_api_key():
+    lightX_api = LightXEditorCredentials.objects.filter(is_active = True).first()
+    if lightX_api:
+        lightX_api = lightX_api.api_key
+    else:
+        lightX_api = env('LIGHTX_API_KEY')
+    return lightX_api
