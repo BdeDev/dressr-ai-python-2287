@@ -4,7 +4,12 @@ import json
 import PIL.Image
 import os
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './mydressr-project-ef3d96e53e7a.json'
+# from rembg import remove
+# from PIL import Image
+# from io import BytesIO
+# from django.core.files.base import ContentFile
+
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './mydressr-project-ef3d96e53e7a.json'
 
 client = genai.Client(
     vertexai=True, 
@@ -74,14 +79,11 @@ def normalize_ai_result(ai_data: dict) -> dict:
             return str(value[0])
         return str(value) if value else default
 
-    # Extract category_id and force it to be an integer
     raw_cat = ai_data.get("category_id")
     try:
-        # This handles cases where AI returns "1" (string) instead of 1 (int)
         category_id = int(raw_cat)
     except (ValueError, TypeError):
-        category_id = 0 # Default to 0/Unknown if parsing fails
-
+        category_id = 0
     return {
         "title": clean_str(ai_data.get("title"), "New Clothing Item"),
         "type": clean_str(ai_data.get("type"), "Other"),
@@ -109,35 +111,51 @@ def suggest_outfit(city, temp, humidity, condition, wardrobe_items):
         Current Context:
         - City: {city}
         - Current Weather: {temp}°C, {humidity}% humidity, {condition}
-        - Goal: Create 3 distinct outfits from the user's uploaded images that prioritize comfort, occasion-appropriateness, and visual harmony.
+        - Goal: Create 3 distinct outfits using the user's uploaded images.
 
         Styling Logic:
-        1. Weather Suitability: Select fabrics and layers appropriate for {temp}°C. If {condition} involves rain or wind, prioritize functional outerwear.
-        2. Color Matching: Use the 60-30-10 rule for color balance. Ensure the "Stylized" option uses high-contrast complementary colors (e.g., Blue/Orange, Purple/Yellow).
-        3. Harmony: Ensure shoes and accessories coordinate with the primary outfit color.
+        1. Structural Integrity: Each outfit must be a complete look consisting of exactly one (1) Top, one (1) Bottom, and one (1) Outerwear (if needed for {temp}°C). Never pair items from the same category (e.g., no shirt-with-shirt or pant-with-pant).
+        2. Weather Suitability: Select fabrics and layers appropriate for {temp}°C. If {condition} involves rain or wind, prioritize functional outerwear.
+        3. Color Matching: Use the 60-30-10 rule. The "Color-Focused" option MUST use high-contrast complementary colors (e.g., Blue/Orange, Purple/Yellow).
+        4. Harmony: Ensure shoes and accessories coordinate with the primary outfit color.
 
-        Task: Return a JSON object containing 3 outfit suggestions:
-        1. "Casual": Optimized for movement and comfort for a day out in {city}.
-        2. "Work/Semi-Formal": A polished "smart-casual" or professional look that respects the current {temp}°C (e.g., blazer or knitwear if cool).
-        3. "Color-Focused": A bold, high-fashion combination using complementary or triadic color schemes to make a statement.
+        Task: Return a JSON object with 3 suggestions. Each suggestion must map IDs to specific clothing roles:
 
         Output Format (STRICT JSON ONLY):
         {{
             "suggestions": [
                 {{
                     "occasion": "Casual",
-                    "explanation": "Briefly explain why these pieces suit {temp}°C and the chosen color palette.",
-                    "outfit_ids": ["id1", "id2", "id3"]
+                    "explanation": "Briefly explain why these pieces suit {temp}°C.",
+                    "items": {{
+                        "top_id": "id_from_image",
+                        "bottom_id": "id_from_image",
+                        "outerwear_id": "id_from_image_or_null",
+                        "footwear_id": "id_from_image",
+                        "accessory_id": "id_from_image_or_null"
+                    }}
                 }},
                 {{
                     "occasion": "Work",
                     "explanation": "Explain the professional appeal and weather-readiness.",
-                    "outfit_ids": ["id4", "id5"]
+                    "items": {{
+                        "top_id": "id_from_image",
+                        "bottom_id": "id_from_image",
+                        "outerwear_id": "id_from_image_or_null",
+                        "footwear_id": "id_from_image",
+                        "accessory_id": "id_from_image"
+                    }}
                 }},
                 {{
                     "occasion": "Color-focused",
-                    "explanation": "Identify the specific color theory used (e.g., complementary) and why it's visually striking.",
-                    "outfit_ids": ["id6", "id7"]
+                    "explanation": "Identify the color theory used (e.g., complementary).",
+                    "items": {{
+                        "top_id": "id_from_image",
+                        "bottom_id": "id_from_image",
+                        "outerwear_id": "id_from_image_or_null",
+                        "footwear_id": "id_from_image",
+                        "accessory_id": "id_from_image"
+                    }}
                 }}
             ]
         }}
@@ -150,3 +168,13 @@ def suggest_outfit(city, temp, humidity, condition, wardrobe_items):
         config={'response_mime_type': 'application/json'}
     )
     return json.loads(response.text)
+
+
+# def remove_image_background(image_file):
+#     input_image = Image.open(image_file)
+#     output_image = remove(input_image)
+
+#     buffer = BytesIO()
+#     output_image.save(buffer, format="PNG")
+#     buffer.seek(0)
+#     return ContentFile(buffer.read(), name=f"{image_file.name.split('.')[0]}.png")

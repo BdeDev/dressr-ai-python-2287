@@ -206,6 +206,8 @@ class Rating(CommonInfo):
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     item = models.ForeignKey(ClothingItem, null=True, blank=True, on_delete=models.CASCADE)
     outfit = models.ForeignKey(Outfit, null=True, blank=True, on_delete=models.CASCADE)
+    suggestion = models.ForeignKey(OutfitSiggestion, null=True, blank=True, on_delete=models.CASCADE)
+    virtual_try_on = models.ForeignKey(VirtualTryOn, null=True, blank=True, on_delete=models.CASCADE)
     rating = models.PositiveIntegerField(default=0)
     comment = models.TextField(null=True, blank=True)
 

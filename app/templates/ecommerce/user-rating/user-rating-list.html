@@ -4,13 +4,12 @@
     <div class="content">
         <div class="page-header">
             <div class="page-title">
-                <h4>User Rating </h4>
+                <h4>User Feedback </h4>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a class="white-text" href="/">Dashboard</a></li>
                         <li class="breadcrumb-item"><a class="white-text" href="{% url 'users:users_list' %}">Customers</a></li>
-                        <li class="breadcrumb-item"><a class="white-text" href="{% url 'users:view_user' user.id %}">Profile</a></li>
-                        <li class="breadcrumb-item active">Notifications</li>
+                        <li class="breadcrumb-item active">User Feedback </li>
                     </ol>
                 </nav>
             </div>
@@ -18,72 +17,7 @@
                 <a class="btn btn-secondary" href="{% url 'wardrobe:wardrobe_list' %}"><i class="fa fa-angle-left me-1"></i> Back</a>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 productdetails">
-                                <ul class="product-bar">
-                                    <li>
-                                        <h4>Item Id </h4>
-                                        <h6>{% if item_id.id %}{{item_id.id}}{% else %}-{% endif %}</h6>
-                                    </li>
-                                    <li>
-                                        <h4>Title </h4>
-                                        <h6>
-                                            <div class="d-flex align-items-center display-images">
-                                                {% if item_id.image.profile_pic %}
-                                                    <a href="{{item_id.image.url}}" data-fancybox>
-                                                        <img src="{{item_id.image.url}}" class="rounded-lg me-2" width="50" alt="">
-                                                    </a>
-                                                {% else %}
-                                                    <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
-                                                        <img src="{% static 'admin-assets/images/dp.png' %}"
-                                                        class="rounded-lg me-2" width="50" alt="">
-                                                    </a>
-                                                {% endif %}
-                                                <span> <a class="w-100" href="{% url 'wardrobe:view_wardrobe' item_id.wardrobe.id %}">{{item_id.title|capfirst}}</a></span>
-                                            </div>
-                                        </h6>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6 productdetails">
-                                <ul class="product-bar">
-                                    <li>
-                                        <h4>Item Category </h4>
-                                        <h6>
-                                            {{item_id.cloth_category.title|capfirst}}
-                                        </h6>
-                                    </li>
-                                    <li>
-                                        <h4>Created By </h4>
-                                        <h6>
-                                            {% if item_id.wardrobe.user %}
-                                            <div class="d-flex align-items-center display-images">
-                                                {% if item_id.wardrobe.user.profile_pic %}
-                                                    <a href="{{item_id.wardrobe.user.profile_pic.url}}" data-fancybox>
-                                                        <img src="{{item_id.wardrobe.user.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
-                                                    </a>
-                                                {% else %}
-                                                    <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
-                                                        <img src="{% static 'admin-assets/images/dp.png' %}"
-                                                        class="rounded-lg me-2" width="50" alt="">
-                                                    </a>
-                                                {% endif %}
-                                                <span><a class="w-100" href="{% url 'users:view_user' item_id.wardrobe.user.id %}">{{item_id.wardrobe.user.full_name|capfirst}}</a></span>
-                                            </div>
-                                            {% else %}-{% endif %}
-                                        </h6>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
         <div class="activity mt-3">
             <div class="activity-box">
                 <div class='d-flex flex-wrap justify-content-between'>
@@ -114,8 +48,8 @@
                                         {% endfor %}
                                     </div>
                                     <div class="activity-right-content d-flex gap-2">
-                                        <span ><a style="color:#1b378f;" href="{% url "users:view_user" rating.user.id %}">{{ rating.user.full_name|capfirst }}</a></span>
-                                        <span>| 
+                                        <span><a style="color:#1b378f;" href="{% url "users:view_user" rating.user.id %}">{{ rating.user.full_name|capfirst }}</a></span>
+                                        <span>|
                                             {{ rating.created_on|naturaltime }}
                                         </span>
                                     </div>

@@ -410,7 +410,9 @@ class GetOutfitSuggestion(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
         suggestion = OutfitSiggestion.objects.get(id=self.kwargs['id'])
+        ratings = Rating.objects.filter(suggestion=suggestion).order_by('-created_on')
         return render(request, 'wardrobe/wardrobs/suggestion-detail.html', {
             "head_title": "Styling Suggestions Management",
             "suggestion": suggestion,
+            "ratings":get_pagination(request,ratings)
         })

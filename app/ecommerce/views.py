@@ -670,11 +670,21 @@ class DeleteStoreCredentials(View):
 class UserFeedBackList(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
-        item_id = ClothingItem.objects.get(id = self.kwargs.get('id'))
-        ratings = Rating.objects.filter(item=item_id).order_by('-created_on')
+        obj_id = None
+        obj_id = (
+            ClothingItem.objects.filter(id=self.kwargs.get('id')).first() or
+            VirtualTryOn.objects.filter(id=self.kwargs.get('id')).first() or
+            Outfit.objects.filter(id=self.kwargs.get('id')).first() or
+            OutfitSiggestion.objects.filter(id=self.kwargs.get('id')).first()
+        )        
+        if obj_id:
+            obj_id = obj_id.id
+            ratings = Rating.objects.filter(Q(item_id=obj_id)|Q(outfit_id=obj_id)|Q(suggestion_id=obj_id)|Q(virtual_try_on_id=obj_id))
+        else:
+            ratings = Rating.objects.none()
         return render(request, 'ecommerce/user-rating/user-rating-list.html',{
             "head_title":'Wardrobe Management',
-            "item_id":item_id,
+            "obj_id":obj_id,
             "ratings":get_pagination(request,ratings),
             "scroll_required":True if request.GET else False,
             "search_filters":request.GET.copy(),
@@ -708,9 +718,11 @@ class ViewTryOnDetails(View):
     @method_decorator(admin_only)
     def get(self, request, *args, **kwargs):
         virtual_try_on = VirtualTryOn.objects.get(id=self.kwargs['id'])
+        ratings = Rating.objects.filter(virtual_try_on=virtual_try_on).order_by('-created_on')
         return render(request,'ecommerce/virtual-try-on/try-on-details.html',{
             'head_title':'Virtual Try On Management',
-            'virtual_try_on':virtual_try_on})
+            'virtual_try_on':virtual_try_on,
+            "ratings":get_pagination(request,ratings)})
 
 
 class DeleteVirtualTryOn(View):
@@ -752,12 +764,12 @@ class SyncTryOnData(View):
                 virtual_try_on.save()
 
                 send_notification(
-                    created_by=request.user,
+                    created_by=get_admin(),
                     created_for=[virtual_try_on.user.id],
                     title="New Virtual Try On Generated",
                     description=f"A new virtual try on is ready for {virtual_try_on.user.full_name}.",
-                    notification_type=ADMIN_NOTIFICATION,
-                    obj_id=str(virtual_try_on.user.id),
+                    notification_type=VIRTUAL_TRY_ON,
+                    obj_id=str(virtual_try_on.id),
                 )
         messages.success(request,"Virtual Try On Sync Successfully!")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -809,8 +821,8 @@ class SyncVirtualTryOnOutput(View):
                 created_for=[try_ons.user.id],
                 title="New Virtual Try On Generated",
                 description=f"A new virtual try on is ready for {try_ons.user.full_name}.",
-                notification_type=ADMIN_NOTIFICATION,
-                obj_id=str(try_ons.user.id),
+                notification_type=VIRTUAL_TRY_ON,
+                obj_id=str(try_ons.id),
             )
         messages.success(request,"Virtual Try On Sync Successfully!")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

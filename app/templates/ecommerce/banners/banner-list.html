@@ -94,9 +94,9 @@
 											<td>
 												<div class="d-flex mx-2">
                                                     {% if banner.is_active %}
-                                                        <span style="line-height:32px;" class="badge bg-success active_deactive me-2" message="Are you sure you want to deactivate?" action='DeActivate' href="{% url 'accounts:change_banner_status' banner.id %}">Active</span>
+                                                        <span style="line-height:32px;" class="badge bg-warning active_deactive me-2" message="Are you sure you want to deactivate?" action='DeActivate' href="{% url 'accounts:change_banner_status' banner.id %}">InActive</span>
                                                     {% else %}
-                                                        <span style="line-height:32px;" class="badge bg-warning active_deactive me-2" message="Are you sure you want to activate?" action='Activate' href="{% url 'accounts:change_banner_status' banner.id %}" >InActive</span>
+                                                        <span style="line-height:32px;" class="badge bg-success active_deactive me-2" message="Are you sure you want to activate?" action='Activate' href="{% url 'accounts:change_banner_status' banner.id %}" >Active</span>
                                                     {% endif %}
                                                     <a title="Edit" data-bs-toggle="modal" onclick="GetValue('{{banner.id}}','{{banner.title}}','{{banner.image}}')"  data-bs-target="#edit-banner" class="btn btn-info shadow btn-xs sharp me-2">
 														<i class="fa fa-edit"></i>

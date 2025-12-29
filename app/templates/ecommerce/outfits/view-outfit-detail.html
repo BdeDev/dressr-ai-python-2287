@@ -148,7 +148,7 @@
                                                                 <tr>
                                                                     <td>{{rating.user.full_name|default:'-'}}</td>
                                                                     <td>{{rating.rating|default:'-'}}</td>
-                                                                    <td>{{rating.comment|default:'-'}}</td>
+                                                                    <td>{{rating.comment|default:'-'|truncatechars:75}}</td>
                                                                     <td>
                                                                         <script>
                                                                             var date = ConvertDateTime("{{ rating.created_on|date:'Y-m-d' }}", "{{ rating.created_on|time:'H:i' }}");
@@ -156,7 +156,9 @@
                                                                         </script>
                                                                     </td>
                                                                     <td>
-
+                                                                        <div class="d-flex">
+                                                                            <a title="View" href="{% url 'ecommerce:feedback_list' outfit.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                                        </div>
                                                                     </td>
                                                                 </tr>
                                                                 {% endfor %}

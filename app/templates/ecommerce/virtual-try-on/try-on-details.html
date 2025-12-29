@@ -181,9 +181,25 @@
                                                             {% if ratings %}
                                                                 {% for rating in ratings %}
                                                                 <tr>
-                                                                    <td>{{rating.user.full_name|capfirst|default:'-'}}</td>
+                                                                    <td>
+                                                                        {% if rating.user %}
+                                                                        <div class="d-flex align-items-center display-images">
+                                                                            {% if rating.user.profile_pic %}
+                                                                                <a href="{{rating.user.profile_pic.url}}" data-fancybox>
+                                                                                    <img src="{{rating.user.profile_pic.url}}" class="rounded-lg me-2" width="50" alt="">
+                                                                                </a>
+                                                                            {% else %}
+                                                                                <a href="{% static 'admin-assets/images/dp.png' %}" data-fancybox>
+                                                                                    <img src="{% static 'admin-assets/images/dp.png' %}"
+                                                                                    class="rounded-lg me-2" width="50" alt="">
+                                                                                </a>
+                                                                            {% endif %}
+                                                                            <span><a class="w-100" href="{% url 'users:view_user' rating.user.id %}">{{rating.user.full_name|capfirst}}</a></span>
+                                                                        </div>
+                                                                        {% else %}-{% endif %}
+                                                                    </td>
                                                                     <td>{{rating.rating|default:'-'}}</td>
-                                                                    <td>{{rating.comment|default:'-'}}</td>
+                                                                    <td>{{rating.comment|default:'-'|truncatechars:75}}</td>
                                                                     <td>
                                                                         <script>
                                                                             var date = ConvertDateTime("{{ rating.created_on|date:'Y-m-d' }}", "{{ rating.created_on|time:'H:i' }}");
@@ -191,7 +207,9 @@
                                                                         </script>
                                                                     </td>
                                                                     <td>
-
+                                                                        <div class="d-flex">
+                                                                            <a title="View" href="{% url 'ecommerce:feedback_list' virtual_try_on.id %}" id="view-btn" class="btn btn-success shadow btn-xs sharp me-1"><i class="fa fa-eye"></i></a>
+                                                                        </div>
                                                                     </td>
                                                                 </tr>
                                                                 {% endfor %}

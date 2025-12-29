@@ -1206,7 +1206,7 @@ class CreateUserAvatarAPI(APIView):
                 created_for=[user.id],
                 title="New Avatar Generated",
                 description=f"A new avatar has been successfully generated for {user.full_name}.",
-                notification_type=ADMIN_NOTIFICATION,
+                notification_type=AVATAR_CREATED,
                 obj_id=str(user.id),
             )
         serialized_data = UserSerializer(user, context={"request": request}).data
@@ -1388,7 +1388,7 @@ class CreateVirtualTryOnAPI(APIView):
             created_for=[user.id],
             title="New Virtual Try On Generated",
             description=f"A new virtual try on is ready for {virtual_try_on.user.full_name}.",
-            notification_type=ADMIN_NOTIFICATION,
+            notification_type=VIRTUAL_TRY_ON,
             obj_id=str(virtual_try_on.id),
         )
         
@@ -1549,7 +1549,7 @@ class CreateAIOutFitAPI(APIView):
             created_for=[user.id],
             title="New outfit Generated",
             description=f"A new outfit is ready for {outfit.created_by.full_name}.",
-            notification_type=ADMIN_NOTIFICATION,
+            notification_type=USER_OUTFIT,
             obj_id=str(outfit.id),
         )
         

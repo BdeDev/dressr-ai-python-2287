@@ -46,9 +46,17 @@
                                     <a {% if notification.notification_type == 1 and notification.obj_id  %}
                                             href="{% url "users:view_user" notification.obj_id %}?n_id={{notification.id}}"
                                         {% elif notification.notification_type == 2 and notification.obj_id %}
-                                            href="{% url "loan_manager:view_loan_application" notification.obj_id %}?n_id={{notification.id}}"
+                                            href="{% url "users:view_user" notification.obj_id %}?n_id={{notification.id}}"
                                         {% elif notification.notification_type == 3 and notification.obj_id %}
-                                            href="{% url "users:view_user" %}?n_id={{notification.id}}"
+                                            href="{% url "users:view_user" notification.obj_id %}?n_id={{notification.id}}"
+                                        {% elif notification.notification_type == 4 and notification.obj_id %}
+                                            href="{% url "ecommerce:view_virtual_try_on" notification.obj_id %}?n_id={{notification.id}}"
+                                        {% elif notification.notification_type == 5 and notification.obj_id %}
+                                            href="{% url "wardrobe:view_outfit_detail" notification.obj_id %}?n_id={{notification.id}}"
+                                        {% elif notification.notification_type == 6 and notification.obj_id %}
+                                            href="{% url "subscription:purchased_plan_info" notification.obj_id %}?n_id={{notification.id}}"
+                                        {% elif notification.notification_type == 7 and notification.obj_id %}
+                                            href="{% url "users:view_suggestion" notification.obj_id %}?n_id={{notification.id}}"
                                         {% else %}
                                             href="?n_id={{notification.id}}"
                                         {% endif %}
@@ -332,7 +340,6 @@
                                     Firebase
                                 </a>
                             </li>
-
                             <li>
                                 <a {% if head_title == 'LightX Editor Credentials Management' %} class="active" {% endif %} href="{% url 'credentials:lightx_editor_key_list' %}" onclick="Loader()">
                                     LightX Editor

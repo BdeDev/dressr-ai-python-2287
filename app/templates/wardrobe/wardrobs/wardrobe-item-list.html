@@ -21,7 +21,7 @@
             <div class="card-body">
 				<div class='d-flex flex-wrap justify-content-between'>
 					<!-- showing_objects-->
-                    {% include "admin-includes/showing_objects.html" with listing_objects=favourite_items %}
+                    {% include "admin-includes/showing_objects.html" with listing_objects=cloth_items %}
                     <!-- showing_objects end-->
 				</div>
                 <div class="row">
@@ -53,7 +53,6 @@
                                                 </span>
                                             </button>
                                         </div>
-
                                         <small>(Wears: {{ item.wear_count }})</small>
                                     </div>
                                     <div class="d-flex justify-content-between">
@@ -79,7 +78,7 @@
                 {% endfor %}
                 </div>
                 <!-- pagination-->
-                {% include "admin-includes/pagination.html" with listing_objects=favourite_items %}
+                {% include "admin-includes/pagination.html" with listing_objects=cloth_items %}
                 <!-- pagination end-->
             </div>
         </div>

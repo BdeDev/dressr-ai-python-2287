@@ -61,12 +61,15 @@ API_PAGINATION = 10
 '''
 Notification Type
 '''
-NOTIFICATION_TYPE = ((1,'Admin Notification'),(2,'Loan Status Notification'),(3,'User Related Notification'),(3,'Query Ticket Notification'),(3,'Subscription Notification'))
+NOTIFICATION_TYPE = ((1,'Admin Notification'),(2,'Avatar Created'),
+                     (3,'User Related Notification'),(4,'Virtual Try On'),(5,'User Outfit Generated'),(6,'Subscription status'),(7,'Style Suggestion'))
 ADMIN_NOTIFICATION=1
-LOAN_STATUS_NOTIFICATION = 2
+AVATAR_CREATED = 2
 USER_RELATED_NOTIFICATION = 3
-QUERY_TICKET_NOTIFICATION = 4
-SUBSCRIPTION_STATUS_NOTIFICATION = 5
+VIRTUAL_TRY_ON = 4
+USER_OUTFIT = 5
+SUBSCRIPTION_STATUS_NOTIFICATION = 6
+STYLE_SUGGESTION_NOTIFICATION = 7
 
 """
 LOGIN_STATE

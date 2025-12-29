@@ -112,6 +112,8 @@ class AddRatingAPI(APIView):
             openapi.Parameter('comment', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Feedback comment"),
             openapi.Parameter('item_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Wardrobe Item ID"),
             openapi.Parameter('outfit_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Outfit ID"),
+            openapi.Parameter('try_on_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Try On ID"),
+            openapi.Parameter('suggestion_id', openapi.IN_FORM, type=openapi.TYPE_STRING, description="Suggestion ID"),
         ],
     )
     def post(self, request):
@@ -119,15 +121,16 @@ class AddRatingAPI(APIView):
         comment = request.data.get("comment")
         item_id = request.data.get("item_id")
         outfit_id = request.data.get("outfit_id")
+        suggestion_id = request.data.get("suggestion_id")
+        try_on_id = request.data.get('try_on_id')
 
-        if not item_id and not outfit_id:
-            return Response({"error": "Please provide either item_id or outfit_id."},status=status.HTTP_400_BAD_REQUEST)
+        if not any([item_id,outfit_id,suggestion_id,try_on_id]):
+            return Response({"error": "Please provide feedback object id."},status=status.HTTP_400_BAD_REQUEST)
 
-        if item_id and outfit_id:
-            return Response({"error": "Please send only one: item_id OR outfit_id, not both."},status=status.HTTP_400_BAD_REQUEST)
-        
         item = None
         outfit = None
+        suggestion = None
+        try_on = None
 
         if item_id:
             try:
@@ -146,6 +149,24 @@ class AddRatingAPI(APIView):
             
             if request.user.id == outfit.created_by.id:
                 return Response({"error": "You cannot rate your own outfit."},status=status.HTTP_400_BAD_REQUEST)
+            
+        if suggestion_id:
+            try:
+                suggestion = OutfitSiggestion.objects.get(id=suggestion_id)
+            except OutfitSiggestion.DoesNotExist:
+                return Response({"error": "Invalid suggestion_id. Suggestion not found."},status=status.HTTP_404_NOT_FOUND)
+            
+            if request.user.id == suggestion.user.id:
+                return Response({"error": "You cannot rate your own suggestion."},status=status.HTTP_400_BAD_REQUEST)
+        
+        if try_on_id:
+            try:
+                try_on = VirtualTryOn.objects.get(id=try_on_id)
+            except VirtualTryOn.DoesNotExist:
+                return Response({"error": "Invalid try_on_id. Virtual try on not found."},status=status.HTTP_404_NOT_FOUND)
+            
+            if request.user.id == try_on.user.id:
+                return Response({"error": "You cannot rate your own virtual try on."},status=status.HTTP_400_BAD_REQUEST)
 
         if not rating_value:
             return Response({"error": "Rating is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -162,6 +183,8 @@ class AddRatingAPI(APIView):
             user=request.user,
             item=item if item else None,
             outfit=outfit if outfit else None,
+            suggestion=suggestion if suggestion else None,
+            virtual_try_on= try_on if try_on else None,
             defaults={"rating": rating_value, "comment": comment}
         )
         message = "Feedback added successfully!" if created else "Feedback updated successfully!"

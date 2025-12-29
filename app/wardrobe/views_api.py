@@ -205,6 +205,7 @@ class AddMultipleItemInWardrobeAPI(APIView):
             # Color
             color = parsed_json.get('color', 'Unknown').strip().capitalize()
 
+            # img_file = remove_image_background(img_file) -----------Runtime GPU required
             # Create ClothingItem
             cloth_item = ClothingItem.objects.create(
                 title=category_name,
@@ -305,7 +306,7 @@ class GetItemsAPI(APIView):
         ],
     )
     def get(self, request, *args, **kwargs):
-        cloth_item = ClothingItem.objects.filter(wardrobe__user = request.user)
+        cloth_item = ClothingItem.objects.filter(wardrobe__user = request.user).order_by('-created_on')
         start,end,meta_data = get_pages_data(request.query_params.get('page', None), cloth_item,15)
         data = ClothItemSerializer(cloth_item[start : end],many=True,context = {"request":request}).data
         return Response({"data":data,"meta":meta_data,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
@@ -1513,50 +1514,6 @@ class MostWearClothAnalyticsAPI(APIView):
         }
         return Response(response, status=200)
 
-class ShareWardrobeAPI(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    parser_classes = [MultiPartParser]
-
-    @swagger_auto_schema(
-        tags=["WarDrobe management"],
-        operation_id="share digitized wardrobes with friends or family members",
-        operation_description="share digitized wardrobes with friends or family members",
-        manual_parameters=[
-            openapi.Parameter('user_email', openapi.IN_FORM,type=openapi.TYPE_STRING,description="User Email"),
-        ],
-    )
-    def post(self, request, *args, **kwargs):
-        CustomRequiredFieldsValidator.validate_api_field(self, request, 
-                [{"field_name": "user_email","method": "post","error_message": "Please enter user email"},])
-        
-        user_email = request.data.get("user_email")
-        share_friend = get_or_none(User,'User does not exist !',email=user_email)
-        wardrobe = Wardrobe.objects.filter(user=request.user).first()
-        if not wardrobe:
-            return Response({"message": "No wardrobe found for current user.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_404_NOT_FOUND)
-
-        if share_friend in wardrobe.shared_with.all():
-            return Response({"message": "This wardrobe is already shared with this user.", "status": status.HTTP_400_BAD_REQUEST},status=status.HTTP_400_BAD_REQUEST)
-        
-        wardrobe.shared_with.add(share_friend)
-        wardrobe_path = reverse("frontend:view_shared_wardrobe")
-        wardrobe_link = f"{request.build_absolute_uri(wardrobe_path)}?wardrobe_id={wardrobe.id}"
-        wardrobe.is_shared = True
-        wardrobe.share_count = wardrobe.share_count + 1
-        wardrobe.save()
-
-        send_notification(
-            created_by=get_admin(),
-            created_for=[share_friend],
-            title=f"Wardrobe share",
-            description=f"share digitized wardrobes with {share_friend.email}",
-            notification_type=ADMIN_NOTIFICATION,
-            obj_id=str(share_friend.id),
-        )
-        bulk_send_user_email(request,request.user,'EmailTemplates/ShareWardrobe.html','A Wardrobe Has Been Shared With You!',share_friend.email,wardrobe_link,"","","","",assign_to_celery=False)
-        return Response({"wardrobe_link":wardrobe_link,"status":status.HTTP_200_OK},status=status.HTTP_200_OK)
-    
-
 class GetWardrobeDetailsAPI(APIView):
     permission_classes = (permissions.AllowAny,)
     parser_classes = [MultiPartParser]
@@ -1626,32 +1583,22 @@ class TodayOutfitSuggestion(APIView):
         ai_response = suggest_outfit(
             city, temprature, humidity, condition, wardrobe_items
         )
-
         suggestions = ai_response.get("suggestions", [])
-
-        if not suggestions:
-            return Response(
-                {"message": "No outfit suggestions found"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        suggestions = ai_response.get("suggestions", [])
-
         if not suggestions:
             return Response(
                 {"message": "No suggestions generated"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         saved_outfits = []
         for suggestion in suggestions:
             occasion = suggestion.get("occasion") if suggestion.get("occasion") else 'All'
             explanation = suggestion.get("explanation")
-            outfit_ids = suggestion.get("outfit_ids", [])
+            items_dict = suggestion.get("items", {})
+    
+            outfit_ids = [val for val in items_dict.values() if val is not None]
             selected_items = wardrobe_items.filter(
                 id__in=outfit_ids
             )
-
             outfit_obj = OutfitSiggestion.objects.filter(
                 user=request.user,
                 occasion=occasion,
@@ -1667,12 +1614,19 @@ class TodayOutfitSuggestion(APIView):
 
             if request.FILES.get("outfit_image"):
                 outfit_obj.today_outfit = request.FILES.get("outfit_image")
-
             outfit_obj.explanation = explanation
             outfit_obj.items.set(selected_items)
             outfit_obj.save()
             saved_outfits.append(outfit_obj)
 
+            send_notification(
+                created_by=get_admin(),
+                created_for=[request.user.id],
+                title=f"New Customer Registered",
+                description=f"New Customer registered with email {request.user.email}",
+                notification_type=ADMIN_NOTIFICATION,
+                obj_id=str(outfit_obj.id),
+            )
         return Response({
             "message": "All outfit suggestions saved successfully",
             "outfits": OutfitSiggestionSerializer(
